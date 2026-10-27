@@ -1,0 +1,6 @@
+PASS 02 柜间重叠: 发现空间问题
+PASS 03 并排贴边: 已检查范围无冲突
+PASS 04 混合问题: 发现空间问题
+PASS 05 清单不完整: 数据不完整
+PASS 06 空方案: 尚未检查
+PASS collision diagnostic selects both rack footprints; inspector identifies which rack properties are displayed.

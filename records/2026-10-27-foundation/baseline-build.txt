@@ -1,0 +1,19 @@
+
+> ai-network-infra-simulator@0.1.0 build
+> npm run build --workspaces --if-present
+
+
+> @ai-infra/web@0.1.0 build
+> vite build
+
+Both esbuild and oxc options were set. oxc options will be used and esbuild options will be ignored. The following esbuild options were set: `{ jsx: 'automatic', jsxImportSource: 'react' }`
+vite v8.2.2 building client environment for production...
+transforming...
+✓ 83 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.42 kB │ gzip:   0.28 kB
+dist/assets/index-D4l7KQeS.css   82.93 kB │ gzip:  12.48 kB
+dist/assets/index-CnUSkvyd.js   439.50 kB │ gzip: 132.17 kB
+
+✓ built in 132ms

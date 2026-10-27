@@ -1,0 +1,104 @@
+Regression recorded after adding the Rack foundation.
+Command: npm test
+Exit code: 1
+Environment: Windows; Node v22.22.1; npm 10.9.4; DATABASE_URL unset.
+
+> @ai-infra/assets@0.1.0 test
+# tests 20
+# pass 12
+# fail 0
+# skipped 8
+> @ai-infra/assistant@0.1.0 test
+# tests 84
+# pass 81
+# fail 0
+# skipped 3
+> @ai-infra/core@0.1.0 test
+# tests 13
+# pass 13
+# fail 0
+# skipped 0
+> @ai-infra/db@0.1.0 test
+# tests 7
+# pass 0
+# fail 0
+# skipped 7
+> @ai-infra/facility@0.1.0 test
+not ok 360 - an unknown tool is refused with 404
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+not ok 361 - an unknown argument is refused rather than ignored
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+not ok 362 - a missing required argument is refused and named
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+not ok 363 - an argument naming another revision is a 403, never a silent rewrite
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+not ok 364 - a denied permission is refused at the handler, not only at selection
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+not ok 365 - a tool with no authorization answer available is refused rather than allowed
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+not ok 366 - a write in a read-only scope is refused before its arguments are even considered
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+not ok 367 - an unconfirmed write returns CONFIRMATION_REQUIRED carrying the call it would make
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+not ok 368 - a confirmed write delegates to the domain service and states its consequence
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+not ok 369 - an unresolvable waiver policy is refused, so no waiver cites a policy that does not exist
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+not ok 370 - a waiver on a pinned policy reports whether that policy promotes coverage
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+not ok 371 - every call emits one credential-free audit record, including a failed one
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+not ok 372 - a result over the byte cap degrades with a notice instead of failing
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+# tests 391
+# pass 96
+# fail 13
+# skipped 282
+> @ai-infra/identity@0.1.0 test
+# tests 24
+# pass 24
+# fail 0
+# skipped 0
+> @ai-infra/imports@0.1.0 test
+# tests 76
+# pass 72
+# fail 0
+# skipped 4
+> @ai-infra/maps@0.1.0 test
+# tests 22
+# pass 12
+# fail 0
+# skipped 10
+> @ai-infra/rack@0.1.0 test
+# tests 17
+# pass 17
+# fail 0
+# skipped 0
+> @ai-infra/rbac@0.1.0 test
+not ok 18 - the generated client catalog is current
+# tests 71
+# pass 56
+# fail 1
+# skipped 14
+> @ai-infra/secrets@0.1.0 test
+# tests 8
+# pass 8
+# fail 0
+# skipped 0
+> @ai-infra/storage@0.1.0 test
+# tests 21
+# pass 20
+# fail 0
+# skipped 1
+> @ai-infra/api@0.1.0 test
+not ok 12 - a turn runs the model the caller chose, and only from the menu
+not ok 13 - a streamed turn reports each round before the envelope
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+# tests 89
+# pass 36
+# fail 2
+# skipped 51
+> @ai-infra/web@0.1.0 test
+ Test Files  47 passed (47)
+      Tests  608 passed (608)
+   Duration  5.23s (transform 17.43s, setup 0ms, collect 46.09s, tests 1.48s, environment 15ms, prepare 24.41s)

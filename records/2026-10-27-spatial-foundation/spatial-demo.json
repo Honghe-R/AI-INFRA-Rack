@@ -1,0 +1,212 @@
+{
+  "synthetic": true,
+  "results": [
+    {
+      "name": "clear_known_scope",
+      "snapshotId": "00000000-0000-4000-8000-000000000008",
+      "facilityInput": {
+        "projectId": "00000000-0000-4000-8000-000000000004",
+        "scenarioId": "00000000-0000-4000-8000-000000000005",
+        "revisionId": "00000000-0000-4000-8000-000000000006",
+        "containerId": "00000000-0000-4000-8000-000000000007",
+        "revisionEtag": "synthetic-facility-etag-v1"
+      },
+      "roomSource": {
+        "kind": "ASSUMED",
+        "reference": "Synthetic course example. COMPLETE is an explicit fixture assumption, not a surveyed obstacle inventory."
+      },
+      "planId": "00000000-0000-4000-8000-000000000003",
+      "rackId": "00000000-0000-4000-8000-000000000002",
+      "status": "CHECKED_SCOPE_CLEAR",
+      "checks": [
+        {
+          "ruleId": "rack.space.room_bounds",
+          "status": "PASS"
+        },
+        {
+          "ruleId": "rack.space.obstacles",
+          "status": "PASS",
+          "inputCoverage": "COMPLETE",
+          "obstaclesChecked": 1
+        }
+      ],
+      "diagnostics": [],
+      "uncheckedRules": [
+        "rack_to_rack_collision",
+        "maintenance_clearance",
+        "aisles",
+        "equipment_and_capacity",
+        "source_freshness",
+        "plan_binding",
+        "authorization"
+      ]
+    },
+    {
+      "name": "outside_room",
+      "snapshotId": "00000000-0000-4000-8000-000000000008",
+      "facilityInput": {
+        "projectId": "00000000-0000-4000-8000-000000000004",
+        "scenarioId": "00000000-0000-4000-8000-000000000005",
+        "revisionId": "00000000-0000-4000-8000-000000000006",
+        "containerId": "00000000-0000-4000-8000-000000000007",
+        "revisionEtag": "synthetic-facility-etag-v1"
+      },
+      "roomSource": {
+        "kind": "ASSUMED",
+        "reference": "Synthetic course example. COMPLETE is an explicit fixture assumption, not a surveyed obstacle inventory."
+      },
+      "planId": "00000000-0000-4000-8000-000000000003",
+      "rackId": "00000000-0000-4000-8000-000000000002",
+      "status": "ISSUES_FOUND",
+      "checks": [
+        {
+          "ruleId": "rack.space.room_bounds",
+          "status": "FAIL"
+        },
+        {
+          "ruleId": "rack.space.obstacles",
+          "status": "PASS",
+          "inputCoverage": "COMPLETE",
+          "obstaclesChecked": 1
+        }
+      ],
+      "diagnostics": [
+        {
+          "ruleId": "rack.space.room_bounds",
+          "code": "RACK_OUTSIDE_ROOM",
+          "severity": "ERROR",
+          "rackId": "00000000-0000-4000-8000-000000000002",
+          "message": "Rack footprint extends beyond the rectangular room boundary.",
+          "evidence": {
+            "unit": "m",
+            "rackBoundsM": {
+              "minX": -0.3,
+              "minY": 2.4,
+              "maxX": 0.3,
+              "maxY": 3.6
+            },
+            "roomBoundsM": {
+              "minX": 0,
+              "minY": 0,
+              "maxX": 10,
+              "maxY": 8
+            }
+          }
+        }
+      ],
+      "uncheckedRules": [
+        "rack_to_rack_collision",
+        "maintenance_clearance",
+        "aisles",
+        "equipment_and_capacity",
+        "source_freshness",
+        "plan_binding",
+        "authorization"
+      ]
+    },
+    {
+      "name": "obstacle_conflict",
+      "snapshotId": "00000000-0000-4000-8000-000000000008",
+      "facilityInput": {
+        "projectId": "00000000-0000-4000-8000-000000000004",
+        "scenarioId": "00000000-0000-4000-8000-000000000005",
+        "revisionId": "00000000-0000-4000-8000-000000000006",
+        "containerId": "00000000-0000-4000-8000-000000000007",
+        "revisionEtag": "synthetic-facility-etag-v1"
+      },
+      "roomSource": {
+        "kind": "ASSUMED",
+        "reference": "Synthetic course example. COMPLETE is an explicit fixture assumption, not a surveyed obstacle inventory."
+      },
+      "planId": "00000000-0000-4000-8000-000000000003",
+      "rackId": "00000000-0000-4000-8000-000000000002",
+      "status": "ISSUES_FOUND",
+      "checks": [
+        {
+          "ruleId": "rack.space.room_bounds",
+          "status": "PASS"
+        },
+        {
+          "ruleId": "rack.space.obstacles",
+          "status": "FAIL",
+          "inputCoverage": "COMPLETE",
+          "obstaclesChecked": 1
+        }
+      ],
+      "diagnostics": [
+        {
+          "ruleId": "rack.space.obstacles",
+          "code": "RACK_OBSTACLE_CONFLICT",
+          "severity": "ERROR",
+          "rackId": "00000000-0000-4000-8000-000000000002",
+          "obstacleId": "00000000-0000-4000-8000-000000000009",
+          "message": "Rack footprint overlaps or touches a known obstacle.",
+          "evidence": {
+            "unit": "m",
+            "rackBoundsM": {
+              "minX": 4.2,
+              "minY": 2.4,
+              "maxX": 4.8,
+              "maxY": 3.6
+            },
+            "obstacleBoundsM": {
+              "minX": 4,
+              "minY": 2,
+              "maxX": 5,
+              "maxY": 4
+            }
+          }
+        }
+      ],
+      "uncheckedRules": [
+        "rack_to_rack_collision",
+        "maintenance_clearance",
+        "aisles",
+        "equipment_and_capacity",
+        "source_freshness",
+        "plan_binding",
+        "authorization"
+      ]
+    },
+    {
+      "name": "unknown_obstacles",
+      "snapshotId": "00000000-0000-4000-8000-000000000008",
+      "facilityInput": {
+        "projectId": "00000000-0000-4000-8000-000000000004",
+        "scenarioId": "00000000-0000-4000-8000-000000000005",
+        "revisionId": "00000000-0000-4000-8000-000000000006",
+        "containerId": "00000000-0000-4000-8000-000000000007",
+        "revisionEtag": "synthetic-facility-etag-v1"
+      },
+      "roomSource": {
+        "kind": "ASSUMED",
+        "reference": "Synthetic course example. COMPLETE is an explicit fixture assumption, not a surveyed obstacle inventory."
+      },
+      "planId": "00000000-0000-4000-8000-000000000003",
+      "rackId": "00000000-0000-4000-8000-000000000002",
+      "status": "INCOMPLETE",
+      "checks": [
+        {
+          "ruleId": "rack.space.room_bounds",
+          "status": "PASS"
+        },
+        {
+          "ruleId": "rack.space.obstacles",
+          "status": "NOT_CHECKED",
+          "inputCoverage": "UNKNOWN",
+          "obstaclesChecked": 0
+        }
+      ],
+      "diagnostics": [],
+      "uncheckedRules": [
+        "rack_to_rack_collision",
+        "maintenance_clearance",
+        "aisles",
+        "equipment_and_capacity",
+        "source_freshness",
+        "plan_binding",
+        "authorization"
+      ]
+    }
+  ]
+}

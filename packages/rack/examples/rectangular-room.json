@@ -1,0 +1,28 @@
+{
+  "contractVersion": 1,
+  "snapshotId": "00000000-0000-4000-8000-000000000008",
+  "facilityInput": {
+    "projectId": "00000000-0000-4000-8000-000000000004",
+    "scenarioId": "00000000-0000-4000-8000-000000000005",
+    "revisionId": "00000000-0000-4000-8000-000000000006",
+    "containerId": "00000000-0000-4000-8000-000000000007",
+    "revisionEtag": "synthetic-facility-etag-v1"
+  },
+  "name": "Synthetic 10 by 8 metre room",
+  "unit": "m",
+  "frame": "ROOM_LOCAL",
+  "originDescription": "Synthetic room lower-left corner is (0,0); X right, Y up; no georeferencing.",
+  "boundaryM": { "minX": 0, "minY": 0, "maxX": 10, "maxY": 8 },
+  "obstacleCoverage": "COMPLETE",
+  "obstacles": [
+    {
+      "obstacleId": "00000000-0000-4000-8000-000000000009",
+      "name": "Synthetic blocked rectangle",
+      "boundsM": { "minX": 4, "minY": 2, "maxX": 5, "maxY": 4 }
+    }
+  ],
+  "source": {
+    "kind": "ASSUMED",
+    "reference": "Synthetic course example. COMPLETE is an explicit fixture assumption, not a surveyed obstacle inventory."
+  }
+}

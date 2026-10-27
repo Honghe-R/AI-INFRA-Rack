@@ -1,0 +1,271 @@
+# 项目进展记录
+
+> 记录原则：只记实际发生的修改与验证；设计方向、已实现、未验证分别说明。
+> 工作目录：`C:\Users\RHH\Desktop\AI-INFRA-Rack`。
+> 操作约束：仅本地开发；不自动 commit、push、改远程或向原老师仓库写入。提交由用户自行完成。
+
+## 当前状态
+
+| 内容 | 状态 |
+| --- | --- |
+| 起始基线 | 当前副本初始提交 `638a769`；第一轮开始时工作区干净，后续保留前轮未提交修改 |
+| 已实现 | Rack 型号/实例、局部占地、空内存方案、设施来源比较、矩形机房、单柜越界/障碍、多柜碰撞与汇总；74 项单元测试 |
+| 已记录 | 基础契约、坐标、方案初始状态/版本、来源比较、三项空间规则、清单覆盖声明与未检查范围、遗留问题 |
+| 部分推进 | 总清单阶段 0–2；阶段 3 仅领域包；阶段 5 提前完成三项离线空间规则，存储/服务仍未完成 |
+| 尚未验证 | 原平台连接真实数据库/对象存储后的完整运行 |
+| 尚未开始 | Rack 数据表、权限、API、页面、设备分配、净距/通道/容量等其他规则、布局算法、候选、Assistant |
+| Git | 所有修改留在工作区，未提交、未推送；远程地址保持原样 |
+
+当前安排：用户要求暂不使用 Docker，后续优先推进离线领域功能；数据库、迁移、seed 和启动平台延后。
+
+当前可通过独立的[只读可视化预览](RACK_PREVIEW.md)查看合成样例；正式工作区 Rack 编辑器与方案保存尚未实现。三项局部空间检查不代表完整方案验证通过。
+
+## 2026-10-27：第一轮基础工作
+
+### 1. 本轮目标与范围调整
+
+最初按总清单准备推进最小读写闭环；随后根据用户要求收窄为基础工作。
+这轮停在环境基线、基础数据契约和领域包骨架，不扩展完整平台功能。
+所有操作均在 Rack 副本中进行，没有在 `C:\Users\RHH\Desktop\AI-INFRA` 中执行修改。
+
+### 2. 环境与原代码检查
+
+- 系统：Windows，PowerShell。
+- Node：`v22.22.1`；npm：`10.9.4`，满足项目 Node >= 22.9 的要求。
+- 起始提交：`638a769 first commit`。
+- 原远程：`https://github.com/Honghe-R/AI-INFRA-Rack.git`，未修改。
+- 未发现适用的 `AGENTS.md`。
+- 初始没有 `node_modules`、`.env`；已执行 `npm ci --no-audit --no-fund` 安装依赖。
+- Docker 命令存在，但 Linux 引擎未运行，连接 `dockerDesktopLinuxEngine` 失败。
+- 本轮没有启动 Docker、创建 `.env`、执行迁移/seed 或启动长驻前后端服务。
+- 启动检查时，5173、8787、55432、59000、59001 未发现监听。
+- 注意：两个副本继承相同 Compose 项目名 `ai-infra-dev`。后续启动 Rack 数据栈前要单独配置项目名、数据卷和端口，避免两个项目共用状态。
+
+### 3. 已完成的修改
+
+| 文件/目录 | 内容及目的 |
+| --- | --- |
+| [RACK_FOUNDATION.md](RACK_FOUNDATION.md) | 记录本轮范围、基础字段、坐标约定和后续接口/版本设计方向 |
+| [AGENTS.md](AGENTS.md) | 固定仅修改副本、只做本地工作、不自动提交/推送、持续更新记录的约束 |
+| [packages/rack/package.json](packages/rack/package.json) | 新增 npm workspace，使用原生 Node 测试，无外部运行依赖 |
+| [model.js](packages/rack/src/model.js) | 型号和实例分离；检查有限数值、UUID、单位字段、来源、旋转与锁定类型；未知容量保持 null |
+| [geometry.js](packages/rack/src/geometry.js) | 围绕中心旋转，计算四角、正面边与边界框，明确为室内局部米制坐标 |
+| [index.js](packages/rack/src/index.js) | 暴露有限且明确的基础 API |
+| [basic-rack.json](packages/rack/examples/basic-rack.json) | 可复现的合成 42U 示例，明确非厂商规格且容量未知 |
+| [model.test.js](packages/rack/src/tests/model.test.js) | 17 项测试，覆盖缺失/非法参数、来源、不可变数据、旋转、型号不匹配与数值退化 |
+| [包说明](packages/rack/README.md) | 运行方式、导出 API 与当前不覆盖的能力 |
+| [package-lock.json](package-lock.json) | 注册新 workspace；npm 同时校正既有 Facility 包遗漏的依赖元数据，未新增第三方依赖 |
+| [RACK_PROJECT_TODO.md](RACK_PROJECT_TODO.md) | 添加进展入口，只勾选有证据的基础事项，保留未完成项 |
+| [README.md](README.md) | 增加本课程 Rack 扩展的文档入口，保留原平台说明 |
+| [records/2026-10-27-foundation](records/2026-10-27-foundation) | 保存命令与测试/构建摘要，方便后续比较 |
+
+### 4. 验证结果
+
+| 验证 | 结果与边界 | 证据 |
+| --- | --- | --- |
+| 初始依赖安装 | 成功；新包注册后再次同步 workspace | 本轮命令记录与 lockfile |
+| 原平台构建 `npm run build` | 成功；有既有 esbuild/oxc 配置提示，未影响构建 | [baseline-build.txt](records/2026-10-27-foundation/baseline-build.txt) |
+| 修改前 `npm test` | 1038 通过、16 失败、380 跳过；其中前端 47 个文件/608 测试通过 | [baseline-tests.txt](records/2026-10-27-foundation/baseline-tests.txt) |
+| Rack 测试 | 17 通过，0 失败，0 跳过；不依赖数据库和模型服务 | [rack-tests.txt](records/2026-10-27-foundation/rack-tests.txt) |
+| 修改后全仓回归 | 1055 通过、16 失败、380 跳过；与修改前的失败名称完全相同，新增 Rack 17 项均通过 | [regression-tests.txt](records/2026-10-27-foundation/regression-tests.txt) |
+
+已定位的 16 项基线失败：
+
+1. Facility 工具测试 13 项：未配置 `DATABASE_URL` 时仍构建需要 pool 的工具，报数据库 pool 缺失。
+2. API Assistant 测试 2 项：无数据库时 fixture 的 repository 未初始化，调用 `createUser` 失败。
+3. RBAC 客户端目录校验 1 项：生成文本与工作副本的 LF/CRLF 差异导致字节比较失败。
+
+本轮不修改这些原模块的业务或测试，以便保持新增基础工作的边界。没有声称全仓测试通过，也没有把跳过的数据库测试当作验证成功。
+
+另以 workspace 包名导入 `@ai-infra/rack` 并执行合成示例，确认安装链接与公开导出可用。原测试会临时重写 `packages/db/bin/migrate.js` 的文件形式，本轮已恢复该测试副作用，未保留对原模块的修改。最终代码差异中只有 Rack 基础包、文档与锁文件，不包含数据库或前端业务代码变更。
+
+### 5. 已确定的基础约定
+
+- 型号和实例分离；实例包含项目与方案身份，但服务端归属校验尚未实现。
+- 米制局部坐标、中心位置、逆时针四分之一转；0 度正面为局部 -Y。
+- 尺寸/坐标不能使用数字字符串、NaN 或 Infinity；未知容量为 null。
+- 示例仅为合成训练数据，不能据此声称真实机柜容量已确认。
+- 数据输入有效不代表布局/容量可行，基础函数不返回“工程验证通过”。
+- 版本方向暂选独立 Rack Plan 绑定设施输入，持久化前还需评审工作区/Assistant 适配。
+
+### 6. 未完成与下一步
+
+- Docker 引擎未运行，原平台迁移/seed/端到端基线仍待做。
+- 完整机房输入、障碍/净距、预算与设备 contract 尚未确定。
+- 版本策略只是设计方向，尚无 Rack Plan、并发控制或过期校验实现。
+- 没有 Rack 数据库表、API、权限目录、页面或 Assistant surface。
+- 下一小步建议：隔离本地 Compose 环境并验证原平台运行，再设计“创建/读取一个空 Rack Plan”的持久化闭环。
+- 下一轮追加记录，注明新增文件、运行命令、成功/失败/跳过和待办；不删除本轮历史。
+
+## 2026-10-27：第二轮，离线空方案基础
+
+### 1. 目标与范围调整
+
+原定补运行基线；检查时 Docker 引擎已可连接，临时准备了副本专用隔离配置并尝试下载镜像。
+原 MinIO 镜像返回 401，PostGIS 下载尚未完成。随后用户明确“先不要弄 Docker，先整其他的”。
+已停止本轮启动的 Compose 下载进程，撤回本轮新增的 Compose、环境示例和启动脚本修改，删除本轮新建的 `.env` 及未使用的运行助手。
+此前的 Rack 基础代码与文档保留；没有执行迁移、seed、前后端启动或数据库写入。
+Docker 可能保留已下载的镜像缓存，本轮没有清理全局 Docker 数据。尝试摘要见 [attempt.txt](records/2026-10-27-local-runtime/attempt.txt)。
+
+调整后本轮只实现“创建一个空的内存方案，并识别上游来源引用变化”，不做数据库和网页。
+
+### 2. 实际修改
+
+| 文件 | 作用 |
+| --- | --- |
+| [input.js](packages/rack/src/input.js) | 抽出已有错误、对象、UUID 和文本检查，供型号与方案复用；不引入外部依赖 |
+| [model.js](packages/rack/src/model.js) | 复用上述基础校验，保持原有公开导出和行为 |
+| [plan.js](packages/rack/src/plan.js) | 新增设施来源引用、空 Rack Plan 构造与来源变化比较 |
+| [index.js](packages/rack/src/index.js) | 新增三个公开 API |
+| [empty-plan.json](packages/rack/examples/empty-plan.json) | 合成的空方案创建输入，标识与版本 token 均不是真实设施数据 |
+| [plan.test.js](packages/rack/src/tests/plan.test.js) | 新增 15 项测试，涵盖来源绑定、字段校验、初始状态、不可变性、版本过期和身份变更 |
+| [RACK_FOUNDATION.md](RACK_FOUNDATION.md) | 第 9 节记录完整创建字段、比较结果及服务层待办；调整下一阶段方向 |
+| [包说明](packages/rack/README.md)、[总清单](RACK_PROJECT_TODO.md) | 更新已有能力和局部完成项，不将整个阶段标记完成 |
+| [AGENTS.md](AGENTS.md) | 固定用户暂缓 Docker/环境初始化的最新要求 |
+
+### 3. 设计选择与边界
+
+- Rack 方案初始独立版本为 1，与上游设施 ETag 分离。
+- 初始 `DRAFT / NOT_RUN`、空机柜列表；不允许创建调用方直接传入 PASSED、已有版本或非空机柜列表。
+- 来源绑定项目、场景、revision、机房和不透明 revision ETag；项目/场景自报不一致会拒绝。
+- `UNCHANGED / STALE / DIFFERENT_SOURCE` 分开表达；换机房或 revision 不能伪装成普通版本刷新。
+- 这些是纯数据检查。数据库中的真实归属、授权、权威最新版本、边界快照、冻结来源 checksum 仍未验证或实现。
+- 创建返回的内容没有保存到数据库/文件；JSON 可序列化不等于已经完成保存闭环。
+
+### 4. 验证结果
+
+| 检查 | 结果 | 证据 |
+| --- | --- | --- |
+| `npm run test --workspace @ai-infra/rack` | 32 通过、0 失败、0 跳过（原 17 项 + 新增 15 项） | [rack-tests.txt](records/2026-10-27-plan-foundation/rack-tests.txt) |
+| 通过 workspace 包名导入并运行样例 | 成功创建未校验草稿；更换设施 ETag 后返回 STALE | [example-output.txt](records/2026-10-27-plan-foundation/example-output.txt) |
+| 新增/调整代码的 `node --check` | 通过 | 本轮命令记录 |
+| `git diff --check` | 通过；Git 有既有 LF/CRLF 提示 | 本轮命令记录 |
+
+本轮没有重跑全仓构建/测试；第一轮全仓的 16 项基线失败仍作为历史记录保留，不能将本轮 32 项通过解读为全仓通过。
+数据库、S3 下载和浏览器检查没有完成，也没有把环境受阻当作业务测试通过。
+
+### 5. 下一小步
+
+先离线定义机房局部米制边界与输入快照，建立边界/障碍数据检查，再逐步补包含和碰撞规则。
+数据库/API 的“空方案创建与读取”闭环延后，不自动恢复 Docker 工作。
+本轮未 commit、未 push，老师原目录没有修改。
+
+## 2026-10-27：第三轮，离线机房输入与单柜空间检查
+
+### 1. 本轮目标与范围
+
+沿第二轮下一步推进局部米制机房输入与空间规则，不涉及 Docker、数据库或网页。
+为控制范围，仅支持明确声明的轴对齐矩形机房和矩形障碍，检查单个机柜越界与障碍冲突。
+真实设施转换、非矩形空间、机柜间碰撞、净距与容量留到后续。
+
+### 2. 实际修改
+
+| 文件 | 内容与目的 |
+| --- | --- |
+| [room.js](packages/rack/src/room.js) | 新增不可变的矩形机房输入副本；检查单位、局部坐标声明、原点说明、来源、有限正跨度、障碍归属/重复/数量与完整性声明 |
+| [spatial.js](packages/rack/src/spatial.js) | 新增单柜房间包含/障碍冲突检查，复用四方向占地；返回规则、证据、问题及未检查范围 |
+| [index.js](packages/rack/src/index.js) | 暴露机房构造器、单柜检查与两个常量 |
+| [rectangular-room.json](packages/rack/examples/rectangular-room.json) | 10m × 8m 合成矩形机房和一个障碍，明确非真实设施与调查结果 |
+| [spatial-demo.mjs](packages/rack/examples/spatial-demo.mjs) | 无服务、无文件写入的四场景可执行演示 |
+| [spatial.test.js](packages/rack/src/tests/spatial.test.js) | 新增 21 项测试，覆盖有效/无效输入、旋转、四墙越界、边角接触、微小间隙、不完整清单和多项诊断 |
+| [基础约定第 10 节](RACK_FOUNDATION.md#10-第三轮矩形机房输入与单柜空间检查已实现离线) | 记录输入 contract、规则语义、结果状态、局限与运行命令 |
+| [包说明](packages/rack/README.md)、[总清单](RACK_PROJECT_TODO.md) | 更新能力与局部完成项，未勾选完整空间引擎或阶段验收 |
+
+### 3. 关键选择与适用边界
+
+- 输入必须显式是米制 ROOM_LOCAL；不自动把经纬度、毫米或多边形包围框当成可用矩形机房。
+- 房间原点用描述记录，沿用 X 右、Y 上；尚无真实设施投影/原点变换。
+- 机柜恰好贴房间边界视为占地被包含；碰到障碍边或角视为冲突。维护净距未检查。
+- 不暗设数值容差；浮点贴边可能被保守报错，微小正间隙也不等于可通行净距。
+- 障碍数组和覆盖声明必填；UNKNOWN 时无已知问题也返回 INCOMPLETE / NOT_CHECKED。
+- 已知越界或冲突返回诊断，不把合法但摆放不合理的数据当作结构错误拒绝。
+- 输出含来源和未检查范围；不返回整体 feasible，不更新 Plan 的 NOT_RUN 状态。
+- snapshotId 只是调用方提供的标识，没有持久化、hash、权威新鲜度或 Plan/room 真实绑定验证。
+- 单柜检查按代码结构对障碍做线性遍历 O(m)，输入最多 256 个障碍；本轮没有做实测性能/扩展性实验。
+
+### 4. 验证与证据
+
+| 检查 | 结果 | 证据 |
+| --- | --- | --- |
+| `npm run test --workspace @ai-infra/rack` | 53 通过、0 失败、0 跳过（原有 32 + 新增 21） | [rack-tests.txt](records/2026-10-27-spatial-foundation/rack-tests.txt) |
+| `node packages/rack/examples/spatial-demo.mjs` | 通过包名导入并输出四场景：CHECKED_SCOPE_CLEAR、ISSUES_FOUND、ISSUES_FOUND、INCOMPLETE；另用断言检查顺序与状态 | [spatial-demo.json](records/2026-10-27-spatial-foundation/spatial-demo.json) |
+| 三个新增实现/演示文件的 `node --check` | 通过 | 本轮命令记录 |
+| 文档本地链接与 `git diff --check` | 检查无缺失链接/空白错误；有既有 LF/CRLF 提示 | 本轮命令记录 |
+
+只验证本轮涉及的 Rack 领域代码与样例，没有重跑全仓构建/测试；第一轮 16 项基线失败仍为历史结果，不能宣称全仓通过。
+没有启动 Docker、数据库、前后端、迁移或 seed；没有新增外部依赖，也没有改动原平台业务代码。
+
+### 5. 下一小步
+
+可继续离线补机柜之间的占地碰撞检查，以及多柜场景的结构化诊断；仍需明确这是局部检查，不是完整方案可行性。
+真实设施到局部几何的转换与 Plan 输入绑定待单独补齐，数据库/API/界面继续延后。
+所有修改保留在工作区，未 commit、未 push，未改动老师原目录。
+
+## 2026-10-27：第四轮，多柜碰撞与汇总
+
+### 1. 本轮目标与范围
+
+按第三轮下一步，补机柜之间的占地碰撞和多柜结构化诊断。
+继续纯离线开发，不启动 Docker、数据库、迁移、seed 或前后端，不扩展页面、算法和 Assistant。
+
+### 2. 实际修改
+
+| 文件 | 内容与目的 |
+| --- | --- |
+| [layout.js](packages/rack/src/layout.js) | 新增 `checkRackLayout`；检查布局声明、型号/机柜清单及引用，复用单柜规则并遍历全部无序机柜对 |
+| [spatial.js](packages/rack/src/spatial.js) | 增加稳定规则 ID `rack.space.rack_collision`，单柜行为保持不变 |
+| [index.js](packages/rack/src/index.js) | 暴露多柜检查和型号/机柜数量上限常量 |
+| [layout.test.js](packages/rack/src/tests/layout.test.js) | 新增 21 项测试，包含接触/包含/旋转、未知清单、空布局、归属声明/引用错误、上限与修复后重算 |
+| [layout-demo.mjs](packages/rack/examples/layout-demo.mjs) | 六场景合成演示，直接通过 workspace 包名调用；不保存方案 |
+| [基础设计第 11 节](RACK_FOUNDATION.md)、[包说明](packages/rack/README.md)、[清单](RACK_PROJECT_TODO.md) | 记录字段、汇总状态、接触策略、规模约束与未覆盖内容 |
+
+### 3. 设计选择与适用边界
+
+- 仅检查一个声明项目/方案中的所提供机柜清单；拒绝混用方案、项目不符、重复机柜/型号 ID 或缺失型号。
+- 柜间有正面积内部重叠才报 `RACK_PAIR_OVERLAP`，边/角接触允许占地规则通过；维护净距依然未检查。
+- 与障碍的接触仍按原保守冲突规则处理，不修改第三轮规则语义。
+- 每个无序对只报告一次，证据包含双方 ID、米制占地与重叠区域；锁定机柜不豁免规则。
+- 新增机柜清单 COMPLETE / UNKNOWN 声明。未知清单无已知问题返回 INCOMPLETE，空清单返回 NOT_CHECKED。
+- `rackReports` 保持单柜规则原报告；最外层诊断汇总单柜问题和柜间冲突，结果不可变，不推进方案版本/验证状态。
+- 上限为 256 台机柜、256 个型号；不能静默截断或跳过超限/错误条目。
+- 本轮自报归属一致不代表真实 Plan 绑定、来源新鲜、授权或真实机房清单完整，这些仍由未来服务层实现。
+
+### 4. 验证结果
+
+| 检查 | 结果 | 证据 |
+| --- | --- | --- |
+| `npm run test --workspace @ai-infra/rack` | 74 通过、0 失败、0 跳过（原 53 + 新增 21）；单柜旧测试保持通过 | [rack-tests.txt](records/2026-10-27-layout-collision/rack-tests.txt) |
+| `node packages/rack/examples/layout-demo.mjs` | 六场景分别为 CHECKED_SCOPE_CLEAR、ISSUES_FOUND、CHECKED_SCOPE_CLEAR、ISSUES_FOUND、INCOMPLETE、NOT_CHECKED；另断言混合诊断和碰撞计数 | [layout-demo.json](records/2026-10-27-layout-collision/layout-demo.json) |
+| 256 台上限测试 | 遍历 32640 个无序对，无重复计数；不是实际性能基准 | 同上测试证据 |
+| 新实现/演示 `node --check`、本地文档链接、`git diff --check` | 通过；Git 仍有既有 LF/CRLF 提示 | 本轮命令记录 |
+
+未重跑全仓构建/测试，第一轮 16 项基线失败是历史结果；没有宣称全仓通过。
+没有新增第三方依赖或修改原平台业务模块。没有启动服务、执行迁移/seed、写数据库或访问远程仓库。
+
+### 5. 下一小步
+
+可继续定义机柜正面/背面的维护净距、缺失值和接触策略，再离线实现对应规则。
+真实设施输入转换、Plan 绑定、容量、存储/API/界面继续作为独立后续阶段。
+本轮未 commit、未 push；所有修改在 Rack 副本，老师原目录未改动。
+
+## 2026-10-27：第五轮，只读可视化预览
+
+- 用户要求在可视化平台查看，新增独立本地预览；没有启动 Docker 或数据库。
+- `npm run rack:preview` 启动，地址为 http://127.0.0.1:5183/，当前保持运行供用户查看。
+- 新增 [预览服务](scripts/rack-preview.mjs)、[页面](apps/web/rack-preview/index.html)、[交互](apps/web/rack-preview/preview.js)、[样式](apps/web/rack-preview/preview.css) 与[运行说明](RACK_PREVIEW.md)。
+- 提取[共享样例](packages/rack/examples/layout-scenarios.mjs)，CLI 演示和预览复用同一组输入。预览在 Node 中直接调用现有领域规则，未复制规则到浏览器。
+- 支持六个场景、机柜属性查看、诊断点击定位、重叠高亮、检查范围与原始报告。仅展示合成数据，不支持编辑、保存或真实项目读取；未接入原工作区。
+- Rack 74 项测试通过；HTTP 检查确认六场景报告/几何与领域函数一致、写请求返回 405、非白名单仓库文件返回 404，见 [http-checks.txt](records/2026-10-27-preview/http-checks.txt) 和 [rack-tests.txt](records/2026-10-27-preview/rack-tests.txt)。
+- 实际浏览器验证场景切换和碰撞双方定位，见 [browser-checks.txt](records/2026-10-27-preview/browser-checks.txt) 与[截图](records/2026-10-27-preview/preview-overlap.png)。
+- 仅新增只读预览服务，未执行迁移、seed、提交或推送，未修改老师原目录；全仓测试本轮未重跑。
+
+## 后续记录格式
+
+每轮追加一个日期标题，至少写清：
+
+1. 目标和范围；
+2. 实际修改及文件链接；
+3. 设计选择和适用边界；
+4. 验证命令及结果；
+5. 遗留问题与下一小步；
+6. 是否执行提交/推送（默认不执行）。

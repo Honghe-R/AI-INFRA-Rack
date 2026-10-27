@@ -1,0 +1,8 @@
+2026-10-27 environment attempt (cancelled by user)
+Docker engine reachable: 29.4.0. No containers existed before this attempt.
+Temporary Rack-only Compose identity/ports and ignored local .env were prepared.
+Pinned MinIO image pull returned 401 UNAUTHORIZED. PostGIS pull was interrupted before a container started.
+User requested no Docker work; stopped only the docker compose up -d db processes started by this turn.
+Reverted this turn's Compose/environment/startup-script changes and removed new .env and unused runtime helpers.
+No migrations, seeds, application servers, commits or pushes executed.
+Already downloaded image cache may remain in Docker; no global Docker cleanup was performed.

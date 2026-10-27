@@ -1,0 +1,28 @@
+{
+  "contractVersion": 1,
+  "model": {
+    "modelId": "00000000-0000-4000-8000-000000000001",
+    "name": "Synthetic 42U training rack",
+    "widthM": 0.6,
+    "depthM": 1.2,
+    "heightU": 42,
+    "maxWeightKg": null,
+    "maxPowerKw": null,
+    "maxCoolingKw": null,
+    "source": {
+      "kind": "ASSUMED",
+      "reference": "Synthetic course fixture; dimensions are illustrative, capacity is unknown."
+    }
+  },
+  "placement": {
+    "rackId": "00000000-0000-4000-8000-000000000002",
+    "planId": "00000000-0000-4000-8000-000000000003",
+    "projectId": "00000000-0000-4000-8000-000000000004",
+    "modelId": "00000000-0000-4000-8000-000000000001",
+    "name": "Rack A01",
+    "xM": 2,
+    "yM": 3,
+    "rotationDeg": 0,
+    "locked": false
+  }
+}

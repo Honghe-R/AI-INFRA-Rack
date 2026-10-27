@@ -1,0 +1,12 @@
+PASS GET /: 200 text/html
+PASS GET /preview.js: 200 text/javascript
+PASS GET /preview.css: 200 text/css
+PASS GET /data.json: 200 application/json
+PASS clear_known_scope: exact domain report and footprint parity (CHECKED_SCOPE_CLEAR)
+PASS rack_overlap: exact domain report and footprint parity (ISSUES_FOUND)
+PASS edge_contact: exact domain report and footprint parity (CHECKED_SCOPE_CLEAR)
+PASS mixed_findings: exact domain report and footprint parity (ISSUES_FOUND)
+PASS unknown_rack_inventory: exact domain report and footprint parity (INCOMPLETE)
+PASS empty_inventory: exact domain report and footprint parity (NOT_CHECKED)
+PASS POST rejected (405); arbitrary repository files unavailable (404).
+PASS HEAD returns no body.

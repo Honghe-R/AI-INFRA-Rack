@@ -1,5 +1,11 @@
 # AI Network Infrastructure Planner
 
+Rack 可视化预览：`npm run rack:preview`，打开 http://127.0.0.1:5183/ 。见 [运行说明](RACK_PREVIEW.md)；只读合成样例，无需 Docker。
+
+Rack course extension: see [progress](PROGRESS.md), [foundation decisions](RACK_FOUNDATION.md),
+and the [ordered implementation checklist](RACK_PROJECT_TODO.md). The Rack extension is
+currently a domain foundation; its editor, persistence, planner and Assistant integration are pending.
+
 Platform workspace for infrastructure planning tools. The first tool tenant is the
 [Site and Facility Editor](doc/tools/site-and-facility/Overview.md).
 

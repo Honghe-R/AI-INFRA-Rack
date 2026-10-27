@@ -1,0 +1,116 @@
+
+> @ai-infra/rack@0.1.0 test
+> node --test src/tests/*.test.js
+
+TAP version 13
+# Subtest: the versioned fixture keeps unknown engineering limits explicit
+ok 1 - the versioned fixture keeps unknown engineering limits explicit
+  ---
+  duration_ms: 1.3029
+  type: 'test'
+  ...
+# Subtest: explicit zero capacity is preserved and negative limits are rejected
+ok 2 - explicit zero capacity is preserved and negative limits are rejected
+  ---
+  duration_ms: 0.5687
+  type: 'test'
+  ...
+# Subtest: dimensions require positive finite numbers, not coerced strings
+ok 3 - dimensions require positive finite numbers, not coerced strings
+  ---
+  duration_ms: 0.4059
+  type: 'test'
+  ...
+# Subtest: U capacity requires a positive safe integer
+ok 4 - U capacity requires a positive safe integer
+  ---
+  duration_ms: 0.1533
+  type: 'test'
+  ...
+# Subtest: a source is required and cannot silently claim a known specification
+ok 5 - a source is required and cannot silently claim a known specification
+  ---
+  duration_ms: 0.1365
+  type: 'test'
+  ...
+# Subtest: unknown fields fail instead of hiding a misspelled unit or capacity
+ok 6 - unknown fields fail instead of hiding a misspelled unit or capacity
+  ---
+  duration_ms: 0.1804
+  type: 'test'
+  ...
+# Subtest: identifiers reject invalid values and normalise UUID casing
+ok 7 - identifiers reject invalid values and normalise UUID casing
+  ---
+  duration_ms: 0.7258
+  type: 'test'
+  ...
+# Subtest: names must be bounded non-empty text
+ok 8 - names must be bounded non-empty text
+  ---
+  duration_ms: 0.1949
+  type: 'test'
+  ...
+# Subtest: constructors reject arrays and missing records
+ok 9 - constructors reject arrays and missing records
+  ---
+  duration_ms: 0.2785
+  type: 'test'
+  ...
+# Subtest: local coordinates permit negative positions but refuse missing or non-finite data
+ok 10 - local coordinates permit negative positions but refuse missing or non-finite data
+  ---
+  duration_ms: 0.4008
+  type: 'test'
+  ...
+# Subtest: rotation and lock defaults do not coerce null or strings
+ok 11 - rotation and lock defaults do not coerce null or strings
+  ---
+  duration_ms: 0.2345
+  type: 'test'
+  ...
+# Subtest: returned records do not alias caller-owned mutable input
+ok 12 - returned records do not alias caller-owned mutable input
+  ---
+  duration_ms: 0.4753
+  type: 'test'
+  ...
+# Subtest: the unrotated footprint is centred at its placement and uses metres
+ok 13 - the unrotated footprint is centred at its placement and uses metres
+  ---
+  duration_ms: 1.6212
+  type: 'test'
+  ...
+# Subtest: all quarter-turn rotations keep the physical front edge identifiable
+ok 14 - all quarter-turn rotations keep the physical front edge identifiable
+  ---
+  duration_ms: 0.317
+  type: 'test'
+  ...
+# Subtest: footprints cannot silently use the wrong model or overflow coordinates
+ok 15 - footprints cannot silently use the wrong model or overflow coordinates
+  ---
+  duration_ms: 0.1536
+  type: 'test'
+  ...
+# Subtest: geometry is immutable and never claims engineering feasibility
+ok 16 - geometry is immutable and never claims engineering feasibility
+  ---
+  duration_ms: 0.115
+  type: 'test'
+  ...
+# Subtest: unrepresentable dimensions are rejected rather than yielding zero-area footprints
+ok 17 - unrepresentable dimensions are rejected rather than yielding zero-area footprints
+  ---
+  duration_ms: 0.1052
+  type: 'test'
+  ...
+1..17
+# tests 17
+# suites 0
+# pass 17
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 79.1792

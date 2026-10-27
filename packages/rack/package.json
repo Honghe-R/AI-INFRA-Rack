@@ -1,0 +1,10 @@
+{
+  "name": "@ai-infra/rack",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Rack planning foundation: explicit model contracts and local-coordinate footprints.",
+  "exports": { ".": "./src/index.js" },
+  "scripts": { "test": "node --test src/tests/*.test.js" },
+  "engines": { "node": ">=22.9" }
+}
