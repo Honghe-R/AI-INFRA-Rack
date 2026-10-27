@@ -1,0 +1,19 @@
+node_modules/
+dist/
+.env
+.env*.local
+
+# Local npm cache, used when the shared cache is unavailable.
+.npm-cache/
+
+# Local Postgres data, if a container is bind-mounted here.
+.pgdata/
+
+# Screenshots produced by `npm run ui:shot` for visual review.
+ui-shots/
+doc/architecture/demo-deployment.md
+
+# The demo deployment's certificate chain, kept locally for browser import. Deployment
+# artifacts with a fixed lifetime, not source: they name an address and expire.
+demo-ca.crt
+demo-server.crt

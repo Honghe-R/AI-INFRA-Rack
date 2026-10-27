@@ -1,0 +1,20 @@
+{
+  "name": "@ai-infra/imports",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./adapters/*": "./src/adapters/*"
+  },
+  "scripts": {
+    "test": "node --env-file-if-exists=../../.env --test src/tests/**/*.test.js"
+  },
+  "dependencies": {
+    "@ai-infra/assets": "*",
+    "@ai-infra/core": "*",
+    "@ai-infra/db": "*",
+    "@ai-infra/storage": "*"
+  }
+}

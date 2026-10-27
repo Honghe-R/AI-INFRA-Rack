@@ -1,0 +1,4 @@
+name,longitude,latitude,use
+substation-east,121.47,31.23,utility
+office-north,121.48,31.24,office
+broken-row,,,unknown

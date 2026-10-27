@@ -1,0 +1,426 @@
+{
+  "cases": [
+    {
+      "name": "every part of a multi-role entity moves, and heights travel with their part",
+      "records": [
+        {
+          "entityId": "yard-1",
+          "role": "BOUNDARY",
+          "ordinal": 0,
+          "geojson4326": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  0,
+                  0
+                ],
+                [
+                  0.01,
+                  0
+                ],
+                [
+                  0.01,
+                  0.01
+                ],
+                [
+                  0,
+                  0.01
+                ],
+                [
+                  0,
+                  0
+                ]
+              ]
+            ]
+          },
+          "elevationBaseM": 0,
+          "elevationTopM": 12,
+          "heightM": 12
+        },
+        {
+          "entityId": "yard-1",
+          "role": "CONNECTION_POINT",
+          "ordinal": 0,
+          "geojson4326": {
+            "type": "Point",
+            "coordinates": [
+              0.005,
+              0.005
+            ]
+          },
+          "elevationBaseM": null,
+          "elevationTopM": null,
+          "heightM": null
+        }
+      ],
+      "delta": {
+        "deltaLon": 0.01,
+        "deltaLat": -0.02
+      },
+      "plan": [
+        {
+          "entityId": "yard-1",
+          "role": "BOUNDARY",
+          "ordinal": 0,
+          "elevationBaseM": 0,
+          "elevationTopM": 12,
+          "heightM": 12,
+          "geojson": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  0.01,
+                  -0.02
+                ],
+                [
+                  0.02,
+                  -0.02
+                ],
+                [
+                  0.02,
+                  -0.01
+                ],
+                [
+                  0.01,
+                  -0.01
+                ],
+                [
+                  0.01,
+                  -0.02
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "entityId": "yard-1",
+          "role": "CONNECTION_POINT",
+          "ordinal": 0,
+          "elevationBaseM": null,
+          "elevationTopM": null,
+          "heightM": null,
+          "geojson": {
+            "type": "Point",
+            "coordinates": [
+              0.015,
+              -0.015
+            ]
+          }
+        }
+      ],
+      "changes": [
+        {
+          "kind": "set_geometry",
+          "entity_ref": {
+            "entity_id": "yard-1"
+          },
+          "payload": {
+            "role": "BOUNDARY",
+            "ordinal": 0,
+            "geojson_4326": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    0.01,
+                    -0.02
+                  ],
+                  [
+                    0.02,
+                    -0.02
+                  ],
+                  [
+                    0.02,
+                    -0.01
+                  ],
+                  [
+                    0.01,
+                    -0.01
+                  ],
+                  [
+                    0.01,
+                    -0.02
+                  ]
+                ]
+              ]
+            },
+            "elevation_base_m": 0,
+            "elevation_top_m": 12,
+            "height_m": 12
+          }
+        },
+        {
+          "kind": "set_geometry",
+          "entity_ref": {
+            "entity_id": "yard-1"
+          },
+          "payload": {
+            "role": "CONNECTION_POINT",
+            "ordinal": 0,
+            "geojson_4326": {
+              "type": "Point",
+              "coordinates": [
+                0.015,
+                -0.015
+              ]
+            },
+            "elevation_base_m": null,
+            "elevation_top_m": null,
+            "height_m": null
+          }
+        }
+      ]
+    },
+    {
+      "name": "a MultiPolygon moves position by position",
+      "records": [
+        {
+          "entityId": "parcel-1",
+          "role": "BOUNDARY",
+          "ordinal": 0,
+          "geojson4326": {
+            "type": "MultiPolygon",
+            "coordinates": [
+              [
+                [
+                  [
+                    0,
+                    0
+                  ],
+                  [
+                    1,
+                    0
+                  ],
+                  [
+                    1,
+                    1
+                  ],
+                  [
+                    0,
+                    0
+                  ]
+                ]
+              ],
+              [
+                [
+                  [
+                    2,
+                    2
+                  ],
+                  [
+                    3,
+                    2
+                  ],
+                  [
+                    3,
+                    3
+                  ],
+                  [
+                    2,
+                    2
+                  ]
+                ]
+              ]
+            ]
+          },
+          "elevationBaseM": null,
+          "elevationTopM": null,
+          "heightM": null
+        }
+      ],
+      "delta": {
+        "deltaLon": -0.5,
+        "deltaLat": 0.25
+      },
+      "plan": [
+        {
+          "entityId": "parcel-1",
+          "role": "BOUNDARY",
+          "ordinal": 0,
+          "elevationBaseM": null,
+          "elevationTopM": null,
+          "heightM": null,
+          "geojson": {
+            "type": "MultiPolygon",
+            "coordinates": [
+              [
+                [
+                  [
+                    -0.5,
+                    0.25
+                  ],
+                  [
+                    0.5,
+                    0.25
+                  ],
+                  [
+                    0.5,
+                    1.25
+                  ],
+                  [
+                    -0.5,
+                    0.25
+                  ]
+                ]
+              ],
+              [
+                [
+                  [
+                    1.5,
+                    2.25
+                  ],
+                  [
+                    2.5,
+                    2.25
+                  ],
+                  [
+                    2.5,
+                    3.25
+                  ],
+                  [
+                    1.5,
+                    2.25
+                  ]
+                ]
+              ]
+            ]
+          }
+        }
+      ],
+      "changes": [
+        {
+          "kind": "set_geometry",
+          "entity_ref": {
+            "entity_id": "parcel-1"
+          },
+          "payload": {
+            "role": "BOUNDARY",
+            "ordinal": 0,
+            "geojson_4326": {
+              "type": "MultiPolygon",
+              "coordinates": [
+                [
+                  [
+                    [
+                      -0.5,
+                      0.25
+                    ],
+                    [
+                      0.5,
+                      0.25
+                    ],
+                    [
+                      0.5,
+                      1.25
+                    ],
+                    [
+                      -0.5,
+                      0.25
+                    ]
+                  ]
+                ],
+                [
+                  [
+                    [
+                      1.5,
+                      2.25
+                    ],
+                    [
+                      2.5,
+                      2.25
+                    ],
+                    [
+                      2.5,
+                      3.25
+                    ],
+                    [
+                      1.5,
+                      2.25
+                    ]
+                  ]
+                ]
+              ]
+            },
+            "elevation_base_m": null,
+            "elevation_top_m": null,
+            "height_m": null
+          }
+        }
+      ]
+    },
+    {
+      "name": "a record without geometry is not a part of the plan",
+      "records": [
+        {
+          "entityId": "empty-1",
+          "role": "BOUNDARY",
+          "ordinal": 0,
+          "geojson4326": null,
+          "elevationBaseM": null,
+          "elevationTopM": null,
+          "heightM": null
+        },
+        {
+          "entityId": "yard-2",
+          "role": "BOUNDARY",
+          "ordinal": 2,
+          "geojson4326": {
+            "type": "Point",
+            "coordinates": [
+              10,
+              20
+            ]
+          },
+          "elevationBaseM": 1.5,
+          "elevationTopM": 3,
+          "heightM": 1.5
+        }
+      ],
+      "delta": {
+        "deltaLon": 0.001,
+        "deltaLat": 0.002
+      },
+      "plan": [
+        {
+          "entityId": "yard-2",
+          "role": "BOUNDARY",
+          "ordinal": 2,
+          "elevationBaseM": 1.5,
+          "elevationTopM": 3,
+          "heightM": 1.5,
+          "geojson": {
+            "type": "Point",
+            "coordinates": [
+              10.001,
+              20.002
+            ]
+          }
+        }
+      ],
+      "changes": [
+        {
+          "kind": "set_geometry",
+          "entity_ref": {
+            "entity_id": "yard-2"
+          },
+          "payload": {
+            "role": "BOUNDARY",
+            "ordinal": 2,
+            "geojson_4326": {
+              "type": "Point",
+              "coordinates": [
+                10.001,
+                20.002
+              ]
+            },
+            "elevation_base_m": 1.5,
+            "elevation_top_m": 3,
+            "height_m": 1.5
+          }
+        }
+      ]
+    }
+  ]
+}

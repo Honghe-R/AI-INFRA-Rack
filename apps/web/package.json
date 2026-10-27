@@ -1,0 +1,23 @@
+{
+  "name": "@ai-infra/web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "lucide-react": "latest",
+    "react": "latest",
+    "react-dom": "latest"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "latest",
+    "jose": "^5.9.6",
+    "vite": "latest",
+    "vitest": "^2.1.9"
+  }
+}

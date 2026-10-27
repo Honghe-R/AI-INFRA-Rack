@@ -1,0 +1,26 @@
+{
+  "name": "@ai-infra/api",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node --env-file-if-exists=../../.env src/index.js",
+    "dev": "node --watch --env-file-if-exists=../../.env src/index.js",
+    "worker": "node --env-file-if-exists=../../.env src/worker.js",
+    "test": "node --env-file-if-exists=../../.env --test src/tests/**/*.test.js"
+  },
+  "dependencies": {
+    "@ai-infra/assets": "*",
+    "@ai-infra/assistant": "*",
+    "@ai-infra/core": "*",
+    "@ai-infra/db": "*",
+    "@ai-infra/facility": "*",
+    "@ai-infra/identity": "*",
+    "@ai-infra/imports": "*",
+    "@ai-infra/maps": "*",
+    "@ai-infra/rbac": "*",
+    "@ai-infra/secrets": "*",
+    "@ai-infra/storage": "*"
+  }
+}

@@ -1,0 +1,106 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Build and test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Test
+        run: npm test
+      - name: Build
+        run: npm run build
+
+  database:
+    name: Migrate against PostgreSQL + PostGIS
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: facility
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d facility"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+      object-store:
+        # MinIO moved to Quay; `minio/minio` on Docker Hub no longer resolves.
+        image: quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z
+        env:
+          MINIO_ROOT_USER: minioadmin
+          MINIO_ROOT_PASSWORD: minioadmin
+        ports:
+          - 9000:9000
+        command: server /data
+    env:
+      DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/facility
+      # These drive the storage adapter directly, so the object-store integration test runs
+      # here against a real S3-compatible implementation. The previous OBJECT_STORE_* names
+      # were read by nothing.
+      STORAGE_ENDPOINT: http://127.0.0.1:9000
+      STORAGE_BUCKET: ai-infra-assets
+      STORAGE_REGION: us-east-1
+      STORAGE_ACCESS_KEY_ID: minioadmin
+      STORAGE_SECRET_ACCESS_KEY: minioadmin
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+
+      - name: Wait for the object store
+        run: |
+          for _ in $(seq 1 30); do
+            if curl -sf http://127.0.0.1:9000/minio/health/live >/dev/null; then
+              echo "object store is ready"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "object store did not become ready" >&2
+          exit 1
+
+      - name: Apply migrations
+        run: npm run migrate
+
+      - name: Re-apply migrations (must be a no-op)
+        run: npm run migrate
+
+      - name: Test against the live database
+        run: npm test
+
+      - name: Verify the schema landed
+        run: |
+          node --input-type=module -e "
+          import { createPool } from '@ai-infra/db';
+          const pool = createPool({ connectionString: process.env.DATABASE_URL });
+          const tables = await pool.query(\"SELECT count(*)::int AS n FROM pg_tables WHERE schemaname = 'public'\");
+          const migrations = await pool.query('SELECT count(*)::int AS n FROM schema_migrations');
+          const spatial = await pool.query(\"SELECT count(*)::int AS n FROM pg_indexes WHERE schemaname = 'public' AND indexdef ILIKE '%using gist%'\");
+          const partitions = await pool.query('SELECT count(*)::int AS n FROM pg_class WHERE relispartition');
+          console.log({ tables: tables.rows[0].n, migrations: migrations.rows[0].n, gist_indexes: spatial.rows[0].n, partitions: partitions.rows[0].n });
+          await pool.end();
+          if (tables.rows[0].n < 40) { console.error('expected the canonical schema to be present'); process.exit(1); }
+          if (spatial.rows[0].n < 2) { console.error('expected PostGIS GiST indexes'); process.exit(1); }
+          if (partitions.rows[0].n < 1) { console.error('expected partitioned tables'); process.exit(1); }
+          "

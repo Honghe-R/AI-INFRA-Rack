@@ -1,0 +1,21 @@
+{
+  "name": "@ai-infra/facility",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Site and Facility Editor domain package: the constraint catalog, the validation engine, and the validation worker.",
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "scripts": {
+    "test": "node --env-file-if-exists=../../.env --test src/tests/**/*.test.js"
+  },
+  "dependencies": {
+    "@ai-infra/assets": "*",
+    "@ai-infra/core": "*",
+    "@ai-infra/db": "*",
+    "@ai-infra/imports": "*",
+    "@ai-infra/storage": "*"
+  }
+}

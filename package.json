@@ -1,0 +1,32 @@
+{
+  "name": "ai-network-infra-simulator",
+  "private": true,
+  "version": "0.1.0",
+  "description": "AI network infrastructure planner. Platform workspace plus tool tenants.",
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "test": "npm run test --workspaces --if-present",
+    "build": "npm run build --workspaces --if-present",
+    "migrate": "npm --workspace @ai-infra/db run migrate",
+    "dev": "node --env-file-if-exists=.env scripts/dev.mjs",
+    "dev:api": "npm --workspace @ai-infra/api run dev",
+    "dev:worker": "npm --workspace @ai-infra/api run worker",
+    "start:api": "npm --workspace @ai-infra/api run start",
+    "dev:web": "npm --workspace @ai-infra/web run dev",
+    "dev:seed": "node --env-file-if-exists=.env scripts/dev-seed.mjs",
+    "dev:seed:facility": "node --env-file-if-exists=.env scripts/dev-seed-facility.mjs",
+    "dev:tiles": "node scripts/dev-tiles.mjs",
+    "dev:up": "node --env-file-if-exists=.env scripts/dev-stack.mjs up",
+    "dev:down": "node --env-file-if-exists=.env scripts/dev-stack.mjs down",
+    "dev:reset": "node --env-file-if-exists=.env scripts/dev-stack.mjs reset",
+    "dev:status": "node --env-file-if-exists=.env scripts/dev-stack.mjs status",
+    "ui:shot": "node scripts/ui-shot.mjs"
+  },
+  "engines": {
+    "node": ">=22.9"
+  }
+}

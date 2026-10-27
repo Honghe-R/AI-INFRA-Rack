@@ -1,0 +1,7 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    { "type": "Feature", "id": "p1", "properties": { "use": "utility" }, "geometry": { "type": "Point", "coordinates": [121.47, 31.23] } },
+    { "type": "Feature", "id": "p2", "properties": { "use": "office" }, "geometry": { "type": "Polygon", "coordinates": [[[121.4, 31.2], [121.5, 31.2], [121.5, 31.3], [121.4, 31.2]]] } }
+  ]
+}

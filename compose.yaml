@@ -1,0 +1,60 @@
+# The local development stack.
+#
+# Two services, because these are the two managed services the deployment replaces: a
+# PostgreSQL with PostGIS instead of a managed instance, and an S3-compatible object store
+# instead of a cloud bucket. The application processes run on the host so they reload on
+# change; only the stateful dependencies are containerised.
+#
+# There is no `api` or `web` service on purpose. Containerising them would cost hot reload
+# and gain nothing local, and the code path that matters — how the API reaches the database
+# and the object store — is identical either way because it is configuration, not code.
+#
+#   npm run dev:up      start both, wait until they answer, create the bucket
+#   npm run dev:down    stop them, keeping data
+#   npm run dev:reset   stop them and delete the volumes
+#
+# Ports are chosen off the defaults (5432, 9000) so a machine that already runs PostgreSQL
+# or another S3-compatible store does not collide. Every one of them is overridable from
+# the environment, and .env.example shows the matching application variables.
+
+name: ai-infra-dev
+
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    ports:
+      - '${AI_INFRA_DB_PORT:-55432}:5432'
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-facility}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      # pg_isready ships with the image, so this needs no extra tooling.
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-facility}']
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  object-store:
+# MinIO publishes to Quay, not Docker Hub: the `minio/minio` repository there returns 404
+    # ("object not found"), and only third-party mirrors remain. Pin the release for reproducible
+    # local storage and CI.
+    image: quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z
+    command: server /data --console-address ":9001"
+    ports:
+      - '${AI_INFRA_OBJECT_STORE_PORT:-59000}:9000'
+      - '${AI_INFRA_OBJECT_STORE_CONSOLE_PORT:-59001}:9001'
+    environment:
+      MINIO_ROOT_USER: ${STORAGE_ACCESS_KEY_ID:-ai-infra}
+      MINIO_ROOT_PASSWORD: ${STORAGE_SECRET_ACCESS_KEY:-ai-infra-secret}
+    volumes:
+      - object-store-data:/data
+    # No healthcheck here: the image is minimal and may not carry curl. `npm run dev:up`
+    # polls the health endpoint from the host instead, which also proves the port is
+    # reachable the way the application will reach it.
+
+volumes:
+  db-data:
+  object-store-data:

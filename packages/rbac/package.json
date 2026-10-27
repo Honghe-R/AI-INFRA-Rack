@@ -1,0 +1,20 @@
+{
+  "name": "@ai-infra/rbac",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "scripts": {
+    "generate:keys": "node scripts/generate-client-keys.js",
+    "test": "node --env-file-if-exists=../../.env --test src/tests/**/*.test.js"
+  },
+  "dependencies": {
+    "@ai-infra/core": "*"
+  },
+  "devDependencies": {
+    "@ai-infra/db": "*"
+  }
+}
