@@ -141,3 +141,11 @@ cursor 只在同项目、同过滤范围内查找，错误范围、不存在或�
 第十轮新增 `GET /layout`、`POST /room-snapshot`、`POST /layout/check`、`PUT /layout`，均在单方案路径下；详见 [请求/响应、并发与规则 contract](RACK_LAYOUT.md)。
 读取/检查同时需要 rack.read 和 facility.read，捕获/保存同时需要 rack.write 和 facility.read。写请求要求 UUID Idempotency-Key 与带引号正整数 If-Match。保存时重算固定 Polygon 检查，422 拒绝几何冲突，412 拒绝旧版本；错误不留下部分机柜。
 创建时自动捕获支持的唯一边界；旧方案显式捕获。固定快照来源变化后仍可查看，新的写入阻止；旧 `/room-view` 仍只读取未过期的当前来源。方案 validationState 保持 NOT_RUN。
+
+## 第十一轮补充：空间约束 contract
+
+`GET /plans/:planId/layout` 现在返回 `constraints`；布局 check POST 与保存 PUT 的 v1 请求增加可选 `constraints`。完整字段、诊断与边界见 [RACK_CONSTRAINTS.md](RACK_CONSTRAINTS.md)。省略字段保留数据库已有值，显式 null 拒绝；机柜与约束同事务保存，复用 If-Match、UUID 幂等 key、来源锁及既有权限。
+
+报告新增障碍 ID、FRONT/REAR、障碍数、维护带数和规划来源。非空布局无已知冲突但障碍覆盖 UNKNOWN 或净距未设时为 INCOMPLETE；已声明完整且明确净距后才可能 CHECKED_SCOPE_CLEAR。该状态不推进整体 NOT_RUN。空机柜清单仍检查已提供障碍，存在问题返回 ISSUES_FOUND；无问题返回 NOT_CHECKED。
+
+迁移 009 为旧方案填入未知覆盖、空障碍与 null 净距，不改版本或原机柜。真实 API 32 项通过，迁移 9 项首次/重复通过；证据见 [本轮记录](records/2026-10-28-rack-constraints/)。

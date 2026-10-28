@@ -1,0 +1,8 @@
+packages/rack/src/constraints.js 381ms
+packages/rack/src/tests/constraints.test.js 13ms
+apps/api/src/services/rack-layout.js 23ms
+apps/web/src/rack/RackConstraints.jsx 13ms
+apps/web/src/rack/RackEditor.jsx 38ms
+apps/web/src/rack/edit-layout-state.js 11ms
+apps/web/src/rack/RackRoomView.jsx 24ms
+apps/web/src/tests/rack-constraints.test.jsx 5ms

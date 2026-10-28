@@ -10,7 +10,8 @@ and the [ordered implementation checklist](RACK_PROJECT_TODO.md). The Rack exten
 has a domain foundation, [versioned layout API](RACK_API.md), and a
 [workspace for plans and manual rack editing](RACK_WORKSPACE.md);
 saved plans can display their [bound HALL floorplan in local projected metres](RACK_FLOORPLAN.md).
-The [layout editor](RACK_LAYOUT.md) saves fixed room snapshots and placements with Polygon checks.
+The [layout editor](RACK_LAYOUT.md) saves fixed room snapshots and placements with Polygon checks,
+and supports [declared planning obstacles and front/rear maintenance distances](RACK_CONSTRAINTS.md).
 Equipment, capacity, planner and Rack Assistant integration are pending.
 
 Platform workspace for infrastructure planning tools. The first tool tenant is the

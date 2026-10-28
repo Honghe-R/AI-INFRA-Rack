@@ -1,0 +1,11 @@
+
+> ai-network-infra-simulator@0.1.0 migrate
+> npm --workspace @ai-infra/db run migrate
+
+
+> @ai-infra/db@0.1.0 migrate
+> node --env-file-if-exists=../../.env bin/migrate.js
+
+{"filename":"009_rack_spatial_constraints.sql","timestamp":"2026-10-28T07:15:55.275Z","level":"info","service":"ai-infra-migrate","service_version":"0.1.0","message":"migration.applying"}
+{"filename":"009_rack_spatial_constraints.sql","checksum":"0c0d5ee02886b49ca8f4f4e89be9b56cc33e776e136af073d4e12947e9b3681c","timestamp":"2026-10-28T07:15:55.307Z","level":"info","service":"ai-infra-migrate","service_version":"0.1.0","message":"migration.applied"}
+{"applied":["009_rack_spatial_constraints.sql"],"skipped":8,"timestamp":"2026-10-28T07:15:55.309Z","level":"info","service":"ai-infra-migrate","service_version":"0.1.0","message":"migration.complete"}

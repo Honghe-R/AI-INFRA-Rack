@@ -1,0 +1,5 @@
+Live constraints demo 88e1821b-e8fe-49ce-ba9e-ecfda6925c77: v2, two racks, one assumed obstacle, four maintenance bands.
+Snapshot, full-precision placements and constraints match SQL; front 1 m / rear 0.5 m.
+Admin/viewer GET and viewer check 200; other organisation GET/check 403; HTTP ETag "2".
+CHECKED_SCOPE_CLEAR within declared scope; no diagnostics; whole-plan NOT_RUN retained.
+Read/check left saved row unchanged; prior v4/v1 demos and Facility source ETag retained.

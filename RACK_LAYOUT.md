@@ -1,6 +1,6 @@
 # Rack 布局编辑与保存 v1
 
-日期：2026-10-28。已完成机柜手工编辑的小闭环；设备、容量、障碍物、维护净距、算法和 Rack Assistant 尚未接入。
+日期：2026-10-28。已完成机柜手工编辑的小闭环；本轮新增 [规划禁放区和前后维护净距](RACK_CONSTRAINTS.md)。设备、容量、算法和 Rack Assistant 尚未接入。
 
 ## 本地更新与演示
 
@@ -43,10 +43,10 @@
 | POST /layout/check | rack.read + facility.read | 仅计算提交的草稿；不写数据、不推进版本，viewer 也可检查 |
 | PUT /layout | rack.write + facility.read | 检查版本、来源、快照、型号、锁定及真实 Polygon 后保存整个集合 |
 
-布局 GET 的 `data` 包含：`contractVersion, projectId, planId, scenarioId, version, facilityInput, sourceStatus, snapshot, placements, models, validationState`。
+布局 GET 的 `data` 包含：`contractVersion, projectId, planId, scenarioId, version, facilityInput, sourceStatus, snapshot, placements, models, constraints, validationState`。
 `snapshot` 是 null 或 `{snapshotId,room,view,sourceGeometry,facilityInput}`；`view.boundaryLocalM` 包含所有外环/内环坐标。
 
-check 和 save 的 body 相同（示意 UUID 要换成实际值）：
+check 和 save 的 body 相同；当前还可携带 constraints，未提供时保留已存条件，详见 [新增字段](RACK_CONSTRAINTS.md)（示意 UUID 要换成实际值）：
 
 ```json
 {
@@ -84,9 +84,9 @@ check 和 save 的 body 相同（示意 UUID 要换成实际值）：
 
 外墙相切允许；孔洞相切保守拒绝。使用存储浮点坐标的 PostGIS 拓扑语义，没有额外 epsilon/网格吸附或施工净距容差。微小正重叠仍是冲突；工程容差模型待补。
 
-报告状态为 `ISSUES_FOUND`、`CHECKED_SCOPE_CLEAR` 或空布局 `NOT_CHECKED`；包含 `scope,diagnostics,racksChecked,pairsChecked,obstacleCoverage,uncheckedRules`。诊断有 code、severity、双方 rackIds 和文字。
+报告状态为 `ISSUES_FOUND`、`INCOMPLETE`、`CHECKED_SCOPE_CLEAR` 或空布局 `NOT_CHECKED`；包含 `scope,diagnostics,racksChecked,pairsChecked,obstacleCoverage,uncheckedRules`。诊断有 code、severity、双方 rackIds 和文字。
 
-`CHECKED_SCOPE_CLEAR` 仅覆盖 Polygon 包含、内环和柜间重叠。障碍清单 UNKNOWN；维护净距、通道、设备、U 位、重量、电力、冷却和工程精度均未检查。方案 `validationState` 仍为 `NOT_RUN`，不自动发布/冻结。
+当前规则扩展为显式矩形规划障碍和前后维护带。覆盖 UNKNOWN 或未设置净距时返回 INCOMPLETE；CHECKED_SCOPE_CLEAR 仅针对明确声明的输入和已列规则。侧向净距、通道、设备、U 位、重量、电力、冷却和工程精度仍未检查。方案 `validationState` 仍为 `NOT_RUN`，不自动发布/冻结。
 现有 Facility 合成数据配准审核为 NOT_RECORDED；型号是假设规格，容量未知。图上能放置不等于工程方案可实施。
 
 已保存锁定柜必须先独立保存解锁，再移动/旋转/替换型号/删除；同请求同时解锁并移动也拒绝。名称可修改。前端同步禁用受限操作，后端独立执行规则。
@@ -103,4 +103,4 @@ check 和 save 的 body 相同（示意 UUID 要换成实际值）：
 领域 83 项、真实 DB/API 26 项、相关 Web 57 项通过，Web 构建成功；见 [证据目录](records/2026-10-28-rack-editor/) 和 [进展](PROGRESS.md)。验证仅覆盖对应范围，不代表全仓或工程校核通过。
 实际页面已验证添加、重叠拦截、表单改位置/旋转、锁定、拖动、切换工具保留、dirty 关闭保护及保存重读。并发冲突和事务失败回滚主要由真实 API/数据库测试验证。
 没有浏览器断网响应丢失故障注入；未做完整压力/性能实验、正式审计、最小权限生产部署或完整无障碍审计。
-下一步补障碍与维护净距输入/规则，再做设备及容量闭环，之后推进算法、候选应用与 Rack Assistant。
+障碍/前后净距增量已完成，见 [本轮 contract](RACK_CONSTRAINTS.md)。下一步做设备及容量闭环，之后推进算法、候选应用与 Rack Assistant。

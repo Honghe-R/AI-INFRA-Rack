@@ -233,6 +233,6 @@ export function RackPlanDetail({ plan, roomName }) {
       <dt>Facility lifecycle</dt><dd>{freshness?.lifecycleState ?? 'Unknown'}</dd>
       {freshness?.reasons?.length > 0 && <><dt>Source reasons</dt><dd>{freshness.reasons.join(', ')}</dd></>}
     </dl>
-    <p className="rack-boundary">Fixed room input and rack placements are saved separately from Facility. Polygon checks do not cover obstacles, aisles, equipment or capacity. Rack Assistant integration is pending.</p>
+    <p className="rack-boundary">Fixed room input, rack placements and assumed spatial constraints are saved separately from Facility. Checks cover room boundaries, rack collisions, declared rectangular obstacles and configured front/rear maintenance distances. Side clearances, connected access routes, equipment and capacity remain unchecked. Rack Assistant integration is pending.</p>
   </>;
 }

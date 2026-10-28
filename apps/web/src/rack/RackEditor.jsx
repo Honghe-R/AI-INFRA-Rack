@@ -1,6 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
+import { RackConstraints } from './RackConstraints.jsx';
 import { RoomFloorplan } from './RackRoomView.jsx';
-import { beginLayoutDraft, layoutCheckBody, validateEditorPlacements } from './edit-layout-state.js';
+import {
+  beginLayoutDraft,
+  layoutCheckBody,
+  validateEditorPlacements,
+  defaultEditorConstraints,
+  validateEditorConstraints,
+} from './edit-layout-state.js';
 import { rackError, uncertainCreation } from './rack-plan-state.js';
 
 export function RackEditor({
@@ -18,6 +25,7 @@ export function RackEditor({
   const [reload, setReload] = useState(0);
   const [checkRetry, setCheckRetry] = useState(0);
   const [selectedId, setSelectedId] = useState(null);
+  const [selectedObstacleId, setSelectedObstacleId] = useState(null);
   const [modelId, setModelId] = useState('');
   const [focusRequest, setFocusRequest] = useState(null);
   const [checkState, setCheckState] = useState({ pending: false, report: null, error: null, body: null });
@@ -67,11 +75,14 @@ export function RackEditor({
   const layout = state.data;
   const placements = draft?.placements ?? layout?.placements ?? [];
   const snapshot = layout?.snapshot;
+  const constraints = draft?.constraints ?? layout?.constraints ?? defaultEditorConstraints();
   const checkBody = snapshot
-    ? layoutCheckBody(draft ?? { snapshotId: snapshot.snapshotId, placements })
+    ? layoutCheckBody(
+        draft ? { ...draft, constraints } : { snapshotId: snapshot.snapshotId, placements, constraints },
+      )
     : null;
   const checkKey = JSON.stringify(checkBody);
-  const inputError = validateEditorPlacements(placements);
+  const inputError = validateEditorPlacements(placements) || validateEditorConstraints(constraints);
   useEffect(() => {
     if (!canReadFacility || !snapshot || inputError) {
       setCheckState({ pending: false, report: null, error: null, body: null });
@@ -302,6 +313,9 @@ export function RackEditor({
             room={snapshot.room}
             view={snapshot.view}
             sourceGeometry={snapshot.sourceGeometry}
+            constraints={constraints}
+            selectedObstacleId={selectedObstacleId}
+            onSelectObstacle={setSelectedObstacleId}
             placements={placements}
             models={models}
             selectedId={selectedId}
@@ -440,6 +454,15 @@ export function RackEditor({
               )}
             </section>
           </div>
+          <RackConstraints
+            constraints={constraints}
+            editable={editable}
+            extent={snapshot.view.extentM}
+            selectedId={selectedObstacleId}
+            onSelect={setSelectedObstacleId}
+            onFocus={(id) => setFocusRequest({ obstacleId: id, nonce: Date.now() })}
+            onChange={(value) => onDraftChange({ ...draft, constraints: value })}
+          />
           <section className="rack-check-panel" aria-label="Spatial diagnostics">
             <h3>Spatial checks</h3>
             {inputError ? (
@@ -458,7 +481,8 @@ export function RackEditor({
                 <>
                   <p role="status">
                     {currentReport.status} · {currentReport.racksChecked} racks · {currentReport.pairsChecked}{' '}
-                    pairs
+                    pairs · {currentReport.obstaclesChecked} obstacles · {currentReport.clearanceBandsChecked}{' '}
+                    maintenance bands
                   </p>
                   <ul>
                     {currentReport.diagnostics.map((d, i) => (
@@ -466,14 +490,23 @@ export function RackEditor({
                         <button
                           className="rack-diagnostic"
                           onClick={() => {
-                            setSelectedId(d.rackIds[0]);
-                            setFocusRequest({ rackId: d.rackIds[0], nonce: Date.now() });
+                            if (d.rackIds.length) {
+                              setSelectedId(d.rackIds[0]);
+                              setFocusRequest({ rackId: d.rackIds[0], nonce: Date.now() });
+                            } else if (d.obstacleIds?.length) {
+                              setSelectedObstacleId(d.obstacleIds[0]);
+                              setFocusRequest({ obstacleId: d.obstacleIds[0], nonce: Date.now() });
+                            }
                           }}
                         >
                           {d.code}:{' '}
                           {d.rackIds
                             .map((id) => placements.find((p) => p.rackId === id)?.name ?? id)
                             .join(' ↔ ')}{' '}
+                          {d.side && `[${d.side}] `}
+                          {(d.obstacleIds ?? [])
+                            .map((id) => constraints.obstacles.find((o) => o.obstacleId === id)?.name ?? id)
+                            .join(', ')}{' '}
                           · {d.message}
                         </button>
                       </li>

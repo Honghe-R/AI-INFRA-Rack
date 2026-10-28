@@ -2,6 +2,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import { ApiError, errors } from '@ai-infra/core';
 import { withTenant } from '@ai-infra/db';
 import { normalizeEditableLayout, assertLockedRacksUnchanged, RackInputError } from '@ai-infra/rack';
+import { normalizeSpatialConstraints, localRectangle, rackClearanceBands } from '@ai-infra/rack';
 import { readRackRoomView } from './rack-plans.js';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -25,7 +26,7 @@ async function read(client, projectId, planId) {
   const row = (
     await client.query(
       `SELECT p.plan_id,p.project_id,p.scenario_id,p.version,p.source_revision_id,
-    p.source_container_id,p.source_revision_etag,r.lifecycle_state,e.etag,s.snapshot_id,s.document,
+    p.source_container_id,p.source_revision_etag,p.spatial_constraints,r.lifecycle_state,e.etag,s.snapshot_id,s.document,
     COALESCE((SELECT jsonb_agg(jsonb_build_object('rackId',q.rack_id,'modelId',q.model_id,'name',q.name,
       'xM',q.x_m,'yM',q.y_m,'rotationDeg',q.rotation_deg,'locked',q.locked) ORDER BY q.rack_id)
       FROM rack_placements q WHERE q.project_id=p.project_id AND q.plan_id=p.plan_id),'[]'::jsonb) AS placements,
@@ -58,6 +59,7 @@ async function read(client, projectId, planId) {
     sourceStatus: { status: !row.etag ? 'UNAVAILABLE' : reasons.length ? 'STALE' : 'UNCHANGED', reasons },
     snapshot: row.document ? { snapshotId: row.snapshot_id, ...row.document } : null,
     placements: row.placements,
+    constraints: row.spatial_constraints,
     models: row.models ?? [],
     validationState: 'NOT_RUN',
   };
@@ -66,44 +68,95 @@ async function read(client, projectId, planId) {
 /** SQL topology predicates operate on the exact stored Polygon in local metres.
  * Outer-wall contact is allowed; hole contact is conservatively a conflict.
  * Rack interior overlaps are conflicts; rack edge/corner contact is allowed. */
-async function check(client, layout, entries) {
+async function check(client, layout, entries, constraints) {
   if (!layout.snapshot)
     throw conflict('RACK_SNAPSHOT_REQUIRED', 'Capture the unchanged room input before editing.');
   const footprints = entries.map(({ placement, footprint }) => ({
     rackId: placement.rackId,
     geometry: { type: 'Polygon', coordinates: [[...footprint.cornersM, footprint.cornersM[0]]] },
   }));
+  const obstacles = constraints.obstacles.map((o) => ({
+    obstacleId: o.obstacleId,
+    geometry: localRectangle(o.xM, o.yM, o.widthM, o.depthM),
+  }));
+  const bands = entries.flatMap(({ placement }) =>
+    rackClearanceBands(
+      placement,
+      layout.models.find((m) => m.modelId === placement.modelId),
+      constraints.clearance,
+    ),
+  );
   const result = await client.query(
     `WITH room AS (SELECT ST_SetSRID(ST_GeomFromGeoJSON($1),0) AS geom),
     holes AS (SELECT ST_MakePolygon(ST_InteriorRingN(room.geom,n)) AS geom
       FROM room, generate_series(1, ST_NumInteriorRings(room.geom)) n),
     racks AS (SELECT x->>'rackId' AS id, ST_SetSRID(ST_GeomFromGeoJSON(x->'geometry'),0) AS geom FROM jsonb_array_elements($2::jsonb) x)
-    SELECT 'RACK_OUTSIDE_ROOM' AS code, ARRAY[a.id] AS rack_ids FROM racks a,room WHERE NOT ST_Covers(room.geom,a.geom)
-    UNION ALL SELECT 'RACK_HOLE_CONFLICT',ARRAY[a.id] FROM racks a WHERE EXISTS (SELECT 1 FROM holes h WHERE ST_Intersects(h.geom,a.geom))
-    UNION ALL SELECT 'RACK_PAIR_OVERLAP',ARRAY[a.id,b.id] FROM racks a JOIN racks b ON a.id<b.id
-      WHERE ST_Relate(a.geom,b.geom,'T********') ORDER BY code,rack_ids`,
-    [JSON.stringify(layout.snapshot.view.boundaryLocalM), JSON.stringify(footprints)],
+    ,obstacles AS (SELECT x->>'obstacleId' AS id,ST_SetSRID(ST_GeomFromGeoJSON(x->'geometry'),0) AS geom FROM jsonb_array_elements($3::jsonb) x),
+    bands AS (SELECT x->>'rackId' AS id,x->>'side' AS side,ST_SetSRID(ST_GeomFromGeoJSON(x->'geometry'),0) AS geom FROM jsonb_array_elements($4::jsonb) x)
+    SELECT 'RACK_OUTSIDE_ROOM' AS code, ARRAY[a.id] AS rack_ids, ARRAY[]::text[] AS obstacle_ids, NULL::text AS side FROM racks a,room WHERE NOT ST_Covers(room.geom,a.geom)
+    UNION ALL SELECT 'RACK_HOLE_CONFLICT',ARRAY[a.id],ARRAY[]::text[],NULL::text FROM racks a WHERE EXISTS (SELECT 1 FROM holes h WHERE ST_Intersects(h.geom,a.geom))
+    UNION ALL SELECT 'RACK_PAIR_OVERLAP',ARRAY[a.id,b.id],ARRAY[]::text[],NULL::text FROM racks a JOIN racks b ON a.id<b.id
+      WHERE ST_Relate(a.geom,b.geom,'T********')
+    UNION ALL SELECT 'OBSTACLE_OUTSIDE_ROOM',ARRAY[]::text[],ARRAY[o.id],NULL::text FROM obstacles o,room WHERE NOT ST_Covers(room.geom,o.geom)
+      OR EXISTS(SELECT 1 FROM holes h WHERE ST_Intersects(h.geom,o.geom))
+    UNION ALL SELECT 'RACK_OBSTACLE_CONFLICT',ARRAY[a.id],ARRAY[o.id],NULL::text FROM racks a,obstacles o WHERE ST_Intersects(a.geom,o.geom)
+    UNION ALL SELECT 'CLEARANCE_OUTSIDE_ROOM',ARRAY[b.id],ARRAY[]::text[],b.side FROM bands b,room WHERE NOT ST_Covers(room.geom,b.geom)
+      OR EXISTS(SELECT 1 FROM holes h WHERE ST_Intersects(h.geom,b.geom))
+    UNION ALL SELECT 'CLEARANCE_RACK_CONFLICT',ARRAY[b.id,a.id],ARRAY[]::text[],b.side FROM bands b,racks a WHERE b.id<>a.id AND ST_Relate(b.geom,a.geom,'T********')
+    UNION ALL SELECT 'CLEARANCE_OBSTACLE_CONFLICT',ARRAY[b.id],ARRAY[o.id],b.side FROM bands b,obstacles o WHERE ST_Intersects(b.geom,o.geom)
+    ORDER BY code,rack_ids,obstacle_ids,side`,
+    [
+      JSON.stringify(layout.snapshot.view.boundaryLocalM),
+      JSON.stringify(footprints),
+      JSON.stringify(obstacles),
+      JSON.stringify(bands),
+    ],
   );
   const diagnostics = result.rows.map((row) => ({
     code: row.code,
     rackIds: row.rack_ids,
+    obstacleIds: row.obstacle_ids,
+    ...(row.side ? { side: row.side } : {}),
     severity: 'ERROR',
     message: {
       RACK_OUTSIDE_ROOM: 'Rack footprint leaves the room Polygon.',
       RACK_HOLE_CONFLICT: 'Rack touches or overlaps an interior hole.',
       RACK_PAIR_OVERLAP: 'Rack footprints overlap.',
+      OBSTACLE_OUTSIDE_ROOM: 'Planning obstacle leaves the room or touches an interior hole.',
+      RACK_OBSTACLE_CONFLICT: 'Rack touches or overlaps a planning obstacle.',
+      CLEARANCE_OUTSIDE_ROOM: 'Maintenance band leaves the room or touches an interior hole.',
+      CLEARANCE_RACK_CONFLICT: 'Another rack occupies the maintenance band.',
+      CLEARANCE_OBSTACLE_CONFLICT: 'Maintenance band touches or overlaps a planning obstacle.',
     }[row.code],
   }));
   return {
-    status: diagnostics.length ? 'ISSUES_FOUND' : entries.length ? 'CHECKED_SCOPE_CLEAR' : 'NOT_CHECKED',
-    scope: ['POLYGON_CONTAINMENT', 'INTERIOR_HOLES', 'RACK_PAIR_OVERLAP'],
+    status: diagnostics.length
+      ? 'ISSUES_FOUND'
+      : !entries.length
+        ? 'NOT_CHECKED'
+        : constraints.obstacleCoverage === 'UNKNOWN' || !constraints.clearance
+          ? 'INCOMPLETE'
+          : 'CHECKED_SCOPE_CLEAR',
+    scope: [
+      'POLYGON_CONTAINMENT',
+      'INTERIOR_HOLES',
+      'RACK_PAIR_OVERLAP',
+      'DECLARED_OBSTACLES',
+      ...(constraints.clearance ? ['FRONT_REAR_CLEARANCE'] : []),
+    ],
+    obstaclesChecked: obstacles.length,
+    clearanceBandsChecked: bands.length,
+    clearance: constraints.clearance,
+    planningSource: constraints.source,
     diagnostics,
     racksChecked: entries.length,
     pairsChecked: (entries.length * (entries.length - 1)) / 2,
-    obstacleCoverage: 'UNKNOWN',
+    obstacleCoverage: constraints.obstacleCoverage,
     uncheckedRules: [
-      'OBSTACLES',
-      'MAINTENANCE_CLEARANCE',
+      ...(constraints.obstacleCoverage === 'UNKNOWN' ? ['UNRECORDED_OBSTACLES'] : []),
+      ...(!constraints.clearance ? ['MAINTENANCE_CLEARANCE'] : []),
+      'SIDE_CLEARANCE',
+      'ACCESS_CONNECTIVITY',
       'AISLES',
       'EQUIPMENT',
       'CAPACITY',
@@ -120,7 +173,7 @@ export function createRackLayoutService({ pool }) {
     },
     async check({ projectId, planId, body }) {
       scope(projectId, planId);
-      bodyFields(body, ['contract_version', 'snapshot_id', 'placements']);
+      bodyFields(body, ['contract_version', 'snapshot_id', 'placements', 'constraints']);
       return withTenant(
         pool,
         projectId,
@@ -137,7 +190,14 @@ export function createRackLayoutService({ pool }) {
           return {
             planId,
             snapshotId: layout.snapshot.snapshotId,
-            report: await check(client, layout, entries),
+            report: await check(
+              client,
+              layout,
+              entries,
+              normalizeSpatialConstraints(
+                Object.hasOwn(body, 'constraints') ? body.constraints : layout.constraints,
+              ),
+            ),
           };
         },
         { readOnly: true },
@@ -147,7 +207,9 @@ export function createRackLayoutService({ pool }) {
       scope(projectId, planId);
       bodyFields(
         body,
-        operation === 'capture' ? ['contract_version'] : ['contract_version', 'snapshot_id', 'placements'],
+        operation === 'capture'
+          ? ['contract_version']
+          : ['contract_version', 'snapshot_id', 'placements', 'constraints'],
       );
       if (!UUID.test(actorId ?? '')) throw errors.unauthorized();
       if (!key)
@@ -238,12 +300,20 @@ export function createRackLayoutService({ pool }) {
           });
           const placements = entries.map((item) => item.placement);
           assertLockedRacksUnchanged(layout.placements, placements);
-          const report = await check(client, layout, entries);
+          // Omission preserves saved constraints for older clients. Explicit null is invalid.
+          const constraints = normalizeSpatialConstraints(
+            Object.hasOwn(body, 'constraints') ? body.constraints : layout.constraints,
+          );
+          const report = await check(client, layout, entries, constraints);
           if (report.diagnostics.length)
             throw new ApiError('RACK_LAYOUT_CONFLICT', 'Resolve spatial conflicts before saving.', {
               status: 422,
               details: [{ report }],
             });
+          await client.query(
+            'UPDATE rack_plans SET spatial_constraints=$3 WHERE project_id=$1 AND plan_id=$2',
+            [projectId, planId, JSON.stringify(constraints)],
+          );
           await client.query('DELETE FROM rack_placements WHERE project_id=$1 AND plan_id=$2', [
             projectId,
             planId,

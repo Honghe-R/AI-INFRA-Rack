@@ -641,3 +641,99 @@ test('Rack save waits for a concurrent source update and rejects its obsolete in
     assert.equal((await pool.query('SELECT version FROM rack_plans WHERE plan_id=$1',[layout.planId])).rows[0].version,1);
   }finally{await blocker.query('ROLLBACK');blocker.release();await pending;await other.end();}
 })));
+
+const constraintsInput=(patch={})=>({obstacleCoverage:'UNKNOWN',source:{kind:'ASSUMED',reference:'Integration test planning assumption'},obstacles:[],clearance:null,...patch});
+const planningObstacle=(xM=6,yM=2,patch={})=>({obstacleId:randomUUID(),name:'Test forbidden area',xM,yM,widthM:1,depthM:1,...patch});
+
+test('Rack constraints persist atomically with racks, preserve omitted older-client values and reject stale updates', {skip}, async()=>fixture(async f=>server(f.people,async request=>{
+  const {url,layout}=await prepared(f,request);assert.equal(layout.constraints.obstacleCoverage,'UNKNOWN');assert.equal(layout.constraints.clearance,null);
+  const placements=[rack(3,3)];const constraints=constraintsInput({obstacleCoverage:'DECLARED_COMPLETE',obstacles:[planningObstacle()],clearance:{frontM:1,rearM:.5}});
+  const body={...layoutBody(layout,placements),constraints};const key=randomUUID();
+  const first=await request(url,{body,key,version:1,method:'PUT'});assert.equal(first.status,200,JSON.stringify(first));
+  const saved=first.body.data;assert.equal(saved.version,2);assert.deepEqual(saved.constraints,constraints);assert.deepEqual(saved.snapshot,layout.snapshot);
+  const checked=await request(`${url}/check`,{body,user:'viewer'});assert.equal(checked.body.data.report.status,'CHECKED_SCOPE_CLEAR');
+  assert.equal(checked.body.data.report.obstaclesChecked,1);assert.equal(checked.body.data.report.clearanceBandsChecked,2);
+  assert.ok(!checked.body.data.report.uncheckedRules.includes('MAINTENANCE_CLEARANCE'));
+  const retry=await request(url,{body,key,version:1,method:'PUT'});assert.equal(retry.body.meta.replayed,true);
+  assert.deepEqual((await request(url,{user:'viewer'})).body.data.constraints,constraints);
+  const failing=await request(url,{body:{...body,constraints:{...constraints,obstacles:[planningObstacle(3,3)]}},version:2,method:'PUT'});
+  assert.equal(failing.status,422);assert.deepEqual((await request(url)).body.data,saved,'failed conditions do not leave partial racks or constraints');
+  assert.equal((await request(url,{body:{...body,constraints:constraintsInput()},version:1,method:'PUT'})).status,412);
+  const omitted=await request(url,{body:layoutBody(layout,placements),version:2,method:'PUT'});assert.equal(omitted.status,200);
+  assert.deepEqual(omitted.body.data.constraints,constraints,'omitted constraints preserve saved values');
+  const omittedCheck=await request(`${url}/check`,{body:layoutBody(layout,placements)});assert.equal(omittedCheck.body.data.report.obstaclesChecked,1);
+})));
+
+test('Rack checks declared rectangles even with unknown coverage and rejects obstacle contact and invalid room placement', {skip}, async()=>fixture(async f=>server(f.people,async request=>{
+  const {url,layout}=await prepared(f,request);
+  async function report(obstacles,placements=[rack(3,3)],extra={}) {
+    const response=await request(`${url}/check`,{body:{...layoutBody(layout,placements),constraints:constraintsInput({obstacles,...extra})}});
+    assert.equal(response.status,200,JSON.stringify(response));return response.body.data.report;
+  }
+  const incomplete=await report([planningObstacle()]);assert.equal(incomplete.status,'INCOMPLETE');
+  assert.ok(incomplete.uncheckedRules.includes('UNRECORDED_OBSTACLES'));assert.ok(incomplete.uncheckedRules.includes('MAINTENANCE_CLEARANCE'));
+  const contact=await report([planningObstacle(3.9,3)]);assert.ok(contact.diagnostics.some(d=>d.code==='RACK_OBSTACLE_CONFLICT'));
+  const hole=await report([planningObstacle(1.5,1.5,{widthM:.1,depthM:.1})],[]);assert.ok(hole.diagnostics.some(d=>d.code==='OBSTACLE_OUTSIDE_ROOM'&&d.rackIds.length===0&&d.obstacleIds.length===1));
+  const notch=await report([planningObstacle(6,6)],[]);assert.ok(notch.diagnostics.some(d=>d.code==='OBSTACLE_OUTSIDE_ROOM'));
+  const enclosed=await report([planningObstacle(3,3,{widthM:.1,depthM:.1})]);assert.ok(enclosed.diagnostics.some(d=>d.code==='RACK_OBSTACLE_CONFLICT'));
+  const empty=await report([],[],{obstacleCoverage:'DECLARED_COMPLETE',clearance:{frontM:0,rearM:0}});assert.equal(empty.status,'NOT_CHECKED');
+})));
+
+test('Rack maintenance checks follow all four orientations and distinguish unset and explicit zero', {skip}, async()=>fixture(async f=>server(f.people,async request=>{
+  const coordinates=[[[500000,4400000],[500010,4400000],[500010,4400010],[500000,4400010],[500000,4400000]]];
+  const {url,layout}=await prepared(f,request,coordinates);
+  async function report(item,constraints) {
+    const r=await request(`${url}/check`,{body:{...layoutBody(layout,[item]),constraints:constraintsInput(constraints)}});assert.equal(r.status,200,JSON.stringify(r));return r.body.data.report;
+  }
+  const cases=[[0,5,1],[90,9,5],[180,5,9],[270,1,5]];
+  for(const [rotationDeg,xM,yM] of cases) {
+    const result=await report(rack(xM,yM,{rotationDeg}),{clearance:{frontM:1,rearM:0}});
+    assert.ok(result.diagnostics.some(d=>d.code==='CLEARANCE_OUTSIDE_ROOM'&&d.side==='FRONT'),String(rotationDeg));
+  }
+  const wall=await report(rack(5,1.6),{clearance:{frontM:1,rearM:0}});assert.equal(wall.diagnostics.length,0,'band may touch outer wall');
+  const rear=await report(rack(5,9),{clearance:{frontM:0,rearM:1}});assert.ok(rear.diagnostics.some(d=>d.code==='CLEARANCE_OUTSIDE_ROOM'&&d.side==='REAR'));
+  const zero=await report(rack(5,1),{clearance:{frontM:0,rearM:0},obstacleCoverage:'DECLARED_COMPLETE'});assert.equal(zero.status,'CHECKED_SCOPE_CLEAR');assert.equal(zero.clearanceBandsChecked,0);
+  const unset=await report(rack(5,1),{});assert.equal(unset.status,'INCOMPLETE');assert.ok(unset.uncheckedRules.includes('MAINTENANCE_CLEARANCE'));
+})));
+
+test('Rack maintenance bands may overlap each other but rack bodies and obstacles cannot occupy them', {skip}, async()=>fixture(async f=>server(f.people,async request=>{
+  const {url,layout}=await prepared(f,request);const clearance={frontM:1,rearM:1};
+  async function report(placements,obstacles=[]) {
+    const r=await request(`${url}/check`,{body:{...layoutBody(layout,placements),constraints:constraintsInput({clearance,obstacles})}});assert.equal(r.status,200,JSON.stringify(r));return r.body.data.report;
+  }
+  const shared=await report([rack(3,3),rack(3,5.5)]);assert.equal(shared.diagnostics.length,0,'shared maintenance band is allowed');
+  const invaded=await report([rack(3,3),rack(3,4.5)]);assert.ok(invaded.diagnostics.some(d=>d.code==='CLEARANCE_RACK_CONFLICT'&&d.rackIds.length===2));
+  const obstacles=await report([rack(3,3)],[planningObstacle(3,1.8,{widthM:.1,depthM:.1})]);assert.ok(obstacles.diagnostics.some(d=>d.code==='CLEARANCE_OBSTACLE_CONFLICT'&&d.side==='FRONT'));
+  const edge=await report([rack(3,3)],[planningObstacle(3,1.35,{widthM:.1,depthM:.1})]);assert.ok(edge.diagnostics.some(d=>d.code==='CLEARANCE_OBSTACLE_CONFLICT'),'obstacle-band contact is rejected');
+})));
+
+test('Rack constraints reject malformed/injected inputs and reuse existing scope, read-only, freshness and version guards', {skip}, async()=>fixture(async f=>server(f.people,async request=>{
+  const {url,layout}=await prepared(f,request);const body={...layoutBody(layout,[rack()]),constraints:constraintsInput()};
+  for(const constraints of [null,{},constraintsInput({obstacleCoverage:'COMPLETE'}),constraintsInput({projectId:f.b.projectId}),
+    constraintsInput({obstacles:Array.from({length:65},()=>planningObstacle())}),constraintsInput({clearance:{frontM:Infinity,rearM:1}}),
+    constraintsInput({obstacles:[planningObstacle(6,2,{widthM:0})]})]) {
+    assert.equal((await request(`${url}/check`,{body:{...body,constraints}})).status,400);
+  }
+  assert.equal((await request(url,{method:'PUT',body,version:1,user:'viewer'})).status,403);
+  assert.equal((await request(`${url}/check`,{body,user:'outsider'})).status,403);
+  assert.equal((await request(url.replace(f.a.projectId,f.b.projectId),{method:'PUT',body,version:1})).status,404);
+  await pool.query('UPDATE revision_etags SET etag=$1 WHERE project_id=$2',[randomUUID(),f.a.projectId]);
+  assert.equal((await request(url,{method:'PUT',body,version:1})).body.error.code,'RACK_SOURCE_STALE');
+  assert.equal((await request(url)).body.data.version,1);
+})));
+
+test('Rack maintenance bands respect interior holes, exact rack contact and partial source coverage', {skip}, async()=>fixture(async f=>server(f.people,async request=>{
+  const {url,layout}=await prepared(f,request);
+  async function check(placements,constraints) {
+    const result=await request(`${url}/check`,{body:{...layoutBody(layout,placements),constraints:constraintsInput(constraints)}});
+    assert.equal(result.status,200,JSON.stringify(result));return result.body.data.report;
+  }
+  const hole=await check([rack(1.5,3)],{clearance:{frontM:1,rearM:0}});
+  assert.ok(hole.diagnostics.some(d=>d.code==='CLEARANCE_OUTSIDE_ROOM'&&d.side==='FRONT'));
+  const contact=await check([rack(3,3),rack(3,5.2)],{clearance:{frontM:1,rearM:1}});
+  assert.equal(contact.diagnostics.length,0,'rack body may touch maintenance band outer edge without interior intrusion');
+  const unknown=await check([rack(3,3)],{clearance:{frontM:0,rearM:0}});
+  assert.equal(unknown.status,'INCOMPLETE');assert.deepEqual(unknown.uncheckedRules.slice(0,1),['UNRECORDED_OBSTACLES']);
+  const unconfigured=await check([rack(3,3)],{obstacleCoverage:'DECLARED_COMPLETE'});
+  assert.equal(unconfigured.status,'INCOMPLETE');assert.ok(unconfigured.uncheckedRules.includes('MAINTENANCE_CLEARANCE'));
+})));

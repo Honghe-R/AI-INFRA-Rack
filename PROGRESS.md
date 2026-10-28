@@ -484,6 +484,48 @@ Docker 可能保留已下载的镜像缓存，本轮没有清理全局 Docker �
 - 下一步先完成障碍/禁放区和维护净距的输入/规则，再推进设备与容量闭环，随后算法、候选、Assistant 和课程材料。
 - 全部工作留在本地，未执行 commit/push 或改 remotes；老师原目录未修改。
 
+## 2026-10-28：第十一轮，规划禁放区与前后维护净距
+
+### 1. 范围与起点
+
+- 承接上一轮可保存机柜编辑，只推进规划矩形禁放区、前后维护距离、图面与后端保存检查；不展开设备、算法或 Assistant。
+- 起始 HEAD `51bee42`，工作区干净。只修改 `AI-INFRA-Rack`，没有 commit、push、改 remotes 或改老师原目录。
+- 使用现有隔离开发栈，应用 009；旧 8 项迁移跳过，没有运行 setup/seed 或重置数据卷。
+
+### 2. 实际修改与设计
+
+- [009 迁移](data-scripts/009_rack_spatial_constraints.sql) 为 rack_plans 增加 JSONB spatial_constraints，沿用强制 RLS；默认 UNKNOWN / ASSUMED / 空障碍 / null 净距，旧方案版本、快照和机柜保留。
+- [领域规则](packages/rack/src/constraints.js) 严格规范化来源、覆盖声明、最多 64 个轴对齐矩形和净距。障碍边长至少 0.001 m，净距为 0 或 0.001–10 m；拒绝极小正值避免浮点退化。
+- [布局服务](apps/api/src/services/rack-layout.js) 在原 Polygon 检查中增加障碍包含/孔洞、柜与障碍、维护带与房间/孔洞/其他柜/障碍检查。前方为 -local Y，四方向旋转，维护带无侧向扩展，允许带间共享。外墙接触允许、孔洞和障碍接触拒绝、柜实体与带相切允许。
+- 约束与机柜同事务/独立版本保存，复用来源锁、If-Match、UUID key 和权限；旧客户端省略 constraints 保留已存值，显式 null 拒绝。失败不会部分保存。
+- 报告增加 obstacleIds、side、障碍数、维护带数与来源。无冲突但 UNKNOWN 或净距 null 时 INCOMPLETE；声明完整且明确净距后可 CHECKED_SCOPE_CLEAR，仍不代表整体工程通过，NOT_RUN 保留。
+- [约束面板](apps/web/src/rack/RackConstraints.jsx) 支持来源、覆盖声明、净距开关/数值、障碍增删/数值编辑/定位；[图面](apps/web/src/rack/RackRoomView.jsx) 增加前后虚线带、障碍块和冲突高亮；检查结果绑定整份草稿，旧结果不能放行保存。
+- 新增根 [RACK_CONSTRAINTS.md](RACK_CONSTRAINTS.md)，同步布局、API、工作区、基础设计、运行、README 与总清单；只勾选本轮有证据的矩形障碍和前后净距。
+
+### 3. 验证与证据
+
+| 检查 | 结果 | 证据 |
+| --- | --- | --- |
+| 领域包 | 89 通过，0 失败/跳过 | [domain-tests.txt](records/2026-10-28-rack-constraints/domain-tests.txt) |
+| 数据库/API | 32 通过，0 失败/跳过；含持久化/省略兼容/幂等/回滚、孔洞/凹口、四方向、相切、零/未知、共享带、侵入与权限 | [api-tests.txt](records/2026-10-28-rack-constraints/api-tests.txt) |
+| Web 定向回归 | 62 通过，含约束输入、草稿/显示、原图面、客户端与 shell/导入边界 | [web-tests.txt](records/2026-10-28-rack-constraints/web-tests.txt) |
+| Web build | 成功；保留原有工具及 >500 kB bundle 提示 | [web-build.txt](records/2026-10-28-rack-constraints/web-build.txt) |
+| 迁移 | 本机 009 成功；独立临时空库 9 项首次应用、重复全跳过，清理仅该临时库 | [migrate.txt](records/2026-10-28-rack-constraints/migrate.txt)、[脚本](records/2026-10-28-rack-constraints/check-migration.mjs)、[结果](records/2026-10-28-rack-constraints/migration-checks.txt) |
+| 实际浏览器 | 禁放区/维护冲突禁存、诊断定位、修复保存 v2、整页重开重读通过 | [步骤](records/2026-10-28-rack-constraints/browser-checks.md)、[冲突](records/2026-10-28-rack-constraints/conflict.png)、[图面](records/2026-10-28-rack-constraints/layout.png) |
+| 运行 SQL/HTTP 对照 | 快照、全精度位置与约束一致；viewer GET/check 200，另一组织两项 403；旧 v4/v1 及 Facility ETag 保留 | [脚本](records/2026-10-28-rack-constraints/check-live-constraints.mjs)、[结果](records/2026-10-28-rack-constraints/live-checks.txt) |
+
+复现命令：`npm run test --workspace @ai-infra/rack`；`node --env-file-if-exists=.env --test apps/api/src/tests/rack-plans.test.js`；Web 定向命令见证据首行；`npm run build --workspace @ai-infra/web`；`node --env-file=.env records/2026-10-28-rack-constraints/check-live-constraints.mjs`。迁移探针同目录 check-migration.mjs。
+
+仅运行表内范围，没有重跑全仓，不宣称原平台基线全部通过。开发期间 watcher 重启曾造成暂时 502，重试恢复；未做浏览器断网或响应丢失故障注入。
+
+### 4. 保留数据、限制与下一步
+
+- 新演示 `Rack constraints demo — Hall A1`：`88e1821b-e8fe-49ce-ba9e-ecfda6925c77`，v2，两柜、一个 1×1 m 假设禁放区、前 1 m / 后 0.5 m；页面已重开验证，无未保存草稿。旧演示 v4/v1 保留。
+- 来源仍为合成 Facility、假设规格和规划输入；配准 NOT_RECORDED、整体验证 NOT_RUN。DECLARED_COMPLETE 仅是本次规划假设的声明，不表示已调查真实机房。
+- 障碍仅轴对齐矩形，未接权威障碍来源；共享维护空间不保证同时维护。侧面净距、连续通路/冷热通道、施工容差、设备/U 位/重量/电力/冷却仍未实现。
+- 重绑定、布局算法、候选应用、Rack Assistant、正式验证/发布、完整审计和性能实验仍待做。复杂度与输入规模边界见空间约束文档，不能当吞吐量承诺。
+- 下一小步建议设备规格、U 位分配和容量的最小闭环，然后再做自动布局与 Assistant。所有改动保持本地，未 commit/push。
+
 ## 后续记录格式
 
 每轮追加一个日期标题，至少写清：

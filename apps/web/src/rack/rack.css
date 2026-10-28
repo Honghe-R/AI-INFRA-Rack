@@ -72,3 +72,16 @@
 .rack-front-edge { stroke: var(--text); stroke-width: 4; pointer-events: none; }
 .rack-drawn-rack text { font-size: 12px; pointer-events: none; }
 @media (max-width: 750px) { .rack-editor-columns { grid-template-columns: 1fr; } }
+.rack-surface textarea { font: inherit; border: 1px solid var(--line-strong); border-radius: var(--radius-md); background: var(--surface); color: var(--text); padding: var(--space-2); box-sizing: border-box; width: 100%; min-height: 60px; resize: vertical; }
+.rack-constraints { margin-top: var(--space-4); }
+.rack-constraints label { display: flex; flex-direction: column; gap: var(--space-2); margin-bottom: var(--space-3); }
+.rack-constraints input, .rack-constraints select { box-sizing: border-box; width: 100%; min-width: 0; }
+.rack-constraints .rack-lock-field { flex-direction: row; align-items: center; }
+.rack-constraints .rack-lock-field input { width: auto; }
+.rack-maintenance-band { fill: var(--accent-soft); fill-opacity: .35; stroke: var(--accent); stroke-dasharray: 5 4; stroke-width: 1.5; pointer-events: none; }
+.rack-maintenance-band.rear { fill: var(--surface); stroke: var(--warning); }
+.rack-drawn-obstacle { cursor: pointer; }
+.rack-drawn-obstacle polygon { fill: var(--warning); fill-opacity: .22; stroke: var(--warning); stroke-width: 2; }
+.rack-drawn-obstacle.has-issue polygon { stroke: var(--error); stroke-width: 3; }
+.rack-drawn-obstacle.is-selected polygon { stroke: var(--text); stroke-width: 3; }
+.rack-drawn-obstacle text { font-size: 12px; pointer-events: none; }
