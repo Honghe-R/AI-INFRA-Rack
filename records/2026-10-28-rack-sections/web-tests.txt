@@ -1,0 +1,25 @@
+
+> @ai-infra/web@0.1.0 test
+> vitest run src/tests/rack-sections.test.jsx src/tests/rack-catalog.test.jsx src/tests/rack-equipment.test.jsx src/tests/rack-editor.test.jsx src/tests/rack-constraints.test.jsx src/tests/rack-floorplan.test.jsx src/tests/rack-surface.test.jsx src/tests/api-client.test.js src/tests/tool-registry.test.js src/tests/open-views.test.js src/tests/shell-render.test.jsx src/tests/import-boundaries.test.js
+
+
+ RUN  v2.1.9 C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/web
+
+ ✓ src/tests/api-client.test.js (11 tests) 8ms
+ ✓ src/tests/tool-registry.test.js (8 tests) 3ms
+ ✓ src/tests/open-views.test.js (14 tests) 4ms
+ ✓ src/tests/rack-sections.test.jsx (4 tests) 17ms
+ ✓ src/tests/rack-equipment.test.jsx (5 tests) 27ms
+ ✓ src/tests/rack-floorplan.test.jsx (4 tests) 16ms
+ ✓ src/tests/rack-constraints.test.jsx (5 tests) 18ms
+ ✓ src/tests/import-boundaries.test.js (3 tests) 270ms
+ ✓ src/tests/rack-editor.test.jsx (4 tests) 18ms
+ ✓ src/tests/rack-catalog.test.jsx (7 tests) 20ms
+ ✓ src/tests/rack-surface.test.jsx (4 tests) 10ms
+ ✓ src/tests/shell-render.test.jsx (31 tests) 158ms
+
+ Test Files  12 passed (12)
+      Tests  100 passed (100)
+   Start at  23:41:18
+   Duration  2.42s (transform 929ms, setup 0ms, collect 4.27s, tests 567ms, environment 2ms, prepare 3.11s)
+

@@ -1,0 +1,20 @@
+
+> @ai-infra/web@0.1.0 build
+> vite build
+
+Both esbuild and oxc options were set. oxc options will be used and esbuild options will be ignored. The following esbuild options were set: `{ jsx: 'automatic', jsxImportSource: 'react' }`
+vite v8.2.2 building client environment for production...
+transforming...
+✓ 100 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.42 kB │ gzip:   0.28 kB
+dist/assets/index-DR5RmVCl.css   95.81 kB │ gzip:  14.85 kB
+dist/assets/index-P2IjLIDQ.js   823.02 kB │ gzip: 223.49 kB
+
+✓ built in 223ms
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.

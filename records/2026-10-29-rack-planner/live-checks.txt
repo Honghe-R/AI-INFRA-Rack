@@ -1,0 +1,38 @@
+{
+  "planId": "e446aafb-1846-4a69-af10-636fd50ba87c",
+  "baseVersion": 2,
+  "racks": 6,
+  "devices": 17,
+  "gridStepM": 0.5,
+  "wallMs": [
+    5399,
+    4369
+  ],
+  "serverMs": [
+    5376,
+    4352
+  ],
+  "baselineAreaM2": 23.919999999999984,
+  "options": [
+    {
+      "algorithm": "row-scan-v1",
+      "areaM2": 15.839999999999977,
+      "movementM": 344.1215072704975,
+      "positionsSubmitted": 9728,
+      "spatial": "CHECKED_SCOPE_CLEAR",
+      "equipment": "INCOMPLETE",
+      "unplaced": 0
+    },
+    {
+      "algorithm": "largest-first-v1",
+      "areaM2": 15.839999999999977,
+      "movementM": 344.1215072704975,
+      "positionsSubmitted": 9728,
+      "spatial": "CHECKED_SCOPE_CLEAR",
+      "equipment": "INCOMPLETE",
+      "unplaced": 0
+    }
+  ],
+  "unchangedDemos": 5,
+  "repeatable": true
+}

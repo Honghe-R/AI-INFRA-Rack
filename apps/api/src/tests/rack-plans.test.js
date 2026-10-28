@@ -11,6 +11,8 @@ import { registerRackRoutes } from '../routes/rack.js';
 import { createRackPlanService } from '../services/rack-plans.js';
 import { createRackLayoutService } from '../services/rack-layout.js';
 import { getRackCatalog } from '@ai-infra/rack';
+import { plannerGeometry, normalizeEditableLayout } from '@ai-infra/rack';
+import { pickRackPosition } from '../services/rack-planner-geometry.js';
 
 const skip = process.env.DATABASE_URL ? false : 'DATABASE_URL is not set';
 let pool, repository;
@@ -206,8 +208,8 @@ test('Rack room view separately requires Facility read access for a custom Rack-
     const denied = await request(`${created.location}/room-view`,{user:'viewer'});
     assert.equal(denied.status,403);
     assert.equal(denied.body.error.details[0].function_key,'facility.read');
-    for(const suffix of ['/layout','/layout/check']) {
-      const result=await request(`${created.location}${suffix}`,{user:'viewer',...(suffix.endsWith('/check')?{body:{contract_version:1}}:{})});
+    for(const suffix of ['/layout','/layout/check','/layout/options']) {
+      const result=await request(`${created.location}${suffix}`,{user:'viewer',...(suffix==='/layout'?{}:{body:{contract_version:1}})});
       assert.equal(result.status,403);assert.equal(result.body.error.details[0].function_key,'facility.read');
     }
   } finally {
@@ -854,4 +856,92 @@ test('Rack maintenance bands respect interior holes, exact rack contact and part
   assert.equal(unknown.status,'INCOMPLETE');assert.deepEqual(unknown.uncheckedRules.slice(0,1),['UNRECORDED_OBSTACLES']);
   const unconfigured=await check([rack(3,3)],{obstacleCoverage:'DECLARED_COMPLETE'});
   assert.equal(unconfigured.status,'INCOMPLETE');assert.ok(unconfigured.uncheckedRules.includes('MAINTENANCE_CLEARANCE'));
+})));
+
+test('Rack options are read-only, deterministic and checked against actual concave geometry, holes, obstacles and clearance', {skip}, async()=>fixture(async f=>server(f.people,async request=>{
+  const {url,layout}=await prepared(f,request);
+  const fixed=rack(3,3,{locked:true,name:'Fixed'}), moving=rack(6,2,{name:'Moving'});
+  const equipment=equipmentInput([testDevice(moving.rackId)]);
+  const constraints=constraintsInput({obstacleCoverage:'DECLARED_COMPLETE',clearance:{frontM:.5,rearM:.5},obstacles:[planningObstacle(7,2)]});
+  const saved=await request(url,{method:'PUT',version:1,body:{...layoutBody(layout,[fixed,moving]),constraints,equipment}});
+  assert.equal(saved.status,200,JSON.stringify(saved));
+  const before=(await request(url)).body.data;
+  const commands=(await pool.query('SELECT count(*) FROM rack_layout_commands WHERE plan_id=$1',[layout.planId])).rows[0].count;
+  const body={contract_version:1,base_version:2,snapshot_id:layout.snapshot.snapshotId,options:{grid_step_m:.5,allow_rotation:true,strategy:'COMPARE'}};
+  const response=await request(`${url}/options`,{body,user:'viewer'});
+  assert.equal(response.status,200,JSON.stringify(response));
+  const result=response.body.data;assert.equal(result.persisted,false);assert.equal(result.candidates.length,2);assert.equal(result.validationState,'NOT_RUN');
+  for(const candidate of result.candidates){
+    assert.equal(candidate.canStage,true,JSON.stringify(candidate));assert.equal(candidate.unplaced.length,0);
+    assert.deepEqual(candidate.placements.find(p=>p.rackId===fixed.rackId),fixed);
+    assert.deepEqual(candidate.body.equipment,equipment);
+    const check=await request(`${url}/check`,{body:candidate.body});assert.equal(check.status,200);
+    assert.deepEqual(check.body.data.report,candidate.report);assert.deepEqual(check.body.data.equipmentReport,candidate.equipmentReport);
+  }
+  const repeat=(await request(`${url}/options`,{body})).body.data;
+  assert.deepEqual(repeat.candidates,result.candidates);assert.equal(repeat.inputFingerprint,result.inputFingerprint);
+  assert.deepEqual((await request(url)).body.data,before);
+  assert.equal((await pool.query('SELECT count(*) FROM rack_layout_commands WHERE plan_id=$1',[layout.planId])).rows[0].count,commands);
+})));
+
+test('Rack option application uses the existing atomic versioned save, replay protection, locks and source guard', {skip}, async()=>fixture(async f=>server(f.people,async request=>{
+  const {url,layout}=await prepared(f,request);
+  const fixed=rack(3,3,{locked:true}), moving=rack(6,2);
+  const saved=await request(url,{method:'PUT',version:1,body:layoutBody(layout,[fixed,moving])});assert.equal(saved.status,200);
+  const body={contract_version:1,base_version:2,snapshot_id:layout.snapshot.snapshotId,options:{strategy:'INPUT_ORDER'}};
+  const response=await request(`${url}/options`,{body});assert.equal(response.status,200,JSON.stringify(response));
+  const candidate=response.body.data.candidates[0];assert.equal(candidate.canStage,true);
+  const applied=await request(url,{method:'PUT',version:2,body:candidate.body,user:'viewer'});assert.equal(applied.status,403);
+  const key=randomUUID();
+  const first=await request(url,{method:'PUT',version:2,key,body:candidate.body,user:'editor'});assert.equal(first.status,200,JSON.stringify(first));assert.equal(first.body.data.version,3);
+  const replay=await request(url,{method:'PUT',version:2,key,body:candidate.body});assert.equal(replay.body.meta.replayed,true);assert.equal(replay.body.data.version,3);
+  assert.equal((await request(url,{method:'PUT',version:2,body:candidate.body})).status,412);
+  assert.equal((await request(`${url}/options`,{body})).status,412);
+  const tampered=structuredClone(candidate.body);tampered.placements.find(p=>p.rackId===fixed.rackId).xM+=1;
+  assert.equal((await request(url,{method:'PUT',version:3,body:tampered})).status,400);
+  await pool.query('UPDATE revision_etags SET etag=$1 WHERE project_id=$2',[randomUUID(),f.a.projectId]);
+  assert.equal((await request(url,{method:'PUT',version:3,body:candidate.body})).body.error.code,'RACK_SOURCE_STALE');
+  assert.equal((await request(`${url}/options`,{body:{...body,base_version:3}})).body.error.code,'RACK_SOURCE_STALE');
+  assert.equal((await request(url)).body.data.version,3);
+})));
+
+test('Rack options enforce input, tenant and source boundaries and retain partial preview identities', {skip}, async()=>fixture(async f=>server(f.people,async request=>{
+  const {url,layout}=await prepared(f,request);
+  const body={contract_version:1,base_version:1,snapshot_id:layout.snapshot.snapshotId,options:{}};
+  assert.equal((await request(`${url}/options`,{body})).status,400,'empty inventory must not be successful');
+  assert.equal((await request(`${url}/options`,{body,user:'outsider'})).status,403);
+  assert.equal((await request(`${url.replace(f.a.projectId,f.b.projectId)}/options`,{body})).status,404);
+  for(const patch of [{options:null},{options:{grid_step_m:0}},{options:{strategy:'OPTIMAL'}},{options:{allow_rotation:1}},{base_version:0},{snapshot_id:randomUUID()},{placements:[]}])
+    assert.ok([400,409].includes((await request(`${url}/options`,{body:{...body,...patch}})).status));
+  const item=rack(3,3);
+  assert.equal((await request(url,{method:'PUT',version:1,body:layoutBody(layout,[item])})).status,200);
+  // Simulate an authoritative room that is smaller than the existing rack; the
+  // search must retain the rack identity in a blocked, fully checked preview.
+  const tiny=structuredClone(layout.snapshot);tiny.view.boundaryLocalM={type:'Polygon',coordinates:[[[0,0],[.1,0],[.1,.1],[0,.1],[0,0]]]};
+  const {snapshotId,...document}=tiny;
+  await pool.query('UPDATE rack_room_snapshots SET document=$2 WHERE plan_id=$1',[layout.planId,JSON.stringify(document)]);
+  const partial=await request(`${url}/options`,{body:{...body,base_version:2,options:{strategy:'INPUT_ORDER'}}});assert.equal(partial.status,200,JSON.stringify(partial));
+  const candidate=partial.body.data.candidates[0];assert.equal(candidate.canStage,false);assert.equal(candidate.unplaced[0].code,'NO_GRID_POSITION');
+  assert.deepEqual(candidate.placements,[item]);assert.ok(candidate.report.diagnostics.length>0);
+})));
+
+test('Rack planner batch geometry agrees with complete checks for every orientation, holes, notches, obstacles and two-way maintenance intrusion', {skip}, async()=>fixture(async f=>server(f.people,async request=>{
+  const {url,layout}=await prepared(f,request);
+  const constraints=constraintsInput({obstacleCoverage:'DECLARED_COMPLETE',obstacles:[planningObstacle(6,2)],clearance:{frontM:1,rearM:.5}});
+  const fixed=rack(3,3,{locked:true});
+  const saved=await request(url,{method:'PUT',version:1,body:{...layoutBody(layout,[fixed]),constraints}});assert.equal(saved.status,200,JSON.stringify(saved));
+  const current=(await request(url)).body.data;
+  const catalog=current.models.find(m=>m.modelId===fixed.modelId);
+  const fixedGeometry=plannerGeometry({...fixed,projectId:f.a.projectId,planId:layout.planId},catalog,constraints.clearance);
+  const client=await pool.connect();
+  try {
+    for(const rotationDeg of [0,90,180,270]) for(const [xM,yM] of [[1.5,1.5],[6,6],[6,2],[3,4.2],[3,1.5],[.3,.6],[8,3],[2.2,3]]) {
+      const p=rack(xM,yM,{rotationDeg});
+      const entry=normalizeEditableLayout({placements:[p],models:current.models,projectId:f.a.projectId,planId:layout.planId})[0];
+      const geometry=plannerGeometry(entry.placement,catalog,constraints.clearance);
+      const pick=await pickRackPosition(client,current,constraints,[geometry],[fixedGeometry]);
+      const checked=await request(`${url}/check`,{body:{...layoutBody(layout,[fixed,p]),constraints}});assert.equal(checked.status,200);
+      assert.equal(pick===0,checked.body.data.report.diagnostics.length===0,JSON.stringify({rotationDeg,xM,yM,diagnostics:checked.body.data.report.diagnostics}));
+    }
+  }finally{client.release();}
 })));

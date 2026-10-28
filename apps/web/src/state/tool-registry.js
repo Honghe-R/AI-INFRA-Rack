@@ -12,6 +12,7 @@
  */
 
 import { RACK_KEYS } from '../generated/permission-keys.js';
+import { RACK_SECTIONS } from '../rack/rack-sections.js';
 
 export const TOOL_GROUPS = Object.freeze([
   Object.freeze({ groupId: 'design', label: 'Design flow' }),
@@ -45,7 +46,8 @@ export const TOOLS = Object.freeze([
     ],
   ),
   tool('floorplan', 'Floorplan', 'design', null),
-  tool('rack', 'Rack', 'design', RACK_KEYS.READ, [fn('overview', 'Plans')]),
+  tool('rack', 'Rack', 'design', RACK_KEYS.READ,
+    RACK_SECTIONS.map((section) => fn(section.functionId, section.label))),
   tool('network', 'Network', 'design', null),
   tool('route_pathway', 'Route & Pathway', 'design', null),
   tool('cabling', 'Cabling', 'design', null),

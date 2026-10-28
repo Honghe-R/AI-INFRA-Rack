@@ -107,6 +107,7 @@ export function RoomFloorplan({
   selectedObstacleId = null,
   onSelectObstacle = null,
   equipmentReport = null,
+  layoutLabel = null,
 }) {
   const fit = fitRoom(view.extentM);
   const [camera, setCamera] = useState(() => rackGroupCamera(placements, models, fit) ?? fit);
@@ -131,6 +132,10 @@ export function RoomFloorplan({
     } catch { setExpandError('The browser could not expand the map. Zoom and pan remain available.'); }
   }
   useEffect(() => {
+    if (focusRequest?.fitRacks) {
+      setCamera(rackGroupCamera(placements, models, fit) ?? fit);
+      return;
+    }
     const rack = focusRequest?.obstacleId
       ? constraints?.obstacles.find((o) => o.obstacleId === focusRequest.obstacleId)
       : placements.find((item) => item.rackId === focusRequest?.rackId);
@@ -186,7 +191,7 @@ export function RoomFloorplan({
       <div className="rack-heading">
         <div>
           <h3>{room.name}</h3>
-          <p className="rack-muted">{onMove ? 'Layout editor' : 'Saved layout'} · Projected grid metres</p>
+          <p className="rack-muted">{layoutLabel ?? (onMove ? 'Layout editor' : 'Saved layout')} · Projected grid metres</p>
         </div>
         <div className="rack-actions" aria-label="Floorplan controls">
           <button onClick={toggleExpanded}>{expanded ? 'Exit expanded map' : 'Expand map'}</button>

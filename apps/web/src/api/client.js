@@ -84,6 +84,8 @@ export function createApiClient({ baseUrl = '', fetchImpl = globalThis.fetch, id
       request(`/api/v1/projects/${encodeURIComponent(projectId)}/rack/plans/${encodeURIComponent(planId)}/layout`, { signal }),
     checkRackLayout: (projectId, planId, body, { signal } = {}) =>
       request(`/api/v1/projects/${encodeURIComponent(projectId)}/rack/plans/${encodeURIComponent(planId)}/layout/check`, {method:'POST',body,signal}),
+    generateRackOptions: (projectId, planId, body, { signal } = {}) =>
+      request(`/api/v1/projects/${encodeURIComponent(projectId)}/rack/plans/${encodeURIComponent(planId)}/layout/options`, {method:'POST',body,signal}),
     saveRackLayout: (projectId, planId, body, { version, idempotencyKey, signal } = {}) =>
       request(`/api/v1/projects/${encodeURIComponent(projectId)}/rack/plans/${encodeURIComponent(planId)}/layout`,
         {method:'PUT',body,signal,headers:{'If-Match':`"${version}"`,'Idempotency-Key':idempotencyKey}}),

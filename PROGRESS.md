@@ -603,6 +603,86 @@ Docker 可能保留已下载的镜像缓存，本轮没有清理全局 Docker �
 - 未做外部目录同步、目录编辑审批、全局硬件资产、正式预算、连续通道、候选、Assistant 或工程认证。仍以可解释布局候选为后续方向。
 - 全部工作留本地，未执行 commit/push；老师原目录和线上平台未改。
 
+## 2026-10-28：第十四轮，Rack 九分区结构与既有功能归位
+
+### 范围与修改
+
+- 用户要求像 Site 一样分区，先铺大致结构、后填细节。起始 HEAD `fe4db05`、工作区干净；只改 AI-INFRA-Rack，未 commit/push 或改老师目录/平台。
+- 新增 [共同分区定义](apps/web/src/rack/rack-sections.js)，工具注册与 Rack 工作区统一消费。侧栏提供 Overview、Plans、Layout、Equipment、Constraints、Capacity、Candidates、Dependencies、Checks；保留原 rack.read 入口权限。
+- 新增 [总览与结构页面](apps/web/src/rack/RackSections.jsx)：模块状态卡、真实所选方案/草稿摘要、候选四步流程骨架、真实 Facility 引用与正式依赖管理的待实现边界。没有假生成/假应用操作。
+- [工作区](apps/web/src/rack/RackSurface.jsx) 增加跨分区方案选择，Plans 保留创建/分页/元数据，并可进入布局。原 overview 路由转为真正总览，原方案与草稿字段保留。
+- [编辑器](apps/web/src/rack/RackEditor.jsx) 按分区展示已有主画布/机柜属性/设备/约束/容量/检查；保持同一实例和共享草稿，不因切页丢失选择、相机、未保存数据和精确重试请求。容量/设备/诊断使用同一设备组件的显示模式。
+- 显式说明所有编辑分区一起保存；当前报告问题在其他分区也提示，可跳 Checks，不能通过隐藏问题面板绕过整份检查。Checks 为当前范围报告，整体 NOT_RUN 保留，不触发 Facility 验证/冻结。
+- 新增根 [RACK_STRUCTURE.md](RACK_STRUCTURE.md)，更新操作、README、待办和本进展。没有后端、Schema、迁移或示例数据更改。
+
+### 验证
+
+- Web 定向 **100 通过、12 文件、0 失败**，覆盖新增导航/状态卡、九分区路由保留同一方案/dirty 草稿/精确请求及拒绝直接关 dirty 标签、设备/容量/诊断显示模式，以及既有 Rack、Catalog、客户端、shell、导入边界。证据：[web-tests.txt](records/2026-10-28-rack-sections/web-tests.txt)。
+- Web build 成功，保留既有 esbuild/oxc 和 >500 kB 包大小提示；证据：[web-build.txt](records/2026-10-28-rack-sections/web-build.txt)。
+- 本轮只改前端结构，未重跑领域/数据库 API 全套；没有浏览器控制工具，未做实际点击回归，不将静态渲染/状态测试写成浏览器验收。
+
+### 遗留与下一步
+
+- 目录/设备身份、空间、容量仍按已有有限范围工作；正式预算、硬件资产、连续通道、持久化验证、算法、候选应用和 Rack Assistant 未实现。
+- Candidates/Dependencies 页面是可扩展结构；依赖页仅展示已保存输入，不是实时依赖图。后续先补输入追踪和影响分析，再做候选生成/预览/应用与 Assistant。
+- 所有代码保持本地，未 commit/push、改 remotes 或修改老师原目录。
+
+## 2026-10-28–29：第十五轮，Rack 专用导航和输入影响可视化
+
+### 范围与实际修改
+
+- 用户明确分区应适合 Rack，不照搬 Site，并要求加快推进。延续第十四轮未提交改动，HEAD 仍为 `fe4db05`；仅修改 AI-INFRA-Rack，没有 commit/push、改 remotes 或修改老师目录/线上平台。
+- 分区顺序调整为 Overview、Plans、Inputs & impact、Rack layout、Space rules、Devices & U slots、Capacity、Layout options、Checks。保留所有 route functionId 和共享草稿机制；不是为对齐 Site 而添加模块。
+- 新增 [RackInputs.jsx](apps/web/src/rack/RackInputs.jsx) 与 [rack-inputs.js](apps/web/src/rack/rack-inputs.js)：从编辑器已有布局、约束、设备、草稿和当前完整请求报告生成输入关系图；节点选择高亮下游，提供对应页面入口、真实 Facility/快照引用、精确目录版本和设备数量汇总。
+- 比较最近读取的保存版与当前草稿，显示机柜、空间条件、设备和限值变化及保守检查影响；null/0/NaN 分别处理，版本冲突注明比较基准，来源状态明确是最近读取结果。整份保存仍由原后端复核权限、版本、来源和全部规则。
+- 更新根 [结构](RACK_STRUCTURE.md)、[操作](RACK_WORKSPACE.md)、[总清单](RACK_PROJECT_TODO.md)，新增 [输入说明](RACK_INPUTS.md)。没有后端、迁移、数据库、目录或演示数据变更。
+
+### 验证与证据
+
+- Web 定向 **103 项通过、13 文件**；含输入影响路径、真实固定版本、未知/零/非法值变化、版本/来源警告及原导航/草稿/设备/空间/Catalog/shell 回归。[结果](records/2026-10-28-rack-inputs/web-tests.txt) 首行保留命令。
+- Web build 成功，保留已有 >500 kB bundle 提示，[结果](records/2026-10-28-rack-inputs/web-build.txt)。未重跑后端/数据库/领域全套，不宣称全仓通过。
+- 实际浏览器读取本机六柜/17 设备示例的来源与五类型号版本；节点选择更新下游；Edit → Layout 临时改名 → Inputs 识别共享草稿变化 → Discard 恢复，无 dirty 标记，保存版本仍为 v2。没有点击保存，原示例不变。[步骤与限制](records/2026-10-28-rack-inputs/browser-checks.md)。首次临时标签定位失效，换独立标签后完成；非业务失败。
+
+### 边界与下一步
+
+- 图表示现有数据消费关系，不是物理网络或机房图；机房主图仍在 Rack layout。变化提示包括元数据、列表重排，是保守提示而非精确增量规则计算；所有规则仍整份检查。
+- 尚无持久化依赖历史、上游事件订阅、显式重绑定和 Network/Power/Thermal 跨工具关联。Layout options 保持 Planned，没有假生成/假应用功能。
+- 下一步是有边界、可解释的布局候选预览，再逐步接安全应用和 Rack Assistant；这轮不同时扩展算法与后端。
+
+## 2026-10-29：第十六轮，确定性布局规划、比较预览与草稿应用
+
+### 范围和修改
+
+- 用户授权接通主体算法及必要输入/检查，本轮完成已有机柜的重排闭环；继续在第十四/十五轮未提交变更上工作，HEAD 仍为 `fe4db05`，只改 AI-INFRA-Rack。未 commit/push、改 remotes 或修改老师目录/平台。
+- 新增 [规划器](packages/rack/src/planner.js)：row-scan-v1 与 largest-first-v1 两种确定性贪心策略；锁定柜先固定，保留全部柜/设备身份和分配，网格/旋转可配置。明确有限搜索失败不是无解证明；未放置对象保留原位但禁止选用候选。
+- 新增 [PostGIS 批次适配器](apps/api/src/services/rack-planner-geometry.js)，复用实际 Polygon/孔洞/障碍/双向前后维护策略，原 [布局服务](apps/api/src/services/rack-layout.js) 对每个完整候选再次做原空间与设备检查，错误不准选用。没有把包围框当房间几何。
+- 新增只读 POST layout/options，需 rack.read + facility.read，服务读取保存版与固定输入，不接受自报设施/设备。校验版本、快照与来源，返回输入指纹、算法版本/参数、指标/报告、未放置原因及完整草稿 body。限制 64 可移动柜、两候选、每柜 2048/每候选16384 提议、128 批次、5 秒 SQL/批次间15秒时间预算。
+- [Layout options](apps/web/src/rack/RackOptions.jsx) 现为实页：参数、现状/两候选比较、逐柜变化、图面预览、未放置与报告、勾选复核。通过 [草稿适配](apps/web/src/rack/rack-options-state.js) 检查归属/基准/来源/无现有草稿后进入原共享草稿，再走原 Save layout。原权限、If-Match、源锁、锁定、UUID 幂等、全量规则和事务均保留。
+- 候选只在当前编辑器内暂存，无迁移/候选表/新写入端点。原主图转草稿与放弃时新增 Fit racks，避免候选移到远处后旧相机看不到。当前整体验证仍 NOT_RUN。
+- 新增根 [RACK_PLANNER.md](RACK_PLANNER.md)，同步 API、基础设计、结构、工作区、README 与清单，按本轮有限范围勾选算法和预览/应用项。
+
+### 验证与证据
+
+| 范围 | 最终结果 | 证据 |
+| --- | --- | --- |
+| Rack 领域 | 113 通过，0 失败/跳过；新增策略/重复性、锁定、异形尺寸排序、四方向维护、超大柜空网格、输入与搜索上限 | [domain-tests.txt](records/2026-10-29-rack-planner/domain-tests.txt) |
+| 数据库/API | 43 通过，0 失败/跳过；新增只读性、来源/版本/权限、真实几何、精确重放、原子保存/幂等/旧版/锁定；32 组批次适配器与完整检查差分 | [api-tests.txt](records/2026-10-29-rack-planner/api-tests.txt) |
+| Web 定向 | 107 通过，14 文件；候选转草稿复制与拒绝路径、客户端、原 Rack/Catalog/shell/边界 | [web-tests.txt](records/2026-10-29-rack-planner/web-tests.txt) |
+| Web build | 成功；保留原 esbuild/oxc 和 >500 kB bundle 提示 | [web-build.txt](records/2026-10-29-rack-planner/web-build.txt) |
+| 浏览器 | 生成两候选、比较/预览、复核禁用、两策略转草稿、自动聚焦、放弃恢复，无保存演示改动 | [步骤](records/2026-10-29-rack-planner/browser-checks.md)、[截图](records/2026-10-29-rack-planner/options.jpg) |
+| 本机只读重放 | 6 柜/17 设备，两次候选精确相同；前后五个旧示例完整布局相等 | [脚本](records/2026-10-29-rack-planner/check-live-planner.mjs)、[摘要](records/2026-10-29-rack-planner/live-checks.txt)、[输入与结果](records/2026-10-29-rack-planner/live-results.json) |
+
+命令：npm run test --workspace @ai-infra/rack；node --env-file-if-exists=.env --test apps/api/src/tests/rack-plans.test.js；Web 定向命令保留在证据首行；npm run build --workspace @ai-infra/web；node --env-file=.env records/2026-10-29-rack-planner/check-live-planner.mjs。
+
+第一次 API 运行 43 项通过；并行记录时出现 5 项测试服务器的 `fetch failed`，没有规则断言失败；原始输出保留在 [失败记录](records/2026-10-29-rack-planner/api-tests-transient-fetch-failures.txt)，原因未确定。独立重跑最终 43 项全过，未用跳过或放宽断言掩盖。前端新增测试初次有括号语法错误，已修复，最终 107 项通过。没有重跑全仓或宣称平台全部基线通过。
+
+### 初步表现、限制和后续
+
+- 本机六柜样例两次端到端约 5.399 / 4.369 秒（当时并行跑回归）；每候选提交 9728 姿态，无未放置柜。现状柜体包围面积约23.92→15.84 m²，总中心搬动344.122 m；两策略因同尺寸/同顺序而相同，明确不是排序有效性的证明，也不是等量释放工程空间。
+- 空间 CHECKED_SCOPE_CLEAR；未知设备资源保持 equipment INCOMPLETE，整体 NOT_RUN。生成/转草稿不写数据库，实际保存只在独立临时 API fixture 完成，五个旧演示与合成 Facility 保留。
+- 当前是现有机柜的贪心重排；未实现设备自动装箱、新柜需求规划、连续通道、正式机房预算、持久化候选历史/独立审批凭证、生产并发限流/异步取消或全局最优。算法和时限不是工程认证或生产 SLA。
+- 下一步可接 Rack Assistant 的真实查询/解释/生成候选工具，或补设备自动分配；本轮不混入这些功能。全部更改留本地，由用户决定提交。
+
 ## 后续记录格式
 
 每轮追加一个日期标题，至少写清：

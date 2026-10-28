@@ -5,6 +5,8 @@
 
 新增 [Catalog 与 Rack 集成](RACK_CATALOG.md)：型号/组件目录、规则示例、固定型号版本上架，以及主画布展开、机柜聚焦和用量着色。
 
+Rack 已按 [工作区结构](RACK_STRUCTURE.md) 分成九个页面；Layout options 已接通 [确定性布局算法、比较预览与草稿保存](RACK_PLANNER.md)，Inputs & impact 展示实际输入关系与草稿变化。正式依赖历史和 Rack Assistant 待实现。
+
 Rack 可视化预览：`npm run rack:preview`，打开 http://127.0.0.1:5183/ 。见 [运行说明](RACK_PREVIEW.md)；只读合成样例，无需 Docker。
 
 Rack course extension: see [progress](PROGRESS.md), [foundation decisions](RACK_FOUNDATION.md),

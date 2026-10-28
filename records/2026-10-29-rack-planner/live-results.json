@@ -1,0 +1,3562 @@
+{
+  "body": {
+    "contract_version": 1,
+    "base_version": 2,
+    "snapshot_id": "41f0d745-db16-44f9-9fc9-cff82a94a520",
+    "options": {
+      "grid_step_m": 0.5,
+      "allow_rotation": true,
+      "strategy": "COMPARE"
+    }
+  },
+  "runs": [
+    {
+      "wallMs": 5399,
+      "result": {
+        "contractVersion": 1,
+        "projectId": "4c11ab8d-5d57-4ad8-ad55-ac08574fba46",
+        "planId": "e446aafb-1846-4a69-af10-636fd50ba87c",
+        "baseVersion": 2,
+        "snapshotId": "41f0d745-db16-44f9-9fc9-cff82a94a520",
+        "facilityInput": {
+          "projectId": "4c11ab8d-5d57-4ad8-ad55-ac08574fba46",
+          "scenarioId": "4ee0094b-9f4e-4e45-8c3e-244fe83348d2",
+          "revisionId": "c5b4b888-e66e-4ffa-bb0e-2dd738ed5f4d",
+          "containerId": "4f938d55-5868-550a-aff9-5fadfcc47df0",
+          "revisionEtag": "1f1b35f2-b80b-4831-8c29-065b2ea848bf"
+        },
+        "inputFingerprint": "db473703824da7a559abbee0e3529fec9a2b78be26b853044735681c5c8a1bfd",
+        "options": {
+          "grid_step_m": 0.5,
+          "allow_rotation": true,
+          "strategy": "COMPARE"
+        },
+        "limits": {
+          "movableRacks": 64,
+          "posesPerRack": 2048,
+          "posesPerOption": 16384,
+          "batchSize": 128
+        },
+        "baseline": {
+          "metrics": {
+            "envelopeAreaM2": 23.919999999999984,
+            "spanXM": 4.599999999999994,
+            "spanYM": 5.200000000000003,
+            "movedRacks": 0,
+            "movementM": 0
+          },
+          "report": {
+            "status": "CHECKED_SCOPE_CLEAR",
+            "scope": [
+              "POLYGON_CONTAINMENT",
+              "INTERIOR_HOLES",
+              "RACK_PAIR_OVERLAP",
+              "DECLARED_OBSTACLES",
+              "FRONT_REAR_CLEARANCE"
+            ],
+            "obstaclesChecked": 1,
+            "clearanceBandsChecked": 12,
+            "clearance": {
+              "frontM": 1,
+              "rearM": 0.5
+            },
+            "planningSource": {
+              "kind": "ASSUMED",
+              "reference": "Synthetic six-rack planning scenario, not a surveyed obstacle inventory."
+            },
+            "diagnostics": [],
+            "racksChecked": 6,
+            "pairsChecked": 15,
+            "obstacleCoverage": "DECLARED_COMPLETE",
+            "uncheckedRules": [
+              "SIDE_CLEARANCE",
+              "ACCESS_CONNECTIVITY",
+              "AISLES",
+              "EQUIPMENT",
+              "CAPACITY",
+              "ENGINEERING_ACCURACY"
+            ]
+          },
+          "equipmentReport": {
+            "status": "INCOMPLETE",
+            "coverage": "DECLARED_COMPLETE",
+            "planningSource": {
+              "kind": "ASSUMED",
+              "reference": "Synthetic catalog v1 allocation; model demands and per-rack limits are planning assumptions."
+            },
+            "devicesChecked": 17,
+            "installedDevices": 17,
+            "unassignedDeviceIds": [],
+            "racks": [
+              {
+                "rackId": "007ece2b-dd08-41a0-8a7e-34e224146297",
+                "heightU": 42,
+                "devicesInstalled": 2,
+                "requestedU": 5,
+                "occupiedU": 5,
+                "freeU": 37,
+                "uStatus": "CHECKED_SCOPE_CLEAR",
+                "capacities": {
+                  "weightKg": {
+                    "unit": "kg",
+                    "knownSubtotal": 90,
+                    "total": 90,
+                    "unknownDevices": 0,
+                    "limit": 500,
+                    "status": "WITHIN_LIMIT",
+                    "limitSource": "PLAN_ASSUMPTION"
+                  },
+                  "powerKw": {
+                    "unit": "kW",
+                    "knownSubtotal": 3.3,
+                    "total": 3.3,
+                    "unknownDevices": 0,
+                    "limit": 6,
+                    "status": "WITHIN_LIMIT",
+                    "limitSource": "PLAN_ASSUMPTION"
+                  },
+                  "coolingKw": {
+                    "unit": "kW",
+                    "knownSubtotal": 3.3,
+                    "total": 3.3,
+                    "unknownDevices": 0,
+                    "limit": 6,
+                    "status": "WITHIN_LIMIT",
+                    "limitSource": "PLAN_ASSUMPTION"
+                  }
+                }
+              },
+              {
+                "rackId": "308d7faf-1a97-452f-8753-3bc3f07c2293",
+                "heightU": 42,
+                "devicesInstalled": 3,
+                "requestedU": 6,
+                "occupiedU": 6,
+                "freeU": 36,
+                "uStatus": "CHECKED_SCOPE_CLEAR",
+                "capacities": {
+                  "weightKg": {
+                    "unit": "kg",
+                    "knownSubtotal": 75,
+                    "total": 75,
+                    "unknownDevices": 0,
+                    "limit": 500,
+                    "status": "WITHIN_LIMIT",
+                    "limitSource": "PLAN_ASSUMPTION"
+                  },
+                  "powerKw": {
+                    "unit": "kW",
+                    "knownSubtotal": 2.4000000000000004,
+                    "total": 2.4000000000000004,
+                    "unknownDevices": 0,
+                    "limit": 3,
+                    "status": "WITHIN_LIMIT",
+                    "limitSource": "PLAN_ASSUMPTION"
+                  },
+                  "coolingKw": {
+                    "unit": "kW",
+                    "knownSubtotal": 2.4000000000000004,
+                    "total": 2.4000000000000004,
+                    "unknownDevices": 0,
+                    "limit": 3,
+                    "status": "WITHIN_LIMIT",
+                    "limitSource": "PLAN_ASSUMPTION"
+                  }
+                }
+              },
+              {
+                "rackId": "808c00a4-9d3e-4a41-85f2-c58aa6a6b82a",
+                "heightU": 42,
+                "devicesInstalled": 2,
+                "requestedU": 3,
+                "occupiedU": 3,
+                "freeU": 39,
+                "uStatus": "CHECKED_SCOPE_CLEAR",
+                "capacities": {
+                  "weightKg": {
+                    "unit": "kg",
+                    "knownSubtotal": 35,
+                    "total": 35,
+                    "unknownDevices": 0,
+                    "limit": 500,
+                    "status": "WITHIN_LIMIT",
+                    "limitSource": "PLAN_ASSUMPTION"
+                  },
+                  "powerKw": {
+                    "unit": "kW",
+                    "knownSubtotal": 1.1,
+                    "total": 1.1,
+                    "unknownDevices": 0,
+                    "limit": 4,
+                    "status": "WITHIN_LIMIT",
+                    "limitSource": "PLAN_ASSUMPTION"
+                  },
+                  "coolingKw": {
+                    "unit": "kW",
+                    "knownSubtotal": 1.1,
+                    "total": 1.1,
+                    "unknownDevices": 0,
+                    "limit": 4,
+                    "status": "WITHIN_LIMIT",
+                    "limitSource": "PLAN_ASSUMPTION"
+                  }
+                }
+              },
+              {
+                "rackId": "b128fd3e-26ca-44de-8233-fd5caab8fbe9",
+                "heightU": 42,
+                "devicesInstalled": 4,
+                "requestedU": 13,
+                "occupiedU": 13,
+                "freeU": 29,
+                "uStatus": "CHECKED_SCOPE_CLEAR",
+                "capacities": {
+                  "weightKg": {
+                    "unit": "kg",
+                    "knownSubtotal": 250,
+                    "total": 250,
+                    "unknownDevices": 0,
+                    "limit": 500,
+                    "status": "WITHIN_LIMIT",
+                    "limitSource": "PLAN_ASSUMPTION"
+                  },
+                  "powerKw": {
+                    "unit": "kW",
+                    "knownSubtotal": 9.3,
+                    "total": 9.3,
+                    "unknownDevices": 0,
+                    "limit": 10,
+                    "status": "WITHIN_LIMIT",
+                    "limitSource": "PLAN_ASSUMPTION"
+                  },
+                  "coolingKw": {
+                    "unit": "kW",
+                    "knownSubtotal": 9.3,
+                    "total": 9.3,
+                    "unknownDevices": 0,
+                    "limit": 10,
+                    "status": "WITHIN_LIMIT",
+                    "limitSource": "PLAN_ASSUMPTION"
+                  }
+                }
+              },
+              {
+                "rackId": "dd22929f-089e-4159-89b4-71b7120da664",
+                "heightU": 42,
+                "devicesInstalled": 4,
+                "requestedU": 10,
+                "occupiedU": 10,
+                "freeU": 32,
+                "uStatus": "CHECKED_SCOPE_CLEAR",
+                "capacities": {
+                  "weightKg": {
+                    "unit": "kg",
+                    "knownSubtotal": 155,
+                    "total": 155,
+                    "unknownDevices": 0,
+                    "limit": 500,
+                    "status": "WITHIN_LIMIT",
+                    "limitSource": "PLAN_ASSUMPTION"
+                  },
+                  "powerKw": {
+                    "unit": "kW",
+                    "knownSubtotal": 5.4,
+                    "total": 5.4,
+                    "unknownDevices": 0,
+                    "limit": 8,
+                    "status": "WITHIN_LIMIT",
+                    "limitSource": "PLAN_ASSUMPTION"
+                  },
+                  "coolingKw": {
+                    "unit": "kW",
+                    "knownSubtotal": 5.4,
+                    "total": 5.4,
+                    "unknownDevices": 0,
+                    "limit": 8,
+                    "status": "WITHIN_LIMIT",
+                    "limitSource": "PLAN_ASSUMPTION"
+                  }
+                }
+              },
+              {
+                "rackId": "eabd3068-c754-4225-89dc-41e318b70a2a",
+                "heightU": 42,
+                "devicesInstalled": 2,
+                "requestedU": 3,
+                "occupiedU": 3,
+                "freeU": 39,
+                "uStatus": "CHECKED_SCOPE_CLEAR",
+                "capacities": {
+                  "weightKg": {
+                    "unit": "kg",
+                    "knownSubtotal": 18,
+                    "total": null,
+                    "unknownDevices": 1,
+                    "limit": 500,
+                    "status": "UNKNOWN",
+                    "limitSource": "PLAN_ASSUMPTION"
+                  },
+                  "powerKw": {
+                    "unit": "kW",
+                    "knownSubtotal": 0.2,
+                    "total": null,
+                    "unknownDevices": 1,
+                    "limit": 6,
+                    "status": "UNKNOWN",
+                    "limitSource": "PLAN_ASSUMPTION"
+                  },
+                  "coolingKw": {
+                    "unit": "kW",
+                    "knownSubtotal": 0,
+                    "total": null,
+                    "unknownDevices": 2,
+                    "limit": 6,
+                    "status": "UNKNOWN",
+                    "limitSource": "PLAN_ASSUMPTION"
+                  }
+                }
+              }
+            ],
+            "diagnostics": [],
+            "uncheckedRules": [
+              "GLOBAL_ASSET_IDENTITY",
+              "DEPTH_RAIL_COMPATIBILITY",
+              "POWER_FEEDS_REDUNDANCY",
+              "AIRFLOW_THERMAL_MODEL",
+              "FLOOR_LOAD",
+              "ENGINEERING_ACCURACY"
+            ]
+          }
+        },
+        "candidates": [
+          {
+            "algorithmId": "row-scan-v1",
+            "strategy": "INPUT_ORDER",
+            "options": {
+              "grid_step_m": 0.5,
+              "allow_rotation": true,
+              "strategy": "COMPARE"
+            },
+            "placements": [
+              {
+                "rackId": "007ece2b-dd08-41a0-8a7e-34e224146297",
+                "modelId": "10000000-0000-4000-8000-000000000001",
+                "name": "A01",
+                "xM": 86.3,
+                "yM": 2.1,
+                "rotationDeg": 0,
+                "locked": false
+              },
+              {
+                "rackId": "308d7faf-1a97-452f-8753-3bc3f07c2293",
+                "modelId": "10000000-0000-4000-8000-000000000001",
+                "name": "B02",
+                "xM": 87.6,
+                "yM": 0.8,
+                "rotationDeg": 270,
+                "locked": false
+              },
+              {
+                "rackId": "808c00a4-9d3e-4a41-85f2-c58aa6a6b82a",
+                "modelId": "10000000-0000-4000-8000-000000000001",
+                "name": "A03",
+                "xM": 88.8,
+                "yM": 2.1,
+                "rotationDeg": 0,
+                "locked": false
+              },
+              {
+                "rackId": "b128fd3e-26ca-44de-8233-fd5caab8fbe9",
+                "modelId": "10000000-0000-4000-8000-000000000001",
+                "name": "A02",
+                "xM": 90.1,
+                "yM": 0.8,
+                "rotationDeg": 270,
+                "locked": false
+              },
+              {
+                "rackId": "dd22929f-089e-4159-89b4-71b7120da664",
+                "modelId": "10000000-0000-4000-8000-000000000001",
+                "name": "B03",
+                "xM": 91.3,
+                "yM": 2.1,
+                "rotationDeg": 0,
+                "locked": false
+              },
+              {
+                "rackId": "eabd3068-c754-4225-89dc-41e318b70a2a",
+                "modelId": "10000000-0000-4000-8000-000000000001",
+                "name": "B01",
+                "xM": 92.6,
+                "yM": 0.8,
+                "rotationDeg": 270,
+                "locked": false
+              }
+            ],
+            "unplaced": [],
+            "positionsSubmitted": 9728,
+            "metrics": {
+              "envelopeAreaM2": 15.839999999999977,
+              "spanXM": 7.199999999999989,
+              "spanYM": 2.2,
+              "movedRacks": 6,
+              "movementM": 344.1215072704975
+            },
+            "optionId": "row-scan-v1:db473703824da7a559abbee0e3529fec9a2b78be26b853044735681c5c8a1bfd",
+            "report": {
+              "status": "CHECKED_SCOPE_CLEAR",
+              "scope": [
+                "POLYGON_CONTAINMENT",
+                "INTERIOR_HOLES",
+                "RACK_PAIR_OVERLAP",
+                "DECLARED_OBSTACLES",
+                "FRONT_REAR_CLEARANCE"
+              ],
+              "obstaclesChecked": 1,
+              "clearanceBandsChecked": 12,
+              "clearance": {
+                "frontM": 1,
+                "rearM": 0.5
+              },
+              "planningSource": {
+                "kind": "ASSUMED",
+                "reference": "Synthetic six-rack planning scenario, not a surveyed obstacle inventory."
+              },
+              "diagnostics": [],
+              "racksChecked": 6,
+              "pairsChecked": 15,
+              "obstacleCoverage": "DECLARED_COMPLETE",
+              "uncheckedRules": [
+                "SIDE_CLEARANCE",
+                "ACCESS_CONNECTIVITY",
+                "AISLES",
+                "EQUIPMENT",
+                "CAPACITY",
+                "ENGINEERING_ACCURACY"
+              ]
+            },
+            "equipmentReport": {
+              "status": "INCOMPLETE",
+              "coverage": "DECLARED_COMPLETE",
+              "planningSource": {
+                "kind": "ASSUMED",
+                "reference": "Synthetic catalog v1 allocation; model demands and per-rack limits are planning assumptions."
+              },
+              "devicesChecked": 17,
+              "installedDevices": 17,
+              "unassignedDeviceIds": [],
+              "racks": [
+                {
+                  "rackId": "007ece2b-dd08-41a0-8a7e-34e224146297",
+                  "heightU": 42,
+                  "devicesInstalled": 2,
+                  "requestedU": 5,
+                  "occupiedU": 5,
+                  "freeU": 37,
+                  "uStatus": "CHECKED_SCOPE_CLEAR",
+                  "capacities": {
+                    "weightKg": {
+                      "unit": "kg",
+                      "knownSubtotal": 90,
+                      "total": 90,
+                      "unknownDevices": 0,
+                      "limit": 500,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    },
+                    "powerKw": {
+                      "unit": "kW",
+                      "knownSubtotal": 3.3,
+                      "total": 3.3,
+                      "unknownDevices": 0,
+                      "limit": 6,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    },
+                    "coolingKw": {
+                      "unit": "kW",
+                      "knownSubtotal": 3.3,
+                      "total": 3.3,
+                      "unknownDevices": 0,
+                      "limit": 6,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    }
+                  }
+                },
+                {
+                  "rackId": "308d7faf-1a97-452f-8753-3bc3f07c2293",
+                  "heightU": 42,
+                  "devicesInstalled": 3,
+                  "requestedU": 6,
+                  "occupiedU": 6,
+                  "freeU": 36,
+                  "uStatus": "CHECKED_SCOPE_CLEAR",
+                  "capacities": {
+                    "weightKg": {
+                      "unit": "kg",
+                      "knownSubtotal": 75,
+                      "total": 75,
+                      "unknownDevices": 0,
+                      "limit": 500,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    },
+                    "powerKw": {
+                      "unit": "kW",
+                      "knownSubtotal": 2.4000000000000004,
+                      "total": 2.4000000000000004,
+                      "unknownDevices": 0,
+                      "limit": 3,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    },
+                    "coolingKw": {
+                      "unit": "kW",
+                      "knownSubtotal": 2.4000000000000004,
+                      "total": 2.4000000000000004,
+                      "unknownDevices": 0,
+                      "limit": 3,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    }
+                  }
+                },
+                {
+                  "rackId": "808c00a4-9d3e-4a41-85f2-c58aa6a6b82a",
+                  "heightU": 42,
+                  "devicesInstalled": 2,
+                  "requestedU": 3,
+                  "occupiedU": 3,
+                  "freeU": 39,
+                  "uStatus": "CHECKED_SCOPE_CLEAR",
+                  "capacities": {
+                    "weightKg": {
+                      "unit": "kg",
+                      "knownSubtotal": 35,
+                      "total": 35,
+                      "unknownDevices": 0,
+                      "limit": 500,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    },
+                    "powerKw": {
+                      "unit": "kW",
+                      "knownSubtotal": 1.1,
+                      "total": 1.1,
+                      "unknownDevices": 0,
+                      "limit": 4,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    },
+                    "coolingKw": {
+                      "unit": "kW",
+                      "knownSubtotal": 1.1,
+                      "total": 1.1,
+                      "unknownDevices": 0,
+                      "limit": 4,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    }
+                  }
+                },
+                {
+                  "rackId": "b128fd3e-26ca-44de-8233-fd5caab8fbe9",
+                  "heightU": 42,
+                  "devicesInstalled": 4,
+                  "requestedU": 13,
+                  "occupiedU": 13,
+                  "freeU": 29,
+                  "uStatus": "CHECKED_SCOPE_CLEAR",
+                  "capacities": {
+                    "weightKg": {
+                      "unit": "kg",
+                      "knownSubtotal": 250,
+                      "total": 250,
+                      "unknownDevices": 0,
+                      "limit": 500,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    },
+                    "powerKw": {
+                      "unit": "kW",
+                      "knownSubtotal": 9.3,
+                      "total": 9.3,
+                      "unknownDevices": 0,
+                      "limit": 10,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    },
+                    "coolingKw": {
+                      "unit": "kW",
+                      "knownSubtotal": 9.3,
+                      "total": 9.3,
+                      "unknownDevices": 0,
+                      "limit": 10,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    }
+                  }
+                },
+                {
+                  "rackId": "dd22929f-089e-4159-89b4-71b7120da664",
+                  "heightU": 42,
+                  "devicesInstalled": 4,
+                  "requestedU": 10,
+                  "occupiedU": 10,
+                  "freeU": 32,
+                  "uStatus": "CHECKED_SCOPE_CLEAR",
+                  "capacities": {
+                    "weightKg": {
+                      "unit": "kg",
+                      "knownSubtotal": 155,
+                      "total": 155,
+                      "unknownDevices": 0,
+                      "limit": 500,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    },
+                    "powerKw": {
+                      "unit": "kW",
+                      "knownSubtotal": 5.4,
+                      "total": 5.4,
+                      "unknownDevices": 0,
+                      "limit": 8,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    },
+                    "coolingKw": {
+                      "unit": "kW",
+                      "knownSubtotal": 5.4,
+                      "total": 5.4,
+                      "unknownDevices": 0,
+                      "limit": 8,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    }
+                  }
+                },
+                {
+                  "rackId": "eabd3068-c754-4225-89dc-41e318b70a2a",
+                  "heightU": 42,
+                  "devicesInstalled": 2,
+                  "requestedU": 3,
+                  "occupiedU": 3,
+                  "freeU": 39,
+                  "uStatus": "CHECKED_SCOPE_CLEAR",
+                  "capacities": {
+                    "weightKg": {
+                      "unit": "kg",
+                      "knownSubtotal": 18,
+                      "total": null,
+                      "unknownDevices": 1,
+                      "limit": 500,
+                      "status": "UNKNOWN",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    },
+                    "powerKw": {
+                      "unit": "kW",
+                      "knownSubtotal": 0.2,
+                      "total": null,
+                      "unknownDevices": 1,
+                      "limit": 6,
+                      "status": "UNKNOWN",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    },
+                    "coolingKw": {
+                      "unit": "kW",
+                      "knownSubtotal": 0,
+                      "total": null,
+                      "unknownDevices": 2,
+                      "limit": 6,
+                      "status": "UNKNOWN",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    }
+                  }
+                }
+              ],
+              "diagnostics": [],
+              "uncheckedRules": [
+                "GLOBAL_ASSET_IDENTITY",
+                "DEPTH_RAIL_COMPATIBILITY",
+                "POWER_FEEDS_REDUNDANCY",
+                "AIRFLOW_THERMAL_MODEL",
+                "FLOOR_LOAD",
+                "ENGINEERING_ACCURACY"
+              ]
+            },
+            "canStage": true,
+            "body": {
+              "contract_version": 1,
+              "snapshot_id": "41f0d745-db16-44f9-9fc9-cff82a94a520",
+              "placements": [
+                {
+                  "rackId": "007ece2b-dd08-41a0-8a7e-34e224146297",
+                  "modelId": "10000000-0000-4000-8000-000000000001",
+                  "name": "A01",
+                  "xM": 86.3,
+                  "yM": 2.1,
+                  "rotationDeg": 0,
+                  "locked": false
+                },
+                {
+                  "rackId": "308d7faf-1a97-452f-8753-3bc3f07c2293",
+                  "modelId": "10000000-0000-4000-8000-000000000001",
+                  "name": "B02",
+                  "xM": 87.6,
+                  "yM": 0.8,
+                  "rotationDeg": 270,
+                  "locked": false
+                },
+                {
+                  "rackId": "808c00a4-9d3e-4a41-85f2-c58aa6a6b82a",
+                  "modelId": "10000000-0000-4000-8000-000000000001",
+                  "name": "A03",
+                  "xM": 88.8,
+                  "yM": 2.1,
+                  "rotationDeg": 0,
+                  "locked": false
+                },
+                {
+                  "rackId": "b128fd3e-26ca-44de-8233-fd5caab8fbe9",
+                  "modelId": "10000000-0000-4000-8000-000000000001",
+                  "name": "A02",
+                  "xM": 90.1,
+                  "yM": 0.8,
+                  "rotationDeg": 270,
+                  "locked": false
+                },
+                {
+                  "rackId": "dd22929f-089e-4159-89b4-71b7120da664",
+                  "modelId": "10000000-0000-4000-8000-000000000001",
+                  "name": "B03",
+                  "xM": 91.3,
+                  "yM": 2.1,
+                  "rotationDeg": 0,
+                  "locked": false
+                },
+                {
+                  "rackId": "eabd3068-c754-4225-89dc-41e318b70a2a",
+                  "modelId": "10000000-0000-4000-8000-000000000001",
+                  "name": "B01",
+                  "xM": 92.6,
+                  "yM": 0.8,
+                  "rotationDeg": 270,
+                  "locked": false
+                }
+              ],
+              "constraints": {
+                "obstacleCoverage": "DECLARED_COMPLETE",
+                "source": {
+                  "kind": "ASSUMED",
+                  "reference": "Synthetic six-rack planning scenario, not a surveyed obstacle inventory."
+                },
+                "obstacles": [
+                  {
+                    "obstacleId": "0a6af86f-df89-40f9-8ba6-06bb63a7c14c",
+                    "name": "Assumed service zone",
+                    "xM": 58.15000236337073,
+                    "yM": 45.8205499202013,
+                    "widthM": 1,
+                    "depthM": 2
+                  }
+                ],
+                "clearance": {
+                  "frontM": 1,
+                  "rearM": 0.5
+                }
+              },
+              "equipment": {
+                "coverage": "DECLARED_COMPLETE",
+                "source": {
+                  "kind": "ASSUMED",
+                  "reference": "Synthetic catalog v1 allocation; model demands and per-rack limits are planning assumptions."
+                },
+                "devices": [
+                  {
+                    "deviceId": "50b4e91f-6c27-4879-8c93-39cdd1c197e6",
+                    "name": "A01 · GPU server · 4U · 1",
+                    "heightU": 4,
+                    "weightKg": 80,
+                    "powerKw": 3,
+                    "coolingKw": 3,
+                    "catalogRef": {
+                      "modelId": "demo-gpu-4u",
+                      "version": 1
+                    },
+                    "rackId": "007ece2b-dd08-41a0-8a7e-34e224146297",
+                    "startU": 1
+                  },
+                  {
+                    "deviceId": "60564a2c-a48d-4eeb-8ff8-b58292e3958a",
+                    "name": "A01 · ToR switch · 1U · 2",
+                    "heightU": 1,
+                    "weightKg": 10,
+                    "powerKw": 0.3,
+                    "coolingKw": 0.3,
+                    "catalogRef": {
+                      "modelId": "demo-tor-1u",
+                      "version": 1
+                    },
+                    "rackId": "007ece2b-dd08-41a0-8a7e-34e224146297",
+                    "startU": 5
+                  },
+                  {
+                    "deviceId": "853c6de9-ec64-4f7a-829c-550676aabae2",
+                    "name": "A02 · GPU server · 4U · 1",
+                    "heightU": 4,
+                    "weightKg": 80,
+                    "powerKw": 3,
+                    "coolingKw": 3,
+                    "catalogRef": {
+                      "modelId": "demo-gpu-4u",
+                      "version": 1
+                    },
+                    "rackId": "b128fd3e-26ca-44de-8233-fd5caab8fbe9",
+                    "startU": 1
+                  },
+                  {
+                    "deviceId": "17128af2-a0ea-44db-89cf-12d6f24d4c8b",
+                    "name": "A02 · GPU server · 4U · 2",
+                    "heightU": 4,
+                    "weightKg": 80,
+                    "powerKw": 3,
+                    "coolingKw": 3,
+                    "catalogRef": {
+                      "modelId": "demo-gpu-4u",
+                      "version": 1
+                    },
+                    "rackId": "b128fd3e-26ca-44de-8233-fd5caab8fbe9",
+                    "startU": 5
+                  },
+                  {
+                    "deviceId": "8527b1f8-a23d-4fdc-8638-f2ca62778983",
+                    "name": "A02 · GPU server · 4U · 3",
+                    "heightU": 4,
+                    "weightKg": 80,
+                    "powerKw": 3,
+                    "coolingKw": 3,
+                    "catalogRef": {
+                      "modelId": "demo-gpu-4u",
+                      "version": 1
+                    },
+                    "rackId": "b128fd3e-26ca-44de-8233-fd5caab8fbe9",
+                    "startU": 9
+                  },
+                  {
+                    "deviceId": "44bde95a-5786-4aab-8161-58b0e635f6da",
+                    "name": "A02 · ToR switch · 1U · 4",
+                    "heightU": 1,
+                    "weightKg": 10,
+                    "powerKw": 0.3,
+                    "coolingKw": 0.3,
+                    "catalogRef": {
+                      "modelId": "demo-tor-1u",
+                      "version": 1
+                    },
+                    "rackId": "b128fd3e-26ca-44de-8233-fd5caab8fbe9",
+                    "startU": 13
+                  },
+                  {
+                    "deviceId": "00080e51-1647-4bc2-854f-3cba7ff27a29",
+                    "name": "A03 · Compute server · 2U · 1",
+                    "heightU": 2,
+                    "weightKg": 25,
+                    "powerKw": 0.8,
+                    "coolingKw": 0.8,
+                    "catalogRef": {
+                      "modelId": "demo-compute-2u",
+                      "version": 1
+                    },
+                    "rackId": "808c00a4-9d3e-4a41-85f2-c58aa6a6b82a",
+                    "startU": 1
+                  },
+                  {
+                    "deviceId": "9e9dd6af-8941-472b-8e02-b668765cb3ad",
+                    "name": "A03 · ToR switch · 1U · 2",
+                    "heightU": 1,
+                    "weightKg": 10,
+                    "powerKw": 0.3,
+                    "coolingKw": 0.3,
+                    "catalogRef": {
+                      "modelId": "demo-tor-1u",
+                      "version": 1
+                    },
+                    "rackId": "808c00a4-9d3e-4a41-85f2-c58aa6a6b82a",
+                    "startU": 3
+                  },
+                  {
+                    "deviceId": "905df0a1-5d23-408d-8e87-896fa645da2c",
+                    "name": "B01 · Unspecified appliance · 1U · 1",
+                    "heightU": 1,
+                    "weightKg": null,
+                    "powerKw": null,
+                    "coolingKw": null,
+                    "catalogRef": {
+                      "modelId": "demo-unspecified-1u",
+                      "version": 1
+                    },
+                    "rackId": "eabd3068-c754-4225-89dc-41e318b70a2a",
+                    "startU": 1
+                  },
+                  {
+                    "deviceId": "4531a586-bed3-44de-83a8-a8c7fb00ee00",
+                    "name": "B01 · Optical switch · 2U · 2",
+                    "heightU": 2,
+                    "weightKg": 18,
+                    "powerKw": 0.2,
+                    "coolingKw": null,
+                    "catalogRef": {
+                      "modelId": "demo-optical-2u",
+                      "version": 1
+                    },
+                    "rackId": "eabd3068-c754-4225-89dc-41e318b70a2a",
+                    "startU": 2
+                  },
+                  {
+                    "deviceId": "08ed3f4a-47e4-4b15-8f6e-497839fd0b81",
+                    "name": "B02 · Compute server · 2U · 1",
+                    "heightU": 2,
+                    "weightKg": 25,
+                    "powerKw": 0.8,
+                    "coolingKw": 0.8,
+                    "catalogRef": {
+                      "modelId": "demo-compute-2u",
+                      "version": 1
+                    },
+                    "rackId": "308d7faf-1a97-452f-8753-3bc3f07c2293",
+                    "startU": 1
+                  },
+                  {
+                    "deviceId": "7bb0bf80-807c-4361-8d09-3eca19a43117",
+                    "name": "B02 · Compute server · 2U · 2",
+                    "heightU": 2,
+                    "weightKg": 25,
+                    "powerKw": 0.8,
+                    "coolingKw": 0.8,
+                    "catalogRef": {
+                      "modelId": "demo-compute-2u",
+                      "version": 1
+                    },
+                    "rackId": "308d7faf-1a97-452f-8753-3bc3f07c2293",
+                    "startU": 3
+                  },
+                  {
+                    "deviceId": "5b3e7305-12f0-438a-8e99-14ef2dc8fb4c",
+                    "name": "B02 · Compute server · 2U · 3",
+                    "heightU": 2,
+                    "weightKg": 25,
+                    "powerKw": 0.8,
+                    "coolingKw": 0.8,
+                    "catalogRef": {
+                      "modelId": "demo-compute-2u",
+                      "version": 1
+                    },
+                    "rackId": "308d7faf-1a97-452f-8753-3bc3f07c2293",
+                    "startU": 5
+                  },
+                  {
+                    "deviceId": "9fdb47c8-616f-48bc-88d5-e4caa70ed5fd",
+                    "name": "B03 · GPU server · 4U · 1",
+                    "heightU": 4,
+                    "weightKg": 80,
+                    "powerKw": 3,
+                    "coolingKw": 3,
+                    "catalogRef": {
+                      "modelId": "demo-gpu-4u",
+                      "version": 1
+                    },
+                    "rackId": "dd22929f-089e-4159-89b4-71b7120da664",
+                    "startU": 1
+                  },
+                  {
+                    "deviceId": "eb0cc123-eb00-4740-8676-340a57673f36",
+                    "name": "B03 · Compute server · 2U · 2",
+                    "heightU": 2,
+                    "weightKg": 25,
+                    "powerKw": 0.8,
+                    "coolingKw": 0.8,
+                    "catalogRef": {
+                      "modelId": "demo-compute-2u",
+                      "version": 1
+                    },
+                    "rackId": "dd22929f-089e-4159-89b4-71b7120da664",
+                    "startU": 5
+                  },
+                  {
+                    "deviceId": "d39892fe-4c1e-467a-8a66-3a644d4ef2ad",
+                    "name": "B03 · Compute server · 2U · 3",
+                    "heightU": 2,
+                    "weightKg": 25,
+                    "powerKw": 0.8,
+                    "coolingKw": 0.8,
+                    "catalogRef": {
+                      "modelId": "demo-compute-2u",
+                      "version": 1
+                    },
+                    "rackId": "dd22929f-089e-4159-89b4-71b7120da664",
+                    "startU": 7
+                  },
+                  {
+                    "deviceId": "8c25c7c5-c5ea-40d1-8908-a0dd2eed3f8d",
+                    "name": "B03 · Compute server · 2U · 4",
+                    "heightU": 2,
+                    "weightKg": 25,
+                    "powerKw": 0.8,
+                    "coolingKw": 0.8,
+                    "catalogRef": {
+                      "modelId": "demo-compute-2u",
+                      "version": 1
+                    },
+                    "rackId": "dd22929f-089e-4159-89b4-71b7120da664",
+                    "startU": 9
+                  }
+                ],
+                "rackLimits": [
+                  {
+                    "rackId": "007ece2b-dd08-41a0-8a7e-34e224146297",
+                    "maxWeightKg": 500,
+                    "maxPowerKw": 6,
+                    "maxCoolingKw": 6
+                  },
+                  {
+                    "rackId": "b128fd3e-26ca-44de-8233-fd5caab8fbe9",
+                    "maxWeightKg": 500,
+                    "maxPowerKw": 10,
+                    "maxCoolingKw": 10
+                  },
+                  {
+                    "rackId": "808c00a4-9d3e-4a41-85f2-c58aa6a6b82a",
+                    "maxWeightKg": 500,
+                    "maxPowerKw": 4,
+                    "maxCoolingKw": 4
+                  },
+                  {
+                    "rackId": "eabd3068-c754-4225-89dc-41e318b70a2a",
+                    "maxWeightKg": 500,
+                    "maxPowerKw": 6,
+                    "maxCoolingKw": 6
+                  },
+                  {
+                    "rackId": "308d7faf-1a97-452f-8753-3bc3f07c2293",
+                    "maxWeightKg": 500,
+                    "maxPowerKw": 3,
+                    "maxCoolingKw": 3
+                  },
+                  {
+                    "rackId": "dd22929f-089e-4159-89b4-71b7120da664",
+                    "maxWeightKg": 500,
+                    "maxPowerKw": 8,
+                    "maxCoolingKw": 8
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "algorithmId": "largest-first-v1",
+            "strategy": "LARGEST_FIRST",
+            "options": {
+              "grid_step_m": 0.5,
+              "allow_rotation": true,
+              "strategy": "COMPARE"
+            },
+            "placements": [
+              {
+                "rackId": "007ece2b-dd08-41a0-8a7e-34e224146297",
+                "modelId": "10000000-0000-4000-8000-000000000001",
+                "name": "A01",
+                "xM": 86.3,
+                "yM": 2.1,
+                "rotationDeg": 0,
+                "locked": false
+              },
+              {
+                "rackId": "308d7faf-1a97-452f-8753-3bc3f07c2293",
+                "modelId": "10000000-0000-4000-8000-000000000001",
+                "name": "B02",
+                "xM": 87.6,
+                "yM": 0.8,
+                "rotationDeg": 270,
+                "locked": false
+              },
+              {
+                "rackId": "808c00a4-9d3e-4a41-85f2-c58aa6a6b82a",
+                "modelId": "10000000-0000-4000-8000-000000000001",
+                "name": "A03",
+                "xM": 88.8,
+                "yM": 2.1,
+                "rotationDeg": 0,
+                "locked": false
+              },
+              {
+                "rackId": "b128fd3e-26ca-44de-8233-fd5caab8fbe9",
+                "modelId": "10000000-0000-4000-8000-000000000001",
+                "name": "A02",
+                "xM": 90.1,
+                "yM": 0.8,
+                "rotationDeg": 270,
+                "locked": false
+              },
+              {
+                "rackId": "dd22929f-089e-4159-89b4-71b7120da664",
+                "modelId": "10000000-0000-4000-8000-000000000001",
+                "name": "B03",
+                "xM": 91.3,
+                "yM": 2.1,
+                "rotationDeg": 0,
+                "locked": false
+              },
+              {
+                "rackId": "eabd3068-c754-4225-89dc-41e318b70a2a",
+                "modelId": "10000000-0000-4000-8000-000000000001",
+                "name": "B01",
+                "xM": 92.6,
+                "yM": 0.8,
+                "rotationDeg": 270,
+                "locked": false
+              }
+            ],
+            "unplaced": [],
+            "positionsSubmitted": 9728,
+            "metrics": {
+              "envelopeAreaM2": 15.839999999999977,
+              "spanXM": 7.199999999999989,
+              "spanYM": 2.2,
+              "movedRacks": 6,
+              "movementM": 344.1215072704975
+            },
+            "optionId": "largest-first-v1:db473703824da7a559abbee0e3529fec9a2b78be26b853044735681c5c8a1bfd",
+            "report": {
+              "status": "CHECKED_SCOPE_CLEAR",
+              "scope": [
+                "POLYGON_CONTAINMENT",
+                "INTERIOR_HOLES",
+                "RACK_PAIR_OVERLAP",
+                "DECLARED_OBSTACLES",
+                "FRONT_REAR_CLEARANCE"
+              ],
+              "obstaclesChecked": 1,
+              "clearanceBandsChecked": 12,
+              "clearance": {
+                "frontM": 1,
+                "rearM": 0.5
+              },
+              "planningSource": {
+                "kind": "ASSUMED",
+                "reference": "Synthetic six-rack planning scenario, not a surveyed obstacle inventory."
+              },
+              "diagnostics": [],
+              "racksChecked": 6,
+              "pairsChecked": 15,
+              "obstacleCoverage": "DECLARED_COMPLETE",
+              "uncheckedRules": [
+                "SIDE_CLEARANCE",
+                "ACCESS_CONNECTIVITY",
+                "AISLES",
+                "EQUIPMENT",
+                "CAPACITY",
+                "ENGINEERING_ACCURACY"
+              ]
+            },
+            "equipmentReport": {
+              "status": "INCOMPLETE",
+              "coverage": "DECLARED_COMPLETE",
+              "planningSource": {
+                "kind": "ASSUMED",
+                "reference": "Synthetic catalog v1 allocation; model demands and per-rack limits are planning assumptions."
+              },
+              "devicesChecked": 17,
+              "installedDevices": 17,
+              "unassignedDeviceIds": [],
+              "racks": [
+                {
+                  "rackId": "007ece2b-dd08-41a0-8a7e-34e224146297",
+                  "heightU": 42,
+                  "devicesInstalled": 2,
+                  "requestedU": 5,
+                  "occupiedU": 5,
+                  "freeU": 37,
+                  "uStatus": "CHECKED_SCOPE_CLEAR",
+                  "capacities": {
+                    "weightKg": {
+                      "unit": "kg",
+                      "knownSubtotal": 90,
+                      "total": 90,
+                      "unknownDevices": 0,
+                      "limit": 500,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    },
+                    "powerKw": {
+                      "unit": "kW",
+                      "knownSubtotal": 3.3,
+                      "total": 3.3,
+                      "unknownDevices": 0,
+                      "limit": 6,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    },
+                    "coolingKw": {
+                      "unit": "kW",
+                      "knownSubtotal": 3.3,
+                      "total": 3.3,
+                      "unknownDevices": 0,
+                      "limit": 6,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    }
+                  }
+                },
+                {
+                  "rackId": "308d7faf-1a97-452f-8753-3bc3f07c2293",
+                  "heightU": 42,
+                  "devicesInstalled": 3,
+                  "requestedU": 6,
+                  "occupiedU": 6,
+                  "freeU": 36,
+                  "uStatus": "CHECKED_SCOPE_CLEAR",
+                  "capacities": {
+                    "weightKg": {
+                      "unit": "kg",
+                      "knownSubtotal": 75,
+                      "total": 75,
+                      "unknownDevices": 0,
+                      "limit": 500,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    },
+                    "powerKw": {
+                      "unit": "kW",
+                      "knownSubtotal": 2.4000000000000004,
+                      "total": 2.4000000000000004,
+                      "unknownDevices": 0,
+                      "limit": 3,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    },
+                    "coolingKw": {
+                      "unit": "kW",
+                      "knownSubtotal": 2.4000000000000004,
+                      "total": 2.4000000000000004,
+                      "unknownDevices": 0,
+                      "limit": 3,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    }
+                  }
+                },
+                {
+                  "rackId": "808c00a4-9d3e-4a41-85f2-c58aa6a6b82a",
+                  "heightU": 42,
+                  "devicesInstalled": 2,
+                  "requestedU": 3,
+                  "occupiedU": 3,
+                  "freeU": 39,
+                  "uStatus": "CHECKED_SCOPE_CLEAR",
+                  "capacities": {
+                    "weightKg": {
+                      "unit": "kg",
+                      "knownSubtotal": 35,
+                      "total": 35,
+                      "unknownDevices": 0,
+                      "limit": 500,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    },
+                    "powerKw": {
+                      "unit": "kW",
+                      "knownSubtotal": 1.1,
+                      "total": 1.1,
+                      "unknownDevices": 0,
+                      "limit": 4,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    },
+                    "coolingKw": {
+                      "unit": "kW",
+                      "knownSubtotal": 1.1,
+                      "total": 1.1,
+                      "unknownDevices": 0,
+                      "limit": 4,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    }
+                  }
+                },
+                {
+                  "rackId": "b128fd3e-26ca-44de-8233-fd5caab8fbe9",
+                  "heightU": 42,
+                  "devicesInstalled": 4,
+                  "requestedU": 13,
+                  "occupiedU": 13,
+                  "freeU": 29,
+                  "uStatus": "CHECKED_SCOPE_CLEAR",
+                  "capacities": {
+                    "weightKg": {
+                      "unit": "kg",
+                      "knownSubtotal": 250,
+                      "total": 250,
+                      "unknownDevices": 0,
+                      "limit": 500,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    },
+                    "powerKw": {
+                      "unit": "kW",
+                      "knownSubtotal": 9.3,
+                      "total": 9.3,
+                      "unknownDevices": 0,
+                      "limit": 10,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    },
+                    "coolingKw": {
+                      "unit": "kW",
+                      "knownSubtotal": 9.3,
+                      "total": 9.3,
+                      "unknownDevices": 0,
+                      "limit": 10,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    }
+                  }
+                },
+                {
+                  "rackId": "dd22929f-089e-4159-89b4-71b7120da664",
+                  "heightU": 42,
+                  "devicesInstalled": 4,
+                  "requestedU": 10,
+                  "occupiedU": 10,
+                  "freeU": 32,
+                  "uStatus": "CHECKED_SCOPE_CLEAR",
+                  "capacities": {
+                    "weightKg": {
+                      "unit": "kg",
+                      "knownSubtotal": 155,
+                      "total": 155,
+                      "unknownDevices": 0,
+                      "limit": 500,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    },
+                    "powerKw": {
+                      "unit": "kW",
+                      "knownSubtotal": 5.4,
+                      "total": 5.4,
+                      "unknownDevices": 0,
+                      "limit": 8,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    },
+                    "coolingKw": {
+                      "unit": "kW",
+                      "knownSubtotal": 5.4,
+                      "total": 5.4,
+                      "unknownDevices": 0,
+                      "limit": 8,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    }
+                  }
+                },
+                {
+                  "rackId": "eabd3068-c754-4225-89dc-41e318b70a2a",
+                  "heightU": 42,
+                  "devicesInstalled": 2,
+                  "requestedU": 3,
+                  "occupiedU": 3,
+                  "freeU": 39,
+                  "uStatus": "CHECKED_SCOPE_CLEAR",
+                  "capacities": {
+                    "weightKg": {
+                      "unit": "kg",
+                      "knownSubtotal": 18,
+                      "total": null,
+                      "unknownDevices": 1,
+                      "limit": 500,
+                      "status": "UNKNOWN",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    },
+                    "powerKw": {
+                      "unit": "kW",
+                      "knownSubtotal": 0.2,
+                      "total": null,
+                      "unknownDevices": 1,
+                      "limit": 6,
+                      "status": "UNKNOWN",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    },
+                    "coolingKw": {
+                      "unit": "kW",
+                      "knownSubtotal": 0,
+                      "total": null,
+                      "unknownDevices": 2,
+                      "limit": 6,
+                      "status": "UNKNOWN",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    }
+                  }
+                }
+              ],
+              "diagnostics": [],
+              "uncheckedRules": [
+                "GLOBAL_ASSET_IDENTITY",
+                "DEPTH_RAIL_COMPATIBILITY",
+                "POWER_FEEDS_REDUNDANCY",
+                "AIRFLOW_THERMAL_MODEL",
+                "FLOOR_LOAD",
+                "ENGINEERING_ACCURACY"
+              ]
+            },
+            "canStage": true,
+            "body": {
+              "contract_version": 1,
+              "snapshot_id": "41f0d745-db16-44f9-9fc9-cff82a94a520",
+              "placements": [
+                {
+                  "rackId": "007ece2b-dd08-41a0-8a7e-34e224146297",
+                  "modelId": "10000000-0000-4000-8000-000000000001",
+                  "name": "A01",
+                  "xM": 86.3,
+                  "yM": 2.1,
+                  "rotationDeg": 0,
+                  "locked": false
+                },
+                {
+                  "rackId": "308d7faf-1a97-452f-8753-3bc3f07c2293",
+                  "modelId": "10000000-0000-4000-8000-000000000001",
+                  "name": "B02",
+                  "xM": 87.6,
+                  "yM": 0.8,
+                  "rotationDeg": 270,
+                  "locked": false
+                },
+                {
+                  "rackId": "808c00a4-9d3e-4a41-85f2-c58aa6a6b82a",
+                  "modelId": "10000000-0000-4000-8000-000000000001",
+                  "name": "A03",
+                  "xM": 88.8,
+                  "yM": 2.1,
+                  "rotationDeg": 0,
+                  "locked": false
+                },
+                {
+                  "rackId": "b128fd3e-26ca-44de-8233-fd5caab8fbe9",
+                  "modelId": "10000000-0000-4000-8000-000000000001",
+                  "name": "A02",
+                  "xM": 90.1,
+                  "yM": 0.8,
+                  "rotationDeg": 270,
+                  "locked": false
+                },
+                {
+                  "rackId": "dd22929f-089e-4159-89b4-71b7120da664",
+                  "modelId": "10000000-0000-4000-8000-000000000001",
+                  "name": "B03",
+                  "xM": 91.3,
+                  "yM": 2.1,
+                  "rotationDeg": 0,
+                  "locked": false
+                },
+                {
+                  "rackId": "eabd3068-c754-4225-89dc-41e318b70a2a",
+                  "modelId": "10000000-0000-4000-8000-000000000001",
+                  "name": "B01",
+                  "xM": 92.6,
+                  "yM": 0.8,
+                  "rotationDeg": 270,
+                  "locked": false
+                }
+              ],
+              "constraints": {
+                "obstacleCoverage": "DECLARED_COMPLETE",
+                "source": {
+                  "kind": "ASSUMED",
+                  "reference": "Synthetic six-rack planning scenario, not a surveyed obstacle inventory."
+                },
+                "obstacles": [
+                  {
+                    "obstacleId": "0a6af86f-df89-40f9-8ba6-06bb63a7c14c",
+                    "name": "Assumed service zone",
+                    "xM": 58.15000236337073,
+                    "yM": 45.8205499202013,
+                    "widthM": 1,
+                    "depthM": 2
+                  }
+                ],
+                "clearance": {
+                  "frontM": 1,
+                  "rearM": 0.5
+                }
+              },
+              "equipment": {
+                "coverage": "DECLARED_COMPLETE",
+                "source": {
+                  "kind": "ASSUMED",
+                  "reference": "Synthetic catalog v1 allocation; model demands and per-rack limits are planning assumptions."
+                },
+                "devices": [
+                  {
+                    "deviceId": "50b4e91f-6c27-4879-8c93-39cdd1c197e6",
+                    "name": "A01 · GPU server · 4U · 1",
+                    "heightU": 4,
+                    "weightKg": 80,
+                    "powerKw": 3,
+                    "coolingKw": 3,
+                    "catalogRef": {
+                      "modelId": "demo-gpu-4u",
+                      "version": 1
+                    },
+                    "rackId": "007ece2b-dd08-41a0-8a7e-34e224146297",
+                    "startU": 1
+                  },
+                  {
+                    "deviceId": "60564a2c-a48d-4eeb-8ff8-b58292e3958a",
+                    "name": "A01 · ToR switch · 1U · 2",
+                    "heightU": 1,
+                    "weightKg": 10,
+                    "powerKw": 0.3,
+                    "coolingKw": 0.3,
+                    "catalogRef": {
+                      "modelId": "demo-tor-1u",
+                      "version": 1
+                    },
+                    "rackId": "007ece2b-dd08-41a0-8a7e-34e224146297",
+                    "startU": 5
+                  },
+                  {
+                    "deviceId": "853c6de9-ec64-4f7a-829c-550676aabae2",
+                    "name": "A02 · GPU server · 4U · 1",
+                    "heightU": 4,
+                    "weightKg": 80,
+                    "powerKw": 3,
+                    "coolingKw": 3,
+                    "catalogRef": {
+                      "modelId": "demo-gpu-4u",
+                      "version": 1
+                    },
+                    "rackId": "b128fd3e-26ca-44de-8233-fd5caab8fbe9",
+                    "startU": 1
+                  },
+                  {
+                    "deviceId": "17128af2-a0ea-44db-89cf-12d6f24d4c8b",
+                    "name": "A02 · GPU server · 4U · 2",
+                    "heightU": 4,
+                    "weightKg": 80,
+                    "powerKw": 3,
+                    "coolingKw": 3,
+                    "catalogRef": {
+                      "modelId": "demo-gpu-4u",
+                      "version": 1
+                    },
+                    "rackId": "b128fd3e-26ca-44de-8233-fd5caab8fbe9",
+                    "startU": 5
+                  },
+                  {
+                    "deviceId": "8527b1f8-a23d-4fdc-8638-f2ca62778983",
+                    "name": "A02 · GPU server · 4U · 3",
+                    "heightU": 4,
+                    "weightKg": 80,
+                    "powerKw": 3,
+                    "coolingKw": 3,
+                    "catalogRef": {
+                      "modelId": "demo-gpu-4u",
+                      "version": 1
+                    },
+                    "rackId": "b128fd3e-26ca-44de-8233-fd5caab8fbe9",
+                    "startU": 9
+                  },
+                  {
+                    "deviceId": "44bde95a-5786-4aab-8161-58b0e635f6da",
+                    "name": "A02 · ToR switch · 1U · 4",
+                    "heightU": 1,
+                    "weightKg": 10,
+                    "powerKw": 0.3,
+                    "coolingKw": 0.3,
+                    "catalogRef": {
+                      "modelId": "demo-tor-1u",
+                      "version": 1
+                    },
+                    "rackId": "b128fd3e-26ca-44de-8233-fd5caab8fbe9",
+                    "startU": 13
+                  },
+                  {
+                    "deviceId": "00080e51-1647-4bc2-854f-3cba7ff27a29",
+                    "name": "A03 · Compute server · 2U · 1",
+                    "heightU": 2,
+                    "weightKg": 25,
+                    "powerKw": 0.8,
+                    "coolingKw": 0.8,
+                    "catalogRef": {
+                      "modelId": "demo-compute-2u",
+                      "version": 1
+                    },
+                    "rackId": "808c00a4-9d3e-4a41-85f2-c58aa6a6b82a",
+                    "startU": 1
+                  },
+                  {
+                    "deviceId": "9e9dd6af-8941-472b-8e02-b668765cb3ad",
+                    "name": "A03 · ToR switch · 1U · 2",
+                    "heightU": 1,
+                    "weightKg": 10,
+                    "powerKw": 0.3,
+                    "coolingKw": 0.3,
+                    "catalogRef": {
+                      "modelId": "demo-tor-1u",
+                      "version": 1
+                    },
+                    "rackId": "808c00a4-9d3e-4a41-85f2-c58aa6a6b82a",
+                    "startU": 3
+                  },
+                  {
+                    "deviceId": "905df0a1-5d23-408d-8e87-896fa645da2c",
+                    "name": "B01 · Unspecified appliance · 1U · 1",
+                    "heightU": 1,
+                    "weightKg": null,
+                    "powerKw": null,
+                    "coolingKw": null,
+                    "catalogRef": {
+                      "modelId": "demo-unspecified-1u",
+                      "version": 1
+                    },
+                    "rackId": "eabd3068-c754-4225-89dc-41e318b70a2a",
+                    "startU": 1
+                  },
+                  {
+                    "deviceId": "4531a586-bed3-44de-83a8-a8c7fb00ee00",
+                    "name": "B01 · Optical switch · 2U · 2",
+                    "heightU": 2,
+                    "weightKg": 18,
+                    "powerKw": 0.2,
+                    "coolingKw": null,
+                    "catalogRef": {
+                      "modelId": "demo-optical-2u",
+                      "version": 1
+                    },
+                    "rackId": "eabd3068-c754-4225-89dc-41e318b70a2a",
+                    "startU": 2
+                  },
+                  {
+                    "deviceId": "08ed3f4a-47e4-4b15-8f6e-497839fd0b81",
+                    "name": "B02 · Compute server · 2U · 1",
+                    "heightU": 2,
+                    "weightKg": 25,
+                    "powerKw": 0.8,
+                    "coolingKw": 0.8,
+                    "catalogRef": {
+                      "modelId": "demo-compute-2u",
+                      "version": 1
+                    },
+                    "rackId": "308d7faf-1a97-452f-8753-3bc3f07c2293",
+                    "startU": 1
+                  },
+                  {
+                    "deviceId": "7bb0bf80-807c-4361-8d09-3eca19a43117",
+                    "name": "B02 · Compute server · 2U · 2",
+                    "heightU": 2,
+                    "weightKg": 25,
+                    "powerKw": 0.8,
+                    "coolingKw": 0.8,
+                    "catalogRef": {
+                      "modelId": "demo-compute-2u",
+                      "version": 1
+                    },
+                    "rackId": "308d7faf-1a97-452f-8753-3bc3f07c2293",
+                    "startU": 3
+                  },
+                  {
+                    "deviceId": "5b3e7305-12f0-438a-8e99-14ef2dc8fb4c",
+                    "name": "B02 · Compute server · 2U · 3",
+                    "heightU": 2,
+                    "weightKg": 25,
+                    "powerKw": 0.8,
+                    "coolingKw": 0.8,
+                    "catalogRef": {
+                      "modelId": "demo-compute-2u",
+                      "version": 1
+                    },
+                    "rackId": "308d7faf-1a97-452f-8753-3bc3f07c2293",
+                    "startU": 5
+                  },
+                  {
+                    "deviceId": "9fdb47c8-616f-48bc-88d5-e4caa70ed5fd",
+                    "name": "B03 · GPU server · 4U · 1",
+                    "heightU": 4,
+                    "weightKg": 80,
+                    "powerKw": 3,
+                    "coolingKw": 3,
+                    "catalogRef": {
+                      "modelId": "demo-gpu-4u",
+                      "version": 1
+                    },
+                    "rackId": "dd22929f-089e-4159-89b4-71b7120da664",
+                    "startU": 1
+                  },
+                  {
+                    "deviceId": "eb0cc123-eb00-4740-8676-340a57673f36",
+                    "name": "B03 · Compute server · 2U · 2",
+                    "heightU": 2,
+                    "weightKg": 25,
+                    "powerKw": 0.8,
+                    "coolingKw": 0.8,
+                    "catalogRef": {
+                      "modelId": "demo-compute-2u",
+                      "version": 1
+                    },
+                    "rackId": "dd22929f-089e-4159-89b4-71b7120da664",
+                    "startU": 5
+                  },
+                  {
+                    "deviceId": "d39892fe-4c1e-467a-8a66-3a644d4ef2ad",
+                    "name": "B03 · Compute server · 2U · 3",
+                    "heightU": 2,
+                    "weightKg": 25,
+                    "powerKw": 0.8,
+                    "coolingKw": 0.8,
+                    "catalogRef": {
+                      "modelId": "demo-compute-2u",
+                      "version": 1
+                    },
+                    "rackId": "dd22929f-089e-4159-89b4-71b7120da664",
+                    "startU": 7
+                  },
+                  {
+                    "deviceId": "8c25c7c5-c5ea-40d1-8908-a0dd2eed3f8d",
+                    "name": "B03 · Compute server · 2U · 4",
+                    "heightU": 2,
+                    "weightKg": 25,
+                    "powerKw": 0.8,
+                    "coolingKw": 0.8,
+                    "catalogRef": {
+                      "modelId": "demo-compute-2u",
+                      "version": 1
+                    },
+                    "rackId": "dd22929f-089e-4159-89b4-71b7120da664",
+                    "startU": 9
+                  }
+                ],
+                "rackLimits": [
+                  {
+                    "rackId": "007ece2b-dd08-41a0-8a7e-34e224146297",
+                    "maxWeightKg": 500,
+                    "maxPowerKw": 6,
+                    "maxCoolingKw": 6
+                  },
+                  {
+                    "rackId": "b128fd3e-26ca-44de-8233-fd5caab8fbe9",
+                    "maxWeightKg": 500,
+                    "maxPowerKw": 10,
+                    "maxCoolingKw": 10
+                  },
+                  {
+                    "rackId": "808c00a4-9d3e-4a41-85f2-c58aa6a6b82a",
+                    "maxWeightKg": 500,
+                    "maxPowerKw": 4,
+                    "maxCoolingKw": 4
+                  },
+                  {
+                    "rackId": "eabd3068-c754-4225-89dc-41e318b70a2a",
+                    "maxWeightKg": 500,
+                    "maxPowerKw": 6,
+                    "maxCoolingKw": 6
+                  },
+                  {
+                    "rackId": "308d7faf-1a97-452f-8753-3bc3f07c2293",
+                    "maxWeightKg": 500,
+                    "maxPowerKw": 3,
+                    "maxCoolingKw": 3
+                  },
+                  {
+                    "rackId": "dd22929f-089e-4159-89b4-71b7120da664",
+                    "maxWeightKg": 500,
+                    "maxPowerKw": 8,
+                    "maxCoolingKw": 8
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        "elapsedMs": 5376,
+        "scope": "EXISTING_RACK_RELOCATION",
+        "validationState": "NOT_RUN",
+        "persisted": false
+      }
+    },
+    {
+      "wallMs": 4369,
+      "result": {
+        "contractVersion": 1,
+        "projectId": "4c11ab8d-5d57-4ad8-ad55-ac08574fba46",
+        "planId": "e446aafb-1846-4a69-af10-636fd50ba87c",
+        "baseVersion": 2,
+        "snapshotId": "41f0d745-db16-44f9-9fc9-cff82a94a520",
+        "facilityInput": {
+          "projectId": "4c11ab8d-5d57-4ad8-ad55-ac08574fba46",
+          "scenarioId": "4ee0094b-9f4e-4e45-8c3e-244fe83348d2",
+          "revisionId": "c5b4b888-e66e-4ffa-bb0e-2dd738ed5f4d",
+          "containerId": "4f938d55-5868-550a-aff9-5fadfcc47df0",
+          "revisionEtag": "1f1b35f2-b80b-4831-8c29-065b2ea848bf"
+        },
+        "inputFingerprint": "db473703824da7a559abbee0e3529fec9a2b78be26b853044735681c5c8a1bfd",
+        "options": {
+          "grid_step_m": 0.5,
+          "allow_rotation": true,
+          "strategy": "COMPARE"
+        },
+        "limits": {
+          "movableRacks": 64,
+          "posesPerRack": 2048,
+          "posesPerOption": 16384,
+          "batchSize": 128
+        },
+        "baseline": {
+          "metrics": {
+            "envelopeAreaM2": 23.919999999999984,
+            "spanXM": 4.599999999999994,
+            "spanYM": 5.200000000000003,
+            "movedRacks": 0,
+            "movementM": 0
+          },
+          "report": {
+            "status": "CHECKED_SCOPE_CLEAR",
+            "scope": [
+              "POLYGON_CONTAINMENT",
+              "INTERIOR_HOLES",
+              "RACK_PAIR_OVERLAP",
+              "DECLARED_OBSTACLES",
+              "FRONT_REAR_CLEARANCE"
+            ],
+            "obstaclesChecked": 1,
+            "clearanceBandsChecked": 12,
+            "clearance": {
+              "frontM": 1,
+              "rearM": 0.5
+            },
+            "planningSource": {
+              "kind": "ASSUMED",
+              "reference": "Synthetic six-rack planning scenario, not a surveyed obstacle inventory."
+            },
+            "diagnostics": [],
+            "racksChecked": 6,
+            "pairsChecked": 15,
+            "obstacleCoverage": "DECLARED_COMPLETE",
+            "uncheckedRules": [
+              "SIDE_CLEARANCE",
+              "ACCESS_CONNECTIVITY",
+              "AISLES",
+              "EQUIPMENT",
+              "CAPACITY",
+              "ENGINEERING_ACCURACY"
+            ]
+          },
+          "equipmentReport": {
+            "status": "INCOMPLETE",
+            "coverage": "DECLARED_COMPLETE",
+            "planningSource": {
+              "kind": "ASSUMED",
+              "reference": "Synthetic catalog v1 allocation; model demands and per-rack limits are planning assumptions."
+            },
+            "devicesChecked": 17,
+            "installedDevices": 17,
+            "unassignedDeviceIds": [],
+            "racks": [
+              {
+                "rackId": "007ece2b-dd08-41a0-8a7e-34e224146297",
+                "heightU": 42,
+                "devicesInstalled": 2,
+                "requestedU": 5,
+                "occupiedU": 5,
+                "freeU": 37,
+                "uStatus": "CHECKED_SCOPE_CLEAR",
+                "capacities": {
+                  "weightKg": {
+                    "unit": "kg",
+                    "knownSubtotal": 90,
+                    "total": 90,
+                    "unknownDevices": 0,
+                    "limit": 500,
+                    "status": "WITHIN_LIMIT",
+                    "limitSource": "PLAN_ASSUMPTION"
+                  },
+                  "powerKw": {
+                    "unit": "kW",
+                    "knownSubtotal": 3.3,
+                    "total": 3.3,
+                    "unknownDevices": 0,
+                    "limit": 6,
+                    "status": "WITHIN_LIMIT",
+                    "limitSource": "PLAN_ASSUMPTION"
+                  },
+                  "coolingKw": {
+                    "unit": "kW",
+                    "knownSubtotal": 3.3,
+                    "total": 3.3,
+                    "unknownDevices": 0,
+                    "limit": 6,
+                    "status": "WITHIN_LIMIT",
+                    "limitSource": "PLAN_ASSUMPTION"
+                  }
+                }
+              },
+              {
+                "rackId": "308d7faf-1a97-452f-8753-3bc3f07c2293",
+                "heightU": 42,
+                "devicesInstalled": 3,
+                "requestedU": 6,
+                "occupiedU": 6,
+                "freeU": 36,
+                "uStatus": "CHECKED_SCOPE_CLEAR",
+                "capacities": {
+                  "weightKg": {
+                    "unit": "kg",
+                    "knownSubtotal": 75,
+                    "total": 75,
+                    "unknownDevices": 0,
+                    "limit": 500,
+                    "status": "WITHIN_LIMIT",
+                    "limitSource": "PLAN_ASSUMPTION"
+                  },
+                  "powerKw": {
+                    "unit": "kW",
+                    "knownSubtotal": 2.4000000000000004,
+                    "total": 2.4000000000000004,
+                    "unknownDevices": 0,
+                    "limit": 3,
+                    "status": "WITHIN_LIMIT",
+                    "limitSource": "PLAN_ASSUMPTION"
+                  },
+                  "coolingKw": {
+                    "unit": "kW",
+                    "knownSubtotal": 2.4000000000000004,
+                    "total": 2.4000000000000004,
+                    "unknownDevices": 0,
+                    "limit": 3,
+                    "status": "WITHIN_LIMIT",
+                    "limitSource": "PLAN_ASSUMPTION"
+                  }
+                }
+              },
+              {
+                "rackId": "808c00a4-9d3e-4a41-85f2-c58aa6a6b82a",
+                "heightU": 42,
+                "devicesInstalled": 2,
+                "requestedU": 3,
+                "occupiedU": 3,
+                "freeU": 39,
+                "uStatus": "CHECKED_SCOPE_CLEAR",
+                "capacities": {
+                  "weightKg": {
+                    "unit": "kg",
+                    "knownSubtotal": 35,
+                    "total": 35,
+                    "unknownDevices": 0,
+                    "limit": 500,
+                    "status": "WITHIN_LIMIT",
+                    "limitSource": "PLAN_ASSUMPTION"
+                  },
+                  "powerKw": {
+                    "unit": "kW",
+                    "knownSubtotal": 1.1,
+                    "total": 1.1,
+                    "unknownDevices": 0,
+                    "limit": 4,
+                    "status": "WITHIN_LIMIT",
+                    "limitSource": "PLAN_ASSUMPTION"
+                  },
+                  "coolingKw": {
+                    "unit": "kW",
+                    "knownSubtotal": 1.1,
+                    "total": 1.1,
+                    "unknownDevices": 0,
+                    "limit": 4,
+                    "status": "WITHIN_LIMIT",
+                    "limitSource": "PLAN_ASSUMPTION"
+                  }
+                }
+              },
+              {
+                "rackId": "b128fd3e-26ca-44de-8233-fd5caab8fbe9",
+                "heightU": 42,
+                "devicesInstalled": 4,
+                "requestedU": 13,
+                "occupiedU": 13,
+                "freeU": 29,
+                "uStatus": "CHECKED_SCOPE_CLEAR",
+                "capacities": {
+                  "weightKg": {
+                    "unit": "kg",
+                    "knownSubtotal": 250,
+                    "total": 250,
+                    "unknownDevices": 0,
+                    "limit": 500,
+                    "status": "WITHIN_LIMIT",
+                    "limitSource": "PLAN_ASSUMPTION"
+                  },
+                  "powerKw": {
+                    "unit": "kW",
+                    "knownSubtotal": 9.3,
+                    "total": 9.3,
+                    "unknownDevices": 0,
+                    "limit": 10,
+                    "status": "WITHIN_LIMIT",
+                    "limitSource": "PLAN_ASSUMPTION"
+                  },
+                  "coolingKw": {
+                    "unit": "kW",
+                    "knownSubtotal": 9.3,
+                    "total": 9.3,
+                    "unknownDevices": 0,
+                    "limit": 10,
+                    "status": "WITHIN_LIMIT",
+                    "limitSource": "PLAN_ASSUMPTION"
+                  }
+                }
+              },
+              {
+                "rackId": "dd22929f-089e-4159-89b4-71b7120da664",
+                "heightU": 42,
+                "devicesInstalled": 4,
+                "requestedU": 10,
+                "occupiedU": 10,
+                "freeU": 32,
+                "uStatus": "CHECKED_SCOPE_CLEAR",
+                "capacities": {
+                  "weightKg": {
+                    "unit": "kg",
+                    "knownSubtotal": 155,
+                    "total": 155,
+                    "unknownDevices": 0,
+                    "limit": 500,
+                    "status": "WITHIN_LIMIT",
+                    "limitSource": "PLAN_ASSUMPTION"
+                  },
+                  "powerKw": {
+                    "unit": "kW",
+                    "knownSubtotal": 5.4,
+                    "total": 5.4,
+                    "unknownDevices": 0,
+                    "limit": 8,
+                    "status": "WITHIN_LIMIT",
+                    "limitSource": "PLAN_ASSUMPTION"
+                  },
+                  "coolingKw": {
+                    "unit": "kW",
+                    "knownSubtotal": 5.4,
+                    "total": 5.4,
+                    "unknownDevices": 0,
+                    "limit": 8,
+                    "status": "WITHIN_LIMIT",
+                    "limitSource": "PLAN_ASSUMPTION"
+                  }
+                }
+              },
+              {
+                "rackId": "eabd3068-c754-4225-89dc-41e318b70a2a",
+                "heightU": 42,
+                "devicesInstalled": 2,
+                "requestedU": 3,
+                "occupiedU": 3,
+                "freeU": 39,
+                "uStatus": "CHECKED_SCOPE_CLEAR",
+                "capacities": {
+                  "weightKg": {
+                    "unit": "kg",
+                    "knownSubtotal": 18,
+                    "total": null,
+                    "unknownDevices": 1,
+                    "limit": 500,
+                    "status": "UNKNOWN",
+                    "limitSource": "PLAN_ASSUMPTION"
+                  },
+                  "powerKw": {
+                    "unit": "kW",
+                    "knownSubtotal": 0.2,
+                    "total": null,
+                    "unknownDevices": 1,
+                    "limit": 6,
+                    "status": "UNKNOWN",
+                    "limitSource": "PLAN_ASSUMPTION"
+                  },
+                  "coolingKw": {
+                    "unit": "kW",
+                    "knownSubtotal": 0,
+                    "total": null,
+                    "unknownDevices": 2,
+                    "limit": 6,
+                    "status": "UNKNOWN",
+                    "limitSource": "PLAN_ASSUMPTION"
+                  }
+                }
+              }
+            ],
+            "diagnostics": [],
+            "uncheckedRules": [
+              "GLOBAL_ASSET_IDENTITY",
+              "DEPTH_RAIL_COMPATIBILITY",
+              "POWER_FEEDS_REDUNDANCY",
+              "AIRFLOW_THERMAL_MODEL",
+              "FLOOR_LOAD",
+              "ENGINEERING_ACCURACY"
+            ]
+          }
+        },
+        "candidates": [
+          {
+            "algorithmId": "row-scan-v1",
+            "strategy": "INPUT_ORDER",
+            "options": {
+              "grid_step_m": 0.5,
+              "allow_rotation": true,
+              "strategy": "COMPARE"
+            },
+            "placements": [
+              {
+                "rackId": "007ece2b-dd08-41a0-8a7e-34e224146297",
+                "modelId": "10000000-0000-4000-8000-000000000001",
+                "name": "A01",
+                "xM": 86.3,
+                "yM": 2.1,
+                "rotationDeg": 0,
+                "locked": false
+              },
+              {
+                "rackId": "308d7faf-1a97-452f-8753-3bc3f07c2293",
+                "modelId": "10000000-0000-4000-8000-000000000001",
+                "name": "B02",
+                "xM": 87.6,
+                "yM": 0.8,
+                "rotationDeg": 270,
+                "locked": false
+              },
+              {
+                "rackId": "808c00a4-9d3e-4a41-85f2-c58aa6a6b82a",
+                "modelId": "10000000-0000-4000-8000-000000000001",
+                "name": "A03",
+                "xM": 88.8,
+                "yM": 2.1,
+                "rotationDeg": 0,
+                "locked": false
+              },
+              {
+                "rackId": "b128fd3e-26ca-44de-8233-fd5caab8fbe9",
+                "modelId": "10000000-0000-4000-8000-000000000001",
+                "name": "A02",
+                "xM": 90.1,
+                "yM": 0.8,
+                "rotationDeg": 270,
+                "locked": false
+              },
+              {
+                "rackId": "dd22929f-089e-4159-89b4-71b7120da664",
+                "modelId": "10000000-0000-4000-8000-000000000001",
+                "name": "B03",
+                "xM": 91.3,
+                "yM": 2.1,
+                "rotationDeg": 0,
+                "locked": false
+              },
+              {
+                "rackId": "eabd3068-c754-4225-89dc-41e318b70a2a",
+                "modelId": "10000000-0000-4000-8000-000000000001",
+                "name": "B01",
+                "xM": 92.6,
+                "yM": 0.8,
+                "rotationDeg": 270,
+                "locked": false
+              }
+            ],
+            "unplaced": [],
+            "positionsSubmitted": 9728,
+            "metrics": {
+              "envelopeAreaM2": 15.839999999999977,
+              "spanXM": 7.199999999999989,
+              "spanYM": 2.2,
+              "movedRacks": 6,
+              "movementM": 344.1215072704975
+            },
+            "optionId": "row-scan-v1:db473703824da7a559abbee0e3529fec9a2b78be26b853044735681c5c8a1bfd",
+            "report": {
+              "status": "CHECKED_SCOPE_CLEAR",
+              "scope": [
+                "POLYGON_CONTAINMENT",
+                "INTERIOR_HOLES",
+                "RACK_PAIR_OVERLAP",
+                "DECLARED_OBSTACLES",
+                "FRONT_REAR_CLEARANCE"
+              ],
+              "obstaclesChecked": 1,
+              "clearanceBandsChecked": 12,
+              "clearance": {
+                "frontM": 1,
+                "rearM": 0.5
+              },
+              "planningSource": {
+                "kind": "ASSUMED",
+                "reference": "Synthetic six-rack planning scenario, not a surveyed obstacle inventory."
+              },
+              "diagnostics": [],
+              "racksChecked": 6,
+              "pairsChecked": 15,
+              "obstacleCoverage": "DECLARED_COMPLETE",
+              "uncheckedRules": [
+                "SIDE_CLEARANCE",
+                "ACCESS_CONNECTIVITY",
+                "AISLES",
+                "EQUIPMENT",
+                "CAPACITY",
+                "ENGINEERING_ACCURACY"
+              ]
+            },
+            "equipmentReport": {
+              "status": "INCOMPLETE",
+              "coverage": "DECLARED_COMPLETE",
+              "planningSource": {
+                "kind": "ASSUMED",
+                "reference": "Synthetic catalog v1 allocation; model demands and per-rack limits are planning assumptions."
+              },
+              "devicesChecked": 17,
+              "installedDevices": 17,
+              "unassignedDeviceIds": [],
+              "racks": [
+                {
+                  "rackId": "007ece2b-dd08-41a0-8a7e-34e224146297",
+                  "heightU": 42,
+                  "devicesInstalled": 2,
+                  "requestedU": 5,
+                  "occupiedU": 5,
+                  "freeU": 37,
+                  "uStatus": "CHECKED_SCOPE_CLEAR",
+                  "capacities": {
+                    "weightKg": {
+                      "unit": "kg",
+                      "knownSubtotal": 90,
+                      "total": 90,
+                      "unknownDevices": 0,
+                      "limit": 500,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    },
+                    "powerKw": {
+                      "unit": "kW",
+                      "knownSubtotal": 3.3,
+                      "total": 3.3,
+                      "unknownDevices": 0,
+                      "limit": 6,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    },
+                    "coolingKw": {
+                      "unit": "kW",
+                      "knownSubtotal": 3.3,
+                      "total": 3.3,
+                      "unknownDevices": 0,
+                      "limit": 6,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    }
+                  }
+                },
+                {
+                  "rackId": "308d7faf-1a97-452f-8753-3bc3f07c2293",
+                  "heightU": 42,
+                  "devicesInstalled": 3,
+                  "requestedU": 6,
+                  "occupiedU": 6,
+                  "freeU": 36,
+                  "uStatus": "CHECKED_SCOPE_CLEAR",
+                  "capacities": {
+                    "weightKg": {
+                      "unit": "kg",
+                      "knownSubtotal": 75,
+                      "total": 75,
+                      "unknownDevices": 0,
+                      "limit": 500,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    },
+                    "powerKw": {
+                      "unit": "kW",
+                      "knownSubtotal": 2.4000000000000004,
+                      "total": 2.4000000000000004,
+                      "unknownDevices": 0,
+                      "limit": 3,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    },
+                    "coolingKw": {
+                      "unit": "kW",
+                      "knownSubtotal": 2.4000000000000004,
+                      "total": 2.4000000000000004,
+                      "unknownDevices": 0,
+                      "limit": 3,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    }
+                  }
+                },
+                {
+                  "rackId": "808c00a4-9d3e-4a41-85f2-c58aa6a6b82a",
+                  "heightU": 42,
+                  "devicesInstalled": 2,
+                  "requestedU": 3,
+                  "occupiedU": 3,
+                  "freeU": 39,
+                  "uStatus": "CHECKED_SCOPE_CLEAR",
+                  "capacities": {
+                    "weightKg": {
+                      "unit": "kg",
+                      "knownSubtotal": 35,
+                      "total": 35,
+                      "unknownDevices": 0,
+                      "limit": 500,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    },
+                    "powerKw": {
+                      "unit": "kW",
+                      "knownSubtotal": 1.1,
+                      "total": 1.1,
+                      "unknownDevices": 0,
+                      "limit": 4,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    },
+                    "coolingKw": {
+                      "unit": "kW",
+                      "knownSubtotal": 1.1,
+                      "total": 1.1,
+                      "unknownDevices": 0,
+                      "limit": 4,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    }
+                  }
+                },
+                {
+                  "rackId": "b128fd3e-26ca-44de-8233-fd5caab8fbe9",
+                  "heightU": 42,
+                  "devicesInstalled": 4,
+                  "requestedU": 13,
+                  "occupiedU": 13,
+                  "freeU": 29,
+                  "uStatus": "CHECKED_SCOPE_CLEAR",
+                  "capacities": {
+                    "weightKg": {
+                      "unit": "kg",
+                      "knownSubtotal": 250,
+                      "total": 250,
+                      "unknownDevices": 0,
+                      "limit": 500,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    },
+                    "powerKw": {
+                      "unit": "kW",
+                      "knownSubtotal": 9.3,
+                      "total": 9.3,
+                      "unknownDevices": 0,
+                      "limit": 10,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    },
+                    "coolingKw": {
+                      "unit": "kW",
+                      "knownSubtotal": 9.3,
+                      "total": 9.3,
+                      "unknownDevices": 0,
+                      "limit": 10,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    }
+                  }
+                },
+                {
+                  "rackId": "dd22929f-089e-4159-89b4-71b7120da664",
+                  "heightU": 42,
+                  "devicesInstalled": 4,
+                  "requestedU": 10,
+                  "occupiedU": 10,
+                  "freeU": 32,
+                  "uStatus": "CHECKED_SCOPE_CLEAR",
+                  "capacities": {
+                    "weightKg": {
+                      "unit": "kg",
+                      "knownSubtotal": 155,
+                      "total": 155,
+                      "unknownDevices": 0,
+                      "limit": 500,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    },
+                    "powerKw": {
+                      "unit": "kW",
+                      "knownSubtotal": 5.4,
+                      "total": 5.4,
+                      "unknownDevices": 0,
+                      "limit": 8,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    },
+                    "coolingKw": {
+                      "unit": "kW",
+                      "knownSubtotal": 5.4,
+                      "total": 5.4,
+                      "unknownDevices": 0,
+                      "limit": 8,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    }
+                  }
+                },
+                {
+                  "rackId": "eabd3068-c754-4225-89dc-41e318b70a2a",
+                  "heightU": 42,
+                  "devicesInstalled": 2,
+                  "requestedU": 3,
+                  "occupiedU": 3,
+                  "freeU": 39,
+                  "uStatus": "CHECKED_SCOPE_CLEAR",
+                  "capacities": {
+                    "weightKg": {
+                      "unit": "kg",
+                      "knownSubtotal": 18,
+                      "total": null,
+                      "unknownDevices": 1,
+                      "limit": 500,
+                      "status": "UNKNOWN",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    },
+                    "powerKw": {
+                      "unit": "kW",
+                      "knownSubtotal": 0.2,
+                      "total": null,
+                      "unknownDevices": 1,
+                      "limit": 6,
+                      "status": "UNKNOWN",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    },
+                    "coolingKw": {
+                      "unit": "kW",
+                      "knownSubtotal": 0,
+                      "total": null,
+                      "unknownDevices": 2,
+                      "limit": 6,
+                      "status": "UNKNOWN",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    }
+                  }
+                }
+              ],
+              "diagnostics": [],
+              "uncheckedRules": [
+                "GLOBAL_ASSET_IDENTITY",
+                "DEPTH_RAIL_COMPATIBILITY",
+                "POWER_FEEDS_REDUNDANCY",
+                "AIRFLOW_THERMAL_MODEL",
+                "FLOOR_LOAD",
+                "ENGINEERING_ACCURACY"
+              ]
+            },
+            "canStage": true,
+            "body": {
+              "contract_version": 1,
+              "snapshot_id": "41f0d745-db16-44f9-9fc9-cff82a94a520",
+              "placements": [
+                {
+                  "rackId": "007ece2b-dd08-41a0-8a7e-34e224146297",
+                  "modelId": "10000000-0000-4000-8000-000000000001",
+                  "name": "A01",
+                  "xM": 86.3,
+                  "yM": 2.1,
+                  "rotationDeg": 0,
+                  "locked": false
+                },
+                {
+                  "rackId": "308d7faf-1a97-452f-8753-3bc3f07c2293",
+                  "modelId": "10000000-0000-4000-8000-000000000001",
+                  "name": "B02",
+                  "xM": 87.6,
+                  "yM": 0.8,
+                  "rotationDeg": 270,
+                  "locked": false
+                },
+                {
+                  "rackId": "808c00a4-9d3e-4a41-85f2-c58aa6a6b82a",
+                  "modelId": "10000000-0000-4000-8000-000000000001",
+                  "name": "A03",
+                  "xM": 88.8,
+                  "yM": 2.1,
+                  "rotationDeg": 0,
+                  "locked": false
+                },
+                {
+                  "rackId": "b128fd3e-26ca-44de-8233-fd5caab8fbe9",
+                  "modelId": "10000000-0000-4000-8000-000000000001",
+                  "name": "A02",
+                  "xM": 90.1,
+                  "yM": 0.8,
+                  "rotationDeg": 270,
+                  "locked": false
+                },
+                {
+                  "rackId": "dd22929f-089e-4159-89b4-71b7120da664",
+                  "modelId": "10000000-0000-4000-8000-000000000001",
+                  "name": "B03",
+                  "xM": 91.3,
+                  "yM": 2.1,
+                  "rotationDeg": 0,
+                  "locked": false
+                },
+                {
+                  "rackId": "eabd3068-c754-4225-89dc-41e318b70a2a",
+                  "modelId": "10000000-0000-4000-8000-000000000001",
+                  "name": "B01",
+                  "xM": 92.6,
+                  "yM": 0.8,
+                  "rotationDeg": 270,
+                  "locked": false
+                }
+              ],
+              "constraints": {
+                "obstacleCoverage": "DECLARED_COMPLETE",
+                "source": {
+                  "kind": "ASSUMED",
+                  "reference": "Synthetic six-rack planning scenario, not a surveyed obstacle inventory."
+                },
+                "obstacles": [
+                  {
+                    "obstacleId": "0a6af86f-df89-40f9-8ba6-06bb63a7c14c",
+                    "name": "Assumed service zone",
+                    "xM": 58.15000236337073,
+                    "yM": 45.8205499202013,
+                    "widthM": 1,
+                    "depthM": 2
+                  }
+                ],
+                "clearance": {
+                  "frontM": 1,
+                  "rearM": 0.5
+                }
+              },
+              "equipment": {
+                "coverage": "DECLARED_COMPLETE",
+                "source": {
+                  "kind": "ASSUMED",
+                  "reference": "Synthetic catalog v1 allocation; model demands and per-rack limits are planning assumptions."
+                },
+                "devices": [
+                  {
+                    "deviceId": "50b4e91f-6c27-4879-8c93-39cdd1c197e6",
+                    "name": "A01 · GPU server · 4U · 1",
+                    "heightU": 4,
+                    "weightKg": 80,
+                    "powerKw": 3,
+                    "coolingKw": 3,
+                    "catalogRef": {
+                      "modelId": "demo-gpu-4u",
+                      "version": 1
+                    },
+                    "rackId": "007ece2b-dd08-41a0-8a7e-34e224146297",
+                    "startU": 1
+                  },
+                  {
+                    "deviceId": "60564a2c-a48d-4eeb-8ff8-b58292e3958a",
+                    "name": "A01 · ToR switch · 1U · 2",
+                    "heightU": 1,
+                    "weightKg": 10,
+                    "powerKw": 0.3,
+                    "coolingKw": 0.3,
+                    "catalogRef": {
+                      "modelId": "demo-tor-1u",
+                      "version": 1
+                    },
+                    "rackId": "007ece2b-dd08-41a0-8a7e-34e224146297",
+                    "startU": 5
+                  },
+                  {
+                    "deviceId": "853c6de9-ec64-4f7a-829c-550676aabae2",
+                    "name": "A02 · GPU server · 4U · 1",
+                    "heightU": 4,
+                    "weightKg": 80,
+                    "powerKw": 3,
+                    "coolingKw": 3,
+                    "catalogRef": {
+                      "modelId": "demo-gpu-4u",
+                      "version": 1
+                    },
+                    "rackId": "b128fd3e-26ca-44de-8233-fd5caab8fbe9",
+                    "startU": 1
+                  },
+                  {
+                    "deviceId": "17128af2-a0ea-44db-89cf-12d6f24d4c8b",
+                    "name": "A02 · GPU server · 4U · 2",
+                    "heightU": 4,
+                    "weightKg": 80,
+                    "powerKw": 3,
+                    "coolingKw": 3,
+                    "catalogRef": {
+                      "modelId": "demo-gpu-4u",
+                      "version": 1
+                    },
+                    "rackId": "b128fd3e-26ca-44de-8233-fd5caab8fbe9",
+                    "startU": 5
+                  },
+                  {
+                    "deviceId": "8527b1f8-a23d-4fdc-8638-f2ca62778983",
+                    "name": "A02 · GPU server · 4U · 3",
+                    "heightU": 4,
+                    "weightKg": 80,
+                    "powerKw": 3,
+                    "coolingKw": 3,
+                    "catalogRef": {
+                      "modelId": "demo-gpu-4u",
+                      "version": 1
+                    },
+                    "rackId": "b128fd3e-26ca-44de-8233-fd5caab8fbe9",
+                    "startU": 9
+                  },
+                  {
+                    "deviceId": "44bde95a-5786-4aab-8161-58b0e635f6da",
+                    "name": "A02 · ToR switch · 1U · 4",
+                    "heightU": 1,
+                    "weightKg": 10,
+                    "powerKw": 0.3,
+                    "coolingKw": 0.3,
+                    "catalogRef": {
+                      "modelId": "demo-tor-1u",
+                      "version": 1
+                    },
+                    "rackId": "b128fd3e-26ca-44de-8233-fd5caab8fbe9",
+                    "startU": 13
+                  },
+                  {
+                    "deviceId": "00080e51-1647-4bc2-854f-3cba7ff27a29",
+                    "name": "A03 · Compute server · 2U · 1",
+                    "heightU": 2,
+                    "weightKg": 25,
+                    "powerKw": 0.8,
+                    "coolingKw": 0.8,
+                    "catalogRef": {
+                      "modelId": "demo-compute-2u",
+                      "version": 1
+                    },
+                    "rackId": "808c00a4-9d3e-4a41-85f2-c58aa6a6b82a",
+                    "startU": 1
+                  },
+                  {
+                    "deviceId": "9e9dd6af-8941-472b-8e02-b668765cb3ad",
+                    "name": "A03 · ToR switch · 1U · 2",
+                    "heightU": 1,
+                    "weightKg": 10,
+                    "powerKw": 0.3,
+                    "coolingKw": 0.3,
+                    "catalogRef": {
+                      "modelId": "demo-tor-1u",
+                      "version": 1
+                    },
+                    "rackId": "808c00a4-9d3e-4a41-85f2-c58aa6a6b82a",
+                    "startU": 3
+                  },
+                  {
+                    "deviceId": "905df0a1-5d23-408d-8e87-896fa645da2c",
+                    "name": "B01 · Unspecified appliance · 1U · 1",
+                    "heightU": 1,
+                    "weightKg": null,
+                    "powerKw": null,
+                    "coolingKw": null,
+                    "catalogRef": {
+                      "modelId": "demo-unspecified-1u",
+                      "version": 1
+                    },
+                    "rackId": "eabd3068-c754-4225-89dc-41e318b70a2a",
+                    "startU": 1
+                  },
+                  {
+                    "deviceId": "4531a586-bed3-44de-83a8-a8c7fb00ee00",
+                    "name": "B01 · Optical switch · 2U · 2",
+                    "heightU": 2,
+                    "weightKg": 18,
+                    "powerKw": 0.2,
+                    "coolingKw": null,
+                    "catalogRef": {
+                      "modelId": "demo-optical-2u",
+                      "version": 1
+                    },
+                    "rackId": "eabd3068-c754-4225-89dc-41e318b70a2a",
+                    "startU": 2
+                  },
+                  {
+                    "deviceId": "08ed3f4a-47e4-4b15-8f6e-497839fd0b81",
+                    "name": "B02 · Compute server · 2U · 1",
+                    "heightU": 2,
+                    "weightKg": 25,
+                    "powerKw": 0.8,
+                    "coolingKw": 0.8,
+                    "catalogRef": {
+                      "modelId": "demo-compute-2u",
+                      "version": 1
+                    },
+                    "rackId": "308d7faf-1a97-452f-8753-3bc3f07c2293",
+                    "startU": 1
+                  },
+                  {
+                    "deviceId": "7bb0bf80-807c-4361-8d09-3eca19a43117",
+                    "name": "B02 · Compute server · 2U · 2",
+                    "heightU": 2,
+                    "weightKg": 25,
+                    "powerKw": 0.8,
+                    "coolingKw": 0.8,
+                    "catalogRef": {
+                      "modelId": "demo-compute-2u",
+                      "version": 1
+                    },
+                    "rackId": "308d7faf-1a97-452f-8753-3bc3f07c2293",
+                    "startU": 3
+                  },
+                  {
+                    "deviceId": "5b3e7305-12f0-438a-8e99-14ef2dc8fb4c",
+                    "name": "B02 · Compute server · 2U · 3",
+                    "heightU": 2,
+                    "weightKg": 25,
+                    "powerKw": 0.8,
+                    "coolingKw": 0.8,
+                    "catalogRef": {
+                      "modelId": "demo-compute-2u",
+                      "version": 1
+                    },
+                    "rackId": "308d7faf-1a97-452f-8753-3bc3f07c2293",
+                    "startU": 5
+                  },
+                  {
+                    "deviceId": "9fdb47c8-616f-48bc-88d5-e4caa70ed5fd",
+                    "name": "B03 · GPU server · 4U · 1",
+                    "heightU": 4,
+                    "weightKg": 80,
+                    "powerKw": 3,
+                    "coolingKw": 3,
+                    "catalogRef": {
+                      "modelId": "demo-gpu-4u",
+                      "version": 1
+                    },
+                    "rackId": "dd22929f-089e-4159-89b4-71b7120da664",
+                    "startU": 1
+                  },
+                  {
+                    "deviceId": "eb0cc123-eb00-4740-8676-340a57673f36",
+                    "name": "B03 · Compute server · 2U · 2",
+                    "heightU": 2,
+                    "weightKg": 25,
+                    "powerKw": 0.8,
+                    "coolingKw": 0.8,
+                    "catalogRef": {
+                      "modelId": "demo-compute-2u",
+                      "version": 1
+                    },
+                    "rackId": "dd22929f-089e-4159-89b4-71b7120da664",
+                    "startU": 5
+                  },
+                  {
+                    "deviceId": "d39892fe-4c1e-467a-8a66-3a644d4ef2ad",
+                    "name": "B03 · Compute server · 2U · 3",
+                    "heightU": 2,
+                    "weightKg": 25,
+                    "powerKw": 0.8,
+                    "coolingKw": 0.8,
+                    "catalogRef": {
+                      "modelId": "demo-compute-2u",
+                      "version": 1
+                    },
+                    "rackId": "dd22929f-089e-4159-89b4-71b7120da664",
+                    "startU": 7
+                  },
+                  {
+                    "deviceId": "8c25c7c5-c5ea-40d1-8908-a0dd2eed3f8d",
+                    "name": "B03 · Compute server · 2U · 4",
+                    "heightU": 2,
+                    "weightKg": 25,
+                    "powerKw": 0.8,
+                    "coolingKw": 0.8,
+                    "catalogRef": {
+                      "modelId": "demo-compute-2u",
+                      "version": 1
+                    },
+                    "rackId": "dd22929f-089e-4159-89b4-71b7120da664",
+                    "startU": 9
+                  }
+                ],
+                "rackLimits": [
+                  {
+                    "rackId": "007ece2b-dd08-41a0-8a7e-34e224146297",
+                    "maxWeightKg": 500,
+                    "maxPowerKw": 6,
+                    "maxCoolingKw": 6
+                  },
+                  {
+                    "rackId": "b128fd3e-26ca-44de-8233-fd5caab8fbe9",
+                    "maxWeightKg": 500,
+                    "maxPowerKw": 10,
+                    "maxCoolingKw": 10
+                  },
+                  {
+                    "rackId": "808c00a4-9d3e-4a41-85f2-c58aa6a6b82a",
+                    "maxWeightKg": 500,
+                    "maxPowerKw": 4,
+                    "maxCoolingKw": 4
+                  },
+                  {
+                    "rackId": "eabd3068-c754-4225-89dc-41e318b70a2a",
+                    "maxWeightKg": 500,
+                    "maxPowerKw": 6,
+                    "maxCoolingKw": 6
+                  },
+                  {
+                    "rackId": "308d7faf-1a97-452f-8753-3bc3f07c2293",
+                    "maxWeightKg": 500,
+                    "maxPowerKw": 3,
+                    "maxCoolingKw": 3
+                  },
+                  {
+                    "rackId": "dd22929f-089e-4159-89b4-71b7120da664",
+                    "maxWeightKg": 500,
+                    "maxPowerKw": 8,
+                    "maxCoolingKw": 8
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "algorithmId": "largest-first-v1",
+            "strategy": "LARGEST_FIRST",
+            "options": {
+              "grid_step_m": 0.5,
+              "allow_rotation": true,
+              "strategy": "COMPARE"
+            },
+            "placements": [
+              {
+                "rackId": "007ece2b-dd08-41a0-8a7e-34e224146297",
+                "modelId": "10000000-0000-4000-8000-000000000001",
+                "name": "A01",
+                "xM": 86.3,
+                "yM": 2.1,
+                "rotationDeg": 0,
+                "locked": false
+              },
+              {
+                "rackId": "308d7faf-1a97-452f-8753-3bc3f07c2293",
+                "modelId": "10000000-0000-4000-8000-000000000001",
+                "name": "B02",
+                "xM": 87.6,
+                "yM": 0.8,
+                "rotationDeg": 270,
+                "locked": false
+              },
+              {
+                "rackId": "808c00a4-9d3e-4a41-85f2-c58aa6a6b82a",
+                "modelId": "10000000-0000-4000-8000-000000000001",
+                "name": "A03",
+                "xM": 88.8,
+                "yM": 2.1,
+                "rotationDeg": 0,
+                "locked": false
+              },
+              {
+                "rackId": "b128fd3e-26ca-44de-8233-fd5caab8fbe9",
+                "modelId": "10000000-0000-4000-8000-000000000001",
+                "name": "A02",
+                "xM": 90.1,
+                "yM": 0.8,
+                "rotationDeg": 270,
+                "locked": false
+              },
+              {
+                "rackId": "dd22929f-089e-4159-89b4-71b7120da664",
+                "modelId": "10000000-0000-4000-8000-000000000001",
+                "name": "B03",
+                "xM": 91.3,
+                "yM": 2.1,
+                "rotationDeg": 0,
+                "locked": false
+              },
+              {
+                "rackId": "eabd3068-c754-4225-89dc-41e318b70a2a",
+                "modelId": "10000000-0000-4000-8000-000000000001",
+                "name": "B01",
+                "xM": 92.6,
+                "yM": 0.8,
+                "rotationDeg": 270,
+                "locked": false
+              }
+            ],
+            "unplaced": [],
+            "positionsSubmitted": 9728,
+            "metrics": {
+              "envelopeAreaM2": 15.839999999999977,
+              "spanXM": 7.199999999999989,
+              "spanYM": 2.2,
+              "movedRacks": 6,
+              "movementM": 344.1215072704975
+            },
+            "optionId": "largest-first-v1:db473703824da7a559abbee0e3529fec9a2b78be26b853044735681c5c8a1bfd",
+            "report": {
+              "status": "CHECKED_SCOPE_CLEAR",
+              "scope": [
+                "POLYGON_CONTAINMENT",
+                "INTERIOR_HOLES",
+                "RACK_PAIR_OVERLAP",
+                "DECLARED_OBSTACLES",
+                "FRONT_REAR_CLEARANCE"
+              ],
+              "obstaclesChecked": 1,
+              "clearanceBandsChecked": 12,
+              "clearance": {
+                "frontM": 1,
+                "rearM": 0.5
+              },
+              "planningSource": {
+                "kind": "ASSUMED",
+                "reference": "Synthetic six-rack planning scenario, not a surveyed obstacle inventory."
+              },
+              "diagnostics": [],
+              "racksChecked": 6,
+              "pairsChecked": 15,
+              "obstacleCoverage": "DECLARED_COMPLETE",
+              "uncheckedRules": [
+                "SIDE_CLEARANCE",
+                "ACCESS_CONNECTIVITY",
+                "AISLES",
+                "EQUIPMENT",
+                "CAPACITY",
+                "ENGINEERING_ACCURACY"
+              ]
+            },
+            "equipmentReport": {
+              "status": "INCOMPLETE",
+              "coverage": "DECLARED_COMPLETE",
+              "planningSource": {
+                "kind": "ASSUMED",
+                "reference": "Synthetic catalog v1 allocation; model demands and per-rack limits are planning assumptions."
+              },
+              "devicesChecked": 17,
+              "installedDevices": 17,
+              "unassignedDeviceIds": [],
+              "racks": [
+                {
+                  "rackId": "007ece2b-dd08-41a0-8a7e-34e224146297",
+                  "heightU": 42,
+                  "devicesInstalled": 2,
+                  "requestedU": 5,
+                  "occupiedU": 5,
+                  "freeU": 37,
+                  "uStatus": "CHECKED_SCOPE_CLEAR",
+                  "capacities": {
+                    "weightKg": {
+                      "unit": "kg",
+                      "knownSubtotal": 90,
+                      "total": 90,
+                      "unknownDevices": 0,
+                      "limit": 500,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    },
+                    "powerKw": {
+                      "unit": "kW",
+                      "knownSubtotal": 3.3,
+                      "total": 3.3,
+                      "unknownDevices": 0,
+                      "limit": 6,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    },
+                    "coolingKw": {
+                      "unit": "kW",
+                      "knownSubtotal": 3.3,
+                      "total": 3.3,
+                      "unknownDevices": 0,
+                      "limit": 6,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    }
+                  }
+                },
+                {
+                  "rackId": "308d7faf-1a97-452f-8753-3bc3f07c2293",
+                  "heightU": 42,
+                  "devicesInstalled": 3,
+                  "requestedU": 6,
+                  "occupiedU": 6,
+                  "freeU": 36,
+                  "uStatus": "CHECKED_SCOPE_CLEAR",
+                  "capacities": {
+                    "weightKg": {
+                      "unit": "kg",
+                      "knownSubtotal": 75,
+                      "total": 75,
+                      "unknownDevices": 0,
+                      "limit": 500,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    },
+                    "powerKw": {
+                      "unit": "kW",
+                      "knownSubtotal": 2.4000000000000004,
+                      "total": 2.4000000000000004,
+                      "unknownDevices": 0,
+                      "limit": 3,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    },
+                    "coolingKw": {
+                      "unit": "kW",
+                      "knownSubtotal": 2.4000000000000004,
+                      "total": 2.4000000000000004,
+                      "unknownDevices": 0,
+                      "limit": 3,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    }
+                  }
+                },
+                {
+                  "rackId": "808c00a4-9d3e-4a41-85f2-c58aa6a6b82a",
+                  "heightU": 42,
+                  "devicesInstalled": 2,
+                  "requestedU": 3,
+                  "occupiedU": 3,
+                  "freeU": 39,
+                  "uStatus": "CHECKED_SCOPE_CLEAR",
+                  "capacities": {
+                    "weightKg": {
+                      "unit": "kg",
+                      "knownSubtotal": 35,
+                      "total": 35,
+                      "unknownDevices": 0,
+                      "limit": 500,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    },
+                    "powerKw": {
+                      "unit": "kW",
+                      "knownSubtotal": 1.1,
+                      "total": 1.1,
+                      "unknownDevices": 0,
+                      "limit": 4,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    },
+                    "coolingKw": {
+                      "unit": "kW",
+                      "knownSubtotal": 1.1,
+                      "total": 1.1,
+                      "unknownDevices": 0,
+                      "limit": 4,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    }
+                  }
+                },
+                {
+                  "rackId": "b128fd3e-26ca-44de-8233-fd5caab8fbe9",
+                  "heightU": 42,
+                  "devicesInstalled": 4,
+                  "requestedU": 13,
+                  "occupiedU": 13,
+                  "freeU": 29,
+                  "uStatus": "CHECKED_SCOPE_CLEAR",
+                  "capacities": {
+                    "weightKg": {
+                      "unit": "kg",
+                      "knownSubtotal": 250,
+                      "total": 250,
+                      "unknownDevices": 0,
+                      "limit": 500,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    },
+                    "powerKw": {
+                      "unit": "kW",
+                      "knownSubtotal": 9.3,
+                      "total": 9.3,
+                      "unknownDevices": 0,
+                      "limit": 10,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    },
+                    "coolingKw": {
+                      "unit": "kW",
+                      "knownSubtotal": 9.3,
+                      "total": 9.3,
+                      "unknownDevices": 0,
+                      "limit": 10,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    }
+                  }
+                },
+                {
+                  "rackId": "dd22929f-089e-4159-89b4-71b7120da664",
+                  "heightU": 42,
+                  "devicesInstalled": 4,
+                  "requestedU": 10,
+                  "occupiedU": 10,
+                  "freeU": 32,
+                  "uStatus": "CHECKED_SCOPE_CLEAR",
+                  "capacities": {
+                    "weightKg": {
+                      "unit": "kg",
+                      "knownSubtotal": 155,
+                      "total": 155,
+                      "unknownDevices": 0,
+                      "limit": 500,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    },
+                    "powerKw": {
+                      "unit": "kW",
+                      "knownSubtotal": 5.4,
+                      "total": 5.4,
+                      "unknownDevices": 0,
+                      "limit": 8,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    },
+                    "coolingKw": {
+                      "unit": "kW",
+                      "knownSubtotal": 5.4,
+                      "total": 5.4,
+                      "unknownDevices": 0,
+                      "limit": 8,
+                      "status": "WITHIN_LIMIT",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    }
+                  }
+                },
+                {
+                  "rackId": "eabd3068-c754-4225-89dc-41e318b70a2a",
+                  "heightU": 42,
+                  "devicesInstalled": 2,
+                  "requestedU": 3,
+                  "occupiedU": 3,
+                  "freeU": 39,
+                  "uStatus": "CHECKED_SCOPE_CLEAR",
+                  "capacities": {
+                    "weightKg": {
+                      "unit": "kg",
+                      "knownSubtotal": 18,
+                      "total": null,
+                      "unknownDevices": 1,
+                      "limit": 500,
+                      "status": "UNKNOWN",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    },
+                    "powerKw": {
+                      "unit": "kW",
+                      "knownSubtotal": 0.2,
+                      "total": null,
+                      "unknownDevices": 1,
+                      "limit": 6,
+                      "status": "UNKNOWN",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    },
+                    "coolingKw": {
+                      "unit": "kW",
+                      "knownSubtotal": 0,
+                      "total": null,
+                      "unknownDevices": 2,
+                      "limit": 6,
+                      "status": "UNKNOWN",
+                      "limitSource": "PLAN_ASSUMPTION"
+                    }
+                  }
+                }
+              ],
+              "diagnostics": [],
+              "uncheckedRules": [
+                "GLOBAL_ASSET_IDENTITY",
+                "DEPTH_RAIL_COMPATIBILITY",
+                "POWER_FEEDS_REDUNDANCY",
+                "AIRFLOW_THERMAL_MODEL",
+                "FLOOR_LOAD",
+                "ENGINEERING_ACCURACY"
+              ]
+            },
+            "canStage": true,
+            "body": {
+              "contract_version": 1,
+              "snapshot_id": "41f0d745-db16-44f9-9fc9-cff82a94a520",
+              "placements": [
+                {
+                  "rackId": "007ece2b-dd08-41a0-8a7e-34e224146297",
+                  "modelId": "10000000-0000-4000-8000-000000000001",
+                  "name": "A01",
+                  "xM": 86.3,
+                  "yM": 2.1,
+                  "rotationDeg": 0,
+                  "locked": false
+                },
+                {
+                  "rackId": "308d7faf-1a97-452f-8753-3bc3f07c2293",
+                  "modelId": "10000000-0000-4000-8000-000000000001",
+                  "name": "B02",
+                  "xM": 87.6,
+                  "yM": 0.8,
+                  "rotationDeg": 270,
+                  "locked": false
+                },
+                {
+                  "rackId": "808c00a4-9d3e-4a41-85f2-c58aa6a6b82a",
+                  "modelId": "10000000-0000-4000-8000-000000000001",
+                  "name": "A03",
+                  "xM": 88.8,
+                  "yM": 2.1,
+                  "rotationDeg": 0,
+                  "locked": false
+                },
+                {
+                  "rackId": "b128fd3e-26ca-44de-8233-fd5caab8fbe9",
+                  "modelId": "10000000-0000-4000-8000-000000000001",
+                  "name": "A02",
+                  "xM": 90.1,
+                  "yM": 0.8,
+                  "rotationDeg": 270,
+                  "locked": false
+                },
+                {
+                  "rackId": "dd22929f-089e-4159-89b4-71b7120da664",
+                  "modelId": "10000000-0000-4000-8000-000000000001",
+                  "name": "B03",
+                  "xM": 91.3,
+                  "yM": 2.1,
+                  "rotationDeg": 0,
+                  "locked": false
+                },
+                {
+                  "rackId": "eabd3068-c754-4225-89dc-41e318b70a2a",
+                  "modelId": "10000000-0000-4000-8000-000000000001",
+                  "name": "B01",
+                  "xM": 92.6,
+                  "yM": 0.8,
+                  "rotationDeg": 270,
+                  "locked": false
+                }
+              ],
+              "constraints": {
+                "obstacleCoverage": "DECLARED_COMPLETE",
+                "source": {
+                  "kind": "ASSUMED",
+                  "reference": "Synthetic six-rack planning scenario, not a surveyed obstacle inventory."
+                },
+                "obstacles": [
+                  {
+                    "obstacleId": "0a6af86f-df89-40f9-8ba6-06bb63a7c14c",
+                    "name": "Assumed service zone",
+                    "xM": 58.15000236337073,
+                    "yM": 45.8205499202013,
+                    "widthM": 1,
+                    "depthM": 2
+                  }
+                ],
+                "clearance": {
+                  "frontM": 1,
+                  "rearM": 0.5
+                }
+              },
+              "equipment": {
+                "coverage": "DECLARED_COMPLETE",
+                "source": {
+                  "kind": "ASSUMED",
+                  "reference": "Synthetic catalog v1 allocation; model demands and per-rack limits are planning assumptions."
+                },
+                "devices": [
+                  {
+                    "deviceId": "50b4e91f-6c27-4879-8c93-39cdd1c197e6",
+                    "name": "A01 · GPU server · 4U · 1",
+                    "heightU": 4,
+                    "weightKg": 80,
+                    "powerKw": 3,
+                    "coolingKw": 3,
+                    "catalogRef": {
+                      "modelId": "demo-gpu-4u",
+                      "version": 1
+                    },
+                    "rackId": "007ece2b-dd08-41a0-8a7e-34e224146297",
+                    "startU": 1
+                  },
+                  {
+                    "deviceId": "60564a2c-a48d-4eeb-8ff8-b58292e3958a",
+                    "name": "A01 · ToR switch · 1U · 2",
+                    "heightU": 1,
+                    "weightKg": 10,
+                    "powerKw": 0.3,
+                    "coolingKw": 0.3,
+                    "catalogRef": {
+                      "modelId": "demo-tor-1u",
+                      "version": 1
+                    },
+                    "rackId": "007ece2b-dd08-41a0-8a7e-34e224146297",
+                    "startU": 5
+                  },
+                  {
+                    "deviceId": "853c6de9-ec64-4f7a-829c-550676aabae2",
+                    "name": "A02 · GPU server · 4U · 1",
+                    "heightU": 4,
+                    "weightKg": 80,
+                    "powerKw": 3,
+                    "coolingKw": 3,
+                    "catalogRef": {
+                      "modelId": "demo-gpu-4u",
+                      "version": 1
+                    },
+                    "rackId": "b128fd3e-26ca-44de-8233-fd5caab8fbe9",
+                    "startU": 1
+                  },
+                  {
+                    "deviceId": "17128af2-a0ea-44db-89cf-12d6f24d4c8b",
+                    "name": "A02 · GPU server · 4U · 2",
+                    "heightU": 4,
+                    "weightKg": 80,
+                    "powerKw": 3,
+                    "coolingKw": 3,
+                    "catalogRef": {
+                      "modelId": "demo-gpu-4u",
+                      "version": 1
+                    },
+                    "rackId": "b128fd3e-26ca-44de-8233-fd5caab8fbe9",
+                    "startU": 5
+                  },
+                  {
+                    "deviceId": "8527b1f8-a23d-4fdc-8638-f2ca62778983",
+                    "name": "A02 · GPU server · 4U · 3",
+                    "heightU": 4,
+                    "weightKg": 80,
+                    "powerKw": 3,
+                    "coolingKw": 3,
+                    "catalogRef": {
+                      "modelId": "demo-gpu-4u",
+                      "version": 1
+                    },
+                    "rackId": "b128fd3e-26ca-44de-8233-fd5caab8fbe9",
+                    "startU": 9
+                  },
+                  {
+                    "deviceId": "44bde95a-5786-4aab-8161-58b0e635f6da",
+                    "name": "A02 · ToR switch · 1U · 4",
+                    "heightU": 1,
+                    "weightKg": 10,
+                    "powerKw": 0.3,
+                    "coolingKw": 0.3,
+                    "catalogRef": {
+                      "modelId": "demo-tor-1u",
+                      "version": 1
+                    },
+                    "rackId": "b128fd3e-26ca-44de-8233-fd5caab8fbe9",
+                    "startU": 13
+                  },
+                  {
+                    "deviceId": "00080e51-1647-4bc2-854f-3cba7ff27a29",
+                    "name": "A03 · Compute server · 2U · 1",
+                    "heightU": 2,
+                    "weightKg": 25,
+                    "powerKw": 0.8,
+                    "coolingKw": 0.8,
+                    "catalogRef": {
+                      "modelId": "demo-compute-2u",
+                      "version": 1
+                    },
+                    "rackId": "808c00a4-9d3e-4a41-85f2-c58aa6a6b82a",
+                    "startU": 1
+                  },
+                  {
+                    "deviceId": "9e9dd6af-8941-472b-8e02-b668765cb3ad",
+                    "name": "A03 · ToR switch · 1U · 2",
+                    "heightU": 1,
+                    "weightKg": 10,
+                    "powerKw": 0.3,
+                    "coolingKw": 0.3,
+                    "catalogRef": {
+                      "modelId": "demo-tor-1u",
+                      "version": 1
+                    },
+                    "rackId": "808c00a4-9d3e-4a41-85f2-c58aa6a6b82a",
+                    "startU": 3
+                  },
+                  {
+                    "deviceId": "905df0a1-5d23-408d-8e87-896fa645da2c",
+                    "name": "B01 · Unspecified appliance · 1U · 1",
+                    "heightU": 1,
+                    "weightKg": null,
+                    "powerKw": null,
+                    "coolingKw": null,
+                    "catalogRef": {
+                      "modelId": "demo-unspecified-1u",
+                      "version": 1
+                    },
+                    "rackId": "eabd3068-c754-4225-89dc-41e318b70a2a",
+                    "startU": 1
+                  },
+                  {
+                    "deviceId": "4531a586-bed3-44de-83a8-a8c7fb00ee00",
+                    "name": "B01 · Optical switch · 2U · 2",
+                    "heightU": 2,
+                    "weightKg": 18,
+                    "powerKw": 0.2,
+                    "coolingKw": null,
+                    "catalogRef": {
+                      "modelId": "demo-optical-2u",
+                      "version": 1
+                    },
+                    "rackId": "eabd3068-c754-4225-89dc-41e318b70a2a",
+                    "startU": 2
+                  },
+                  {
+                    "deviceId": "08ed3f4a-47e4-4b15-8f6e-497839fd0b81",
+                    "name": "B02 · Compute server · 2U · 1",
+                    "heightU": 2,
+                    "weightKg": 25,
+                    "powerKw": 0.8,
+                    "coolingKw": 0.8,
+                    "catalogRef": {
+                      "modelId": "demo-compute-2u",
+                      "version": 1
+                    },
+                    "rackId": "308d7faf-1a97-452f-8753-3bc3f07c2293",
+                    "startU": 1
+                  },
+                  {
+                    "deviceId": "7bb0bf80-807c-4361-8d09-3eca19a43117",
+                    "name": "B02 · Compute server · 2U · 2",
+                    "heightU": 2,
+                    "weightKg": 25,
+                    "powerKw": 0.8,
+                    "coolingKw": 0.8,
+                    "catalogRef": {
+                      "modelId": "demo-compute-2u",
+                      "version": 1
+                    },
+                    "rackId": "308d7faf-1a97-452f-8753-3bc3f07c2293",
+                    "startU": 3
+                  },
+                  {
+                    "deviceId": "5b3e7305-12f0-438a-8e99-14ef2dc8fb4c",
+                    "name": "B02 · Compute server · 2U · 3",
+                    "heightU": 2,
+                    "weightKg": 25,
+                    "powerKw": 0.8,
+                    "coolingKw": 0.8,
+                    "catalogRef": {
+                      "modelId": "demo-compute-2u",
+                      "version": 1
+                    },
+                    "rackId": "308d7faf-1a97-452f-8753-3bc3f07c2293",
+                    "startU": 5
+                  },
+                  {
+                    "deviceId": "9fdb47c8-616f-48bc-88d5-e4caa70ed5fd",
+                    "name": "B03 · GPU server · 4U · 1",
+                    "heightU": 4,
+                    "weightKg": 80,
+                    "powerKw": 3,
+                    "coolingKw": 3,
+                    "catalogRef": {
+                      "modelId": "demo-gpu-4u",
+                      "version": 1
+                    },
+                    "rackId": "dd22929f-089e-4159-89b4-71b7120da664",
+                    "startU": 1
+                  },
+                  {
+                    "deviceId": "eb0cc123-eb00-4740-8676-340a57673f36",
+                    "name": "B03 · Compute server · 2U · 2",
+                    "heightU": 2,
+                    "weightKg": 25,
+                    "powerKw": 0.8,
+                    "coolingKw": 0.8,
+                    "catalogRef": {
+                      "modelId": "demo-compute-2u",
+                      "version": 1
+                    },
+                    "rackId": "dd22929f-089e-4159-89b4-71b7120da664",
+                    "startU": 5
+                  },
+                  {
+                    "deviceId": "d39892fe-4c1e-467a-8a66-3a644d4ef2ad",
+                    "name": "B03 · Compute server · 2U · 3",
+                    "heightU": 2,
+                    "weightKg": 25,
+                    "powerKw": 0.8,
+                    "coolingKw": 0.8,
+                    "catalogRef": {
+                      "modelId": "demo-compute-2u",
+                      "version": 1
+                    },
+                    "rackId": "dd22929f-089e-4159-89b4-71b7120da664",
+                    "startU": 7
+                  },
+                  {
+                    "deviceId": "8c25c7c5-c5ea-40d1-8908-a0dd2eed3f8d",
+                    "name": "B03 · Compute server · 2U · 4",
+                    "heightU": 2,
+                    "weightKg": 25,
+                    "powerKw": 0.8,
+                    "coolingKw": 0.8,
+                    "catalogRef": {
+                      "modelId": "demo-compute-2u",
+                      "version": 1
+                    },
+                    "rackId": "dd22929f-089e-4159-89b4-71b7120da664",
+                    "startU": 9
+                  }
+                ],
+                "rackLimits": [
+                  {
+                    "rackId": "007ece2b-dd08-41a0-8a7e-34e224146297",
+                    "maxWeightKg": 500,
+                    "maxPowerKw": 6,
+                    "maxCoolingKw": 6
+                  },
+                  {
+                    "rackId": "b128fd3e-26ca-44de-8233-fd5caab8fbe9",
+                    "maxWeightKg": 500,
+                    "maxPowerKw": 10,
+                    "maxCoolingKw": 10
+                  },
+                  {
+                    "rackId": "808c00a4-9d3e-4a41-85f2-c58aa6a6b82a",
+                    "maxWeightKg": 500,
+                    "maxPowerKw": 4,
+                    "maxCoolingKw": 4
+                  },
+                  {
+                    "rackId": "eabd3068-c754-4225-89dc-41e318b70a2a",
+                    "maxWeightKg": 500,
+                    "maxPowerKw": 6,
+                    "maxCoolingKw": 6
+                  },
+                  {
+                    "rackId": "308d7faf-1a97-452f-8753-3bc3f07c2293",
+                    "maxWeightKg": 500,
+                    "maxPowerKw": 3,
+                    "maxCoolingKw": 3
+                  },
+                  {
+                    "rackId": "dd22929f-089e-4159-89b4-71b7120da664",
+                    "maxWeightKg": 500,
+                    "maxPowerKw": 8,
+                    "maxCoolingKw": 8
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        "elapsedMs": 4352,
+        "scope": "EXISTING_RACK_RELOCATION",
+        "validationState": "NOT_RUN",
+        "persisted": false
+      }
+    }
+  ]
+}

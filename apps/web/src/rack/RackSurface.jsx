@@ -4,6 +4,8 @@ import { usePermission } from '../permissions/usePermission.jsx';
 import { planIntent, rackError, roomSource, samePlanScope, uncertainCreation } from './rack-plan-state.js';
 import './rack.css';
 import { RackEditor } from './RackEditor.jsx';
+import { rackSection } from './rack-sections.js';
+import { RackSectionGuide } from './RackSections.jsx';
 
 export function RackSurface(props) {
   const scope = { projectId: props.context.projectId };
@@ -23,6 +25,8 @@ export function RackSurface(props) {
 function RackWorkspace({ client, context, routeState = {}, onRouteChange, onDirtyChange, canWrite, canReadFacility,
   writePending, writeUnavailable, facilityPending, facilityUnavailable }) {
   const { projectId, scenarioId, revisionId } = context;
+  const section = rackSection(routeState.functionId);
+  const navigate = (functionId) => onRouteChange({ functionId });
   const draft = routeState.rackDraft ?? null;
   const editDraft = routeState.rackEditDraft ?? null;
   const selectedId = routeState.rackPlanId ?? null;
@@ -125,14 +129,14 @@ function RackWorkspace({ client, context, routeState = {}, onRouteChange, onDirt
     }
   }
 
-  return <section className="rack-surface" aria-label="Rack plans">
+  return <section className="rack-surface" aria-label={`Rack ${section.label}`}>
     <header className="rack-heading">
-      <div><p className="rack-eyebrow">RACK INFRASTRUCTURE</p><h1>Rack plans</h1>
-        <p>{context.projectName ?? 'Current project'} · Current scenario and Facility revision</p></div>
+      <div><p className="rack-eyebrow">RACK INFRASTRUCTURE</p><h1>{section.label}</h1>
+        <p>{section.description}</p></div>
       <div className="rack-actions">
         <button type="button" onClick={reload}>Refresh plans</button>
         {canWrite && !draft && <button type="button" className="rack-primary" disabled={Boolean(editDraft)} onClick={() => {
-          setCreateError(null); setNotice(null); onRouteChange({ rackDraft: { name: '', hallId: '' } });
+          setCreateError(null); setNotice(null); onRouteChange({ functionId: 'plans', rackDraft: { name: '', hallId: '' } });
         }}>New empty plan</button>}
       </div>
     </header>
@@ -140,6 +144,18 @@ function RackWorkspace({ client, context, routeState = {}, onRouteChange, onDirt
       : writeUnavailable ? 'Creation permissions could not be checked. Reopen this workspace to retry.'
         : 'Read-only access. Creating plans requires rack.write.'}</p>}
     <p className="rack-scope">Scenario <code>{scenarioId}</code> · Facility revision <code>{revisionId}</code></p>
+    {section.functionId === 'overview' && <RackSectionGuide onNavigate={navigate} />}
+    {section.functionId !== 'plans' && <div className="rack-plan-switcher">
+      <label>Active Rack plan<select value={selectedId ?? ''} disabled={Boolean(draft || editDraft) || list.pending}
+        onChange={(event) => onRouteChange({ rackPlanId: event.target.value || null })}>
+        <option value="">Choose a saved plan</option>
+        {selectedId && !list.data?.items?.some((p) => p.planId === selectedId) && <option value={selectedId}>{detail.data?.name ?? selectedId}</option>}
+        {(list.data?.items ?? []).map((p) => <option key={p.planId} value={p.planId}>{p.name}</option>)}
+      </select></label>
+      <button onClick={() => navigate('plans')}>Manage plans</button>
+      {editDraft && <span className="rack-warning">One unsaved draft is shared across sections. Save or discard before changing plans.</span>}
+      {list.error && <p role="alert">{rackError(list.error)}</p>}
+    </div>}
     {notice && <p role="status" className="rack-notice">{notice}</p>}
     {draft && <form className="rack-card rack-create" onSubmit={submit} aria-label="Create empty Rack plan">
       <h2>Create an empty plan</h2><p>Bind a saved plan to one HALL. Supported room geometry is captured as a fixed input; racks can be added after creation.</p>
@@ -170,8 +186,8 @@ function RackWorkspace({ client, context, routeState = {}, onRouteChange, onDirt
         }}>Cancel</button>
       </div>
     </form>}
-    <div className="rack-columns">
-      <section className="rack-card" aria-label="Saved Rack plans"><h2>Saved plans</h2>
+    <div className={section.functionId === 'plans' ? 'rack-columns' : 'rack-section-content'}>
+      <section hidden={section.functionId !== 'plans'} className="rack-card" aria-label="Saved Rack plans"><h2>Saved plans</h2>
         <p className="rack-muted">Newest first · Up to 20 per page</p>
         {list.pending ? <p role="status">Loading plans…</p> : list.error ? <div role="alert">
           <p className="rack-error">{rackError(list.error)}</p><button onClick={reload}>Retry list</button></div>
@@ -193,11 +209,13 @@ function RackWorkspace({ client, context, routeState = {}, onRouteChange, onDirt
           <p className="rack-error">{rackError(detail.error)}</p><button onClick={() => setRefresh(value => value + 1)}>Retry detail</button></div>
           : detail.data ? <>
             <div className="rack-heading"><h2>{detail.data.name}</h2><span className="rack-badge">{detail.data.state} · v{detail.data.version}</span></div>
-            {!draft && <RackEditor key={detail.data.planId} client={client} plan={detail.data} context={context}
+            {section.functionId === 'plans' && !draft && <div className="rack-actions"><button onClick={() => navigate('layout')}>Open layout</button><button onClick={() => navigate('overview')}>Plan overview</button></div>}
+            {!draft && <div hidden={section.functionId === 'plans'}><RackEditor key={detail.data.planId} client={client} plan={detail.data} context={context}
+              section={section.functionId} onNavigate={navigate}
               canWrite={canWrite} canReadFacility={canReadFacility} refresh={refresh} draft={editDraft}
               onDraftChange={value => onRouteChange({ rackEditDraft: value })}
-              onSaved={version => { setNotice(`Saved layout loaded · v${version}`); reload(); }} />}
-            <details className="rack-plan-metadata"><summary>Saved plan details</summary>
+              onSaved={version => { setNotice(`Saved layout loaded · v${version}`); reload(); }} /></div>}
+            <details open={section.functionId === 'plans'} className="rack-plan-metadata"><summary>Saved plan details</summary>
               <RackPlanDetail plan={detail.data} roomName={roomName(detail.data.facilityInput.containerId)} />
             </details>
           </>

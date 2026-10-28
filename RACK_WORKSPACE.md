@@ -23,3 +23,9 @@
 历史证据分别见 [方案工作区](records/2026-10-28-rack-ui/)、[坐标显示](records/2026-10-28-rack-floorplan/)，本轮见 [机柜编辑](records/2026-10-28-rack-editor/)。本轮未进行浏览器断网响应丢失故障注入。
 
 第十三轮：Catalog 已有 Models / Technologies / Rule examples；Rack 支持 Add from catalog 与固定版本规格。主图支持 Expand map、Fit racks、图层和用量着色。详见 [RACK_CATALOG.md](RACK_CATALOG.md)。
+
+第十四轮：原来集中在 Plans 的编辑界面已拆为 Overview / Plans / Layout / Equipment / Constraints / Capacity / Candidates / Dependencies / Checks。先在 Plans 或 Active Rack plan 选择方案，再进入对应分区；已有编辑页共用一个草稿和整份保存。候选与正式依赖管理仅搭结构，Checks 不是正式工程验证。最新操作和边界见 [RACK_STRUCTURE.md](RACK_STRUCTURE.md)。
+
+第十五轮：按 Rack 业务调整为 Overview / Plans / Inputs & impact / Rack layout / Space rules / Devices & U slots / Capacity / Layout options / Checks。Inputs & impact 可查看实际来源、型号版本、输入关系图及共享草稿变化；节点按钮高亮下游并跳转对应页。它是局部输入追踪，正式依赖历史/事件传播未实现；详见 [RACK_INPUTS.md](RACK_INPUTS.md)。
+
+第十六轮：Layout options 选择保存方案、网格与旋转参数 → Generate layout options → 比较现状/行扫描/大柜优先 → 检查未放置项、报告、逐柜位置变更和预览图 → 勾选复核 → Use selected option as draft → Rack layout 自动聚焦 → Save layout。已有草稿时禁止覆盖，旧版本/来源变化仍由后端阻止。候选仅在页面暂存，详见 [RACK_PLANNER.md](RACK_PLANNER.md)。

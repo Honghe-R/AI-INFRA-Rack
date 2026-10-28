@@ -3,6 +3,9 @@ import { RackConstraints } from './RackConstraints.jsx';
 import { RackEquipment } from './RackEquipment.jsx';
 import { useRackCatalog } from '../catalog/useRackCatalog.js';
 import { RoomFloorplan } from './RackRoomView.jsx';
+import { RackPlanOverview } from './RackSections.jsx';
+import { RackInputs } from './RackInputs.jsx';
+import { RackOptions } from './RackOptions.jsx';
 import {
   beginLayoutDraft,
   layoutCheckBody,
@@ -24,6 +27,8 @@ export function RackEditor({
   draft,
   onDraftChange,
   onSaved,
+  section = 'layout',
+  onNavigate = () => {},
 }) {
   const catalogState = useRackCatalog(client, plan.projectId, canReadFacility);
   const [state, setState] = useState({
@@ -340,6 +345,7 @@ export function RackEditor({
                   disabled={busy || Boolean(draft.attempt)}
                   onClick={() => {
                     onDraftChange(null);
+                    setFocusRequest({ fitRacks: true, nonce: Date.now() });
                     setError(null);
                     setNotice('Unsaved changes discarded. Saved layout restored.');
                   }}
@@ -356,6 +362,24 @@ export function RackEditor({
               {placements.length}/256 racks
             </span>
           </div>
+          {draft && <p className="rack-muted">Layout, equipment, constraints and capacity share this draft and save together.</p>}
+          {inputError && <p role="alert" className="rack-error">{inputError}</p>}
+          {(checkState.error || (!inputError && currentReport?.diagnostics.length > 0) ||
+            (!inputError && equipmentReport?.diagnostics.length > 0)) && <div className="rack-warning" role="status">
+            Resolve the current plan checks before saving. <button onClick={() => onNavigate('validate')}>Open checks</button>
+            {checkState.error && <button onClick={() => setCheckRetry((n) => n + 1)}>Retry checks</button>}
+          </div>}
+          {section === 'overview' && <RackPlanOverview layout={layout} equipment={equipment} placements={placements}
+            spatialReport={currentReport} equipmentReport={equipmentReport} onNavigate={onNavigate} isDraft={Boolean(draft)} />}
+          {section === 'dependencies' && <RackInputs layout={layout} placements={placements} constraints={constraints}
+            equipment={equipment} draft={draft} spatialReport={currentReport} equipmentReport={equipmentReport}
+            onNavigate={onNavigate} />}
+          <div hidden={section !== 'candidates'}><RackOptions client={client} layout={layout} draft={draft}
+            canWrite={canWrite} onDraftChange={value => {
+              onDraftChange(value); setError(null); setNotice('Selected option loaded as an unsaved draft. Review and Save layout to apply.');
+              setFocusRequest({ fitRacks: true, nonce: Date.now() });
+            }} onNavigate={onNavigate} /></div>
+          <div hidden={!['layout', 'constraints'].includes(section)} data-rack-panel="layout">
           <RoomFloorplan
             key={snapshot.snapshotId}
             room={snapshot.room}
@@ -373,7 +397,8 @@ export function RackEditor({
             equipmentReport={equipmentReport}
             focusRequest={focusRequest}
           />
-          <div className="rack-editor-columns">
+          </div>
+          <div hidden={section !== 'layout'} className="rack-editor-columns" data-rack-panel="rack-properties">
             <section className="rack-card" aria-label="Rack inventory">
               <h3>Racks</h3>
               <label>
@@ -530,7 +555,9 @@ export function RackEditor({
               )}
             </section>
           </div>
+          <div hidden={!['equipment', 'capacity', 'validate'].includes(section)} data-rack-panel="equipment">
           <RackEquipment
+            mode={section === 'validate' ? 'diagnostics' : section === 'capacity' ? 'capacity' : 'equipment'}
             catalogState={catalogState}
             equipment={equipment}
             placements={placements}
@@ -547,6 +574,8 @@ export function RackEditor({
             inputError={equipmentInputError}
             checkError={checkState.error}
           />
+          </div>
+          <div hidden={section !== 'constraints'} data-rack-panel="constraints">
           <RackConstraints
             constraints={constraints}
             editable={editable}
@@ -556,7 +585,9 @@ export function RackEditor({
             onFocus={(id) => setFocusRequest({ obstacleId: id, nonce: Date.now() })}
             onChange={(value) => onDraftChange({ ...draft, constraints: value })}
           />
-          <section className="rack-check-panel" aria-label="Spatial diagnostics">
+          </div>
+          {section === 'validate' && <p className="rack-warning">These are current draft checks, not a stored whole-plan Validation Run. Whole-plan state remains {layout.validationState}.</p>}
+          <section hidden={!['layout', 'constraints', 'validate'].includes(section)} className="rack-check-panel" aria-label="Spatial diagnostics">
             <h3>Spatial checks</h3>
             {inputError ? (
               <p role="alert" className="rack-error">

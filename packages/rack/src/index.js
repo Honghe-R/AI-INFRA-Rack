@@ -16,3 +16,4 @@ export { EMPTY_SPATIAL_CONSTRAINTS, normalizeSpatialConstraints, localRectangle,
 export { EMPTY_EQUIPMENT, normalizeEquipment, checkEquipment } from './equipment.js';
 export { getRackCatalog, resolveCatalogReference, assertCatalogDevice } from './catalog.js';
 export { getCatalogExamples } from './catalog-examples.js';
+export { generateRackOptions, normalizePlannerOptions, plannerGeometry, layoutMetrics, PLANNER_LIMITS } from './planner.js';

@@ -35,6 +35,10 @@ export function registerRackRoutes(router, { pool, guard }) {
     await facilityRead(ctx);
     return {data:await layouts.check({projectId:ctx.params.projectId,planId:ctx.params.planId,body:ctx.body})};
   }), {permission:RACK_KEYS.READ,projectParam:'projectId'});
+  router.post(`${base}/:planId/layout/options`, ctx => adapt(async () => {
+    await facilityRead(ctx);
+    return { data: await layouts.options({ projectId:ctx.params.projectId, planId:ctx.params.planId, body:ctx.body }) };
+  }), {permission:RACK_KEYS.READ,projectParam:'projectId'});
   for (const [method,suffix,operation] of [['post','/room-snapshot','capture'],['put','/layout','save']]) {
     router[method](`${base}/:planId${suffix}`, ctx=>adapt(async()=>{
       await facilityRead(ctx);

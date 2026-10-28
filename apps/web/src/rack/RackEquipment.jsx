@@ -70,6 +70,7 @@ export function RackEquipment({
   inputError,
   checkError,
   catalogState = null,
+  mode = 'all',
 }) {
   const [selectedId, setSelectedId] = useState(null);
   const [catalogId, setCatalogId] = useState('');
@@ -94,11 +95,12 @@ export function RackEquipment({
   }
   return (
     <section className="rack-card rack-equipment" aria-label="Equipment and capacity">
-      <h3>Equipment &amp; capacity</h3>
+      <h3>{mode === 'capacity' ? 'Rack capacity' : mode === 'diagnostics' ? 'Equipment checks' : mode === 'equipment' ? 'Equipment & U positions' : 'Equipment & capacity'}</h3>
       <p className="rack-muted">
         Plan-local assumed specifications, not a global asset registry. Blank demand/limit means unknown; zero
         is explicit. Changes save together with the layout.
       </p>
+      <div hidden={mode === 'diagnostics'}>
       <label>
         Equipment planning reference
         <textarea
@@ -125,6 +127,7 @@ export function RackEquipment({
           </option>
         </select>
       </label>
+      <div hidden={mode === 'capacity'} data-equipment-panel="devices">
       <div className="rack-actions">
         <h4>Devices · {e.devices.length}/512</h4>
         <button
@@ -279,6 +282,7 @@ export function RackEquipment({
           </button>
         </div>
       )}
+      </div>
       <label>
         Capacity rack
         <select value={selectedRackId ?? ''} onChange={(event) => onSelectRack(event.target.value || null)}>
@@ -292,6 +296,7 @@ export function RackEquipment({
       </label>
       {rack && (
         <>
+          <div hidden={mode === 'equipment'} data-equipment-panel="capacity">
           <h4>{rack.name} capacity limits</h4>
           <label className="rack-lock-field">
             <input
@@ -386,6 +391,8 @@ export function RackEquipment({
               </div>
             </div>
           )}
+          </div>
+          <div hidden={mode === 'capacity'}>
           <RackElevation
             rack={rack}
             model={model}
@@ -393,8 +400,10 @@ export function RackEquipment({
             selectedId={selectedId}
             onSelect={selectDevice}
           />
+          </div>
         </>
       )}
+      </div>
       <div className="rack-equipment-report" aria-label="Equipment diagnostics">
         {inputError ? (
           <p role="alert" className="rack-error">
@@ -403,7 +412,7 @@ export function RackEquipment({
         ) : pending ? (
           <p role="status">Checking current equipment…</p>
         ) : checkError ? (
-          <p role="status">Equipment checks unavailable; retry the layout checks below.</p>
+          <p role="status">Equipment checks unavailable; use Retry checks above.</p>
         ) : report ? (
           <>
             <p role="status">
