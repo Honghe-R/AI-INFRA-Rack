@@ -643,6 +643,76 @@ test('Rack save waits for a concurrent source update and rejects its obsolete in
 })));
 
 const constraintsInput=(patch={})=>({obstacleCoverage:'UNKNOWN',source:{kind:'ASSUMED',reference:'Integration test planning assumption'},obstacles:[],clearance:null,...patch});
+const equipmentInput=(devices=[],patch={})=>({coverage:'UNKNOWN',source:{kind:'ASSUMED',reference:'Test-only equipment and capacity assumptions'},devices,rackLimits:[],...patch});
+const testDevice=(rackId,patch={})=>({deviceId:randomUUID(),name:'Test server',heightU:2,weightKg:20,powerKw:1,coolingKw:1,rackId,startU:rackId?1:null,...patch});
+
+test('Rack equipment persists atomically, restores exact retries, preserves omitted equipment and rejects old versions', {skip}, async()=>fixture(async f=>server(f.people,async request=>{
+  const {url,layout}=await prepared(f,request);assert.equal(layout.equipment.coverage,'UNKNOWN');assert.deepEqual(layout.equipment.devices,[]);
+  const r=rack(),devices=[testDevice(r.rackId)];
+  const equipment=equipmentInput(devices,{coverage:'DECLARED_COMPLETE',rackLimits:[{rackId:r.rackId,maxWeightKg:100,maxPowerKw:10,maxCoolingKw:10}]});
+  const body={...layoutBody(layout,[r]),equipment};const key=randomUUID();
+  const first=await request(url,{method:'PUT',body,key,version:1,user:'editor'});assert.equal(first.status,200,JSON.stringify(first));
+  assert.equal(first.body.data.version,2);assert.deepEqual(first.body.data.equipment,equipment);
+  assert.deepEqual((await pool.query('SELECT equipment FROM rack_plans WHERE plan_id=$1',[layout.planId])).rows[0].equipment,equipment);
+  const retry=await request(url,{method:'PUT',body,key,version:1});assert.equal(retry.body.meta.replayed,true);assert.equal(retry.body.data.version,2);
+  assert.equal((await request(url,{method:'PUT',body:{...body,equipment:equipmentInput()},key,version:1})).body.error.code,'IDEMPOTENCY_KEY_REUSED');
+  assert.equal((await request(url,{method:'PUT',body,version:1})).status,412);
+  assert.deepEqual((await request(url,{user:'viewer'})).body.data.equipment,equipment);
+  const checked=await request(`${url}/check`,{body:layoutBody(layout,[r]),user:'viewer'});
+  assert.equal(checked.status,200);assert.equal(checked.body.data.equipmentReport.status,'CHECKED_SCOPE_CLEAR');assert.equal(checked.body.data.equipmentReport.racks[0].occupiedU,2);
+  const legacy=await request(url,{method:'PUT',body:layoutBody(layout,[{...r,name:'Renamed'}]),version:2});assert.equal(legacy.status,200);assert.deepEqual(legacy.body.data.equipment,equipment);
+  assert.equal(legacy.body.data.validationState,'NOT_RUN');
+})));
+
+test('Rack equipment diagnoses U overlap, overflow and lower-bound overcapacity and rolls back every field on failure', {skip}, async()=>fixture(async f=>server(f.people,async request=>{
+  const {url,layout}=await prepared(f,request);const r=rack();
+  const body={...layoutBody(layout,[r]),equipment:equipmentInput([testDevice(r.rackId)])};
+  const saved=await request(url,{method:'PUT',body,version:1});assert.equal(saved.status,200);
+  const bad={...body,placements:[{...r,name:'Must not save'}],constraints:constraintsInput({source:{kind:'ASSUMED',reference:'Must not persist'}}),equipment:equipmentInput([testDevice(r.rackId,{startU:42,weightKg:120}),testDevice(r.rackId,{startU:42,weightKg:null})],{rackLimits:[{rackId:r.rackId,maxWeightKg:100,maxPowerKw:null,maxCoolingKw:null}]})};
+  const checked=await request(`${url}/check`,{body:bad});assert.equal(checked.status,200);
+  const report=checked.body.data.equipmentReport;assert.equal(report.status,'ISSUES_FOUND');
+  for(const code of ['DEVICE_U_OUT_OF_BOUNDS','DEVICE_U_OVERLAP','RACK_CAPACITY_EXCEEDED']) assert.ok(report.diagnostics.some(d=>d.code===code),code);
+  assert.equal(report.racks[0].capacities.weightKg.total,null);assert.equal(report.racks[0].capacities.weightKg.knownSubtotal,120);
+  const failed=await request(url,{method:'PUT',body:bad,version:2});assert.equal(failed.status,422);assert.equal(failed.body.error.code,'RACK_EQUIPMENT_CONFLICT');
+  assert.deepEqual((await request(url)).body.data,saved.body.data,'failure leaves racks, constraints, equipment, version and snapshot intact');
+})));
+
+test('Rack equipment moves between racks, unassigns without loss and protects rack deletion including legacy clients', {skip}, async()=>fixture(async f=>server(f.people,async request=>{
+  const {url,layout}=await prepared(f,request);const a=rack(),b=rack(6,2);const device=testDevice(a.rackId);
+  let body={...layoutBody(layout,[a,b]),equipment:equipmentInput([device])};
+  assert.equal((await request(url,{method:'PUT',body,version:1})).status,200);
+  const deleting=await request(url,{method:'PUT',body:layoutBody(layout,[b]),version:2});assert.equal(deleting.status,400,'omission cannot discard assignments to a deleted rack');
+  body={...layoutBody(layout,[a,b]),equipment:equipmentInput([{...device,rackId:b.rackId,startU:41}])};
+  const moved=await request(url,{method:'PUT',body,version:2});assert.equal(moved.status,200);assert.equal(moved.body.data.equipment.devices[0].deviceId,device.deviceId);
+  body={...layoutBody(layout,[]),equipment:equipmentInput([{...device,rackId:null,startU:null}])};
+  const unassigned=await request(url,{method:'PUT',body,version:3});assert.equal(unassigned.status,200);assert.equal(unassigned.body.data.equipment.devices[0].weightKg,20);
+  const checked=await request(`${url}/check`,{body});assert.equal(checked.body.data.equipmentReport.installedDevices,0);assert.equal(checked.body.data.equipmentReport.status,'INCOMPLETE');
+})));
+
+test('Rack equipment rejects injected, foreign, duplicate and malformed inputs and retains project permissions', {skip}, async()=>fixture(async f=>server(f.people,async request=>{
+  const {url,layout}=await prepared(f,request);const r=rack(),d=testDevice(r.rackId);
+  const body={...layoutBody(layout,[r]),equipment:equipmentInput([d])};
+  for(const equipment of [null,{},equipmentInput([],{projectId:f.b.projectId}),equipmentInput([{...d,rackId:randomUUID()}]),equipmentInput([d,{...d}]),equipmentInput([{...d,heightU:1.5}]),equipmentInput([{...d,weightKg:'20'}])]) {
+    assert.equal((await request(`${url}/check`,{body:{...body,equipment}})).status,400);
+  }
+  assert.equal((await request(url,{method:'PUT',body,version:1,user:'viewer'})).status,403);
+  assert.equal((await request(`${url}/check`,{body,user:'outsider'})).status,403);
+  assert.equal((await request(url,{user:'outsider'})).status,403);
+  assert.equal((await request(url.replace(f.a.projectId,f.b.projectId),{method:'PUT',body,version:1})).status,404);
+  await pool.query('UPDATE revision_etags SET etag=$1 WHERE project_id=$2',[randomUUID(),f.a.projectId]);
+  assert.equal((await request(url,{method:'PUT',body,version:1})).body.error.code,'RACK_SOURCE_STALE');
+  assert.deepEqual((await request(url)).body.data.equipment.devices,[]);
+})));
+
+test('Rack equipment explicit zero, partial unknown data and omission remain distinct; position lock permits equipment edits', {skip}, async()=>fixture(async f=>server(f.people,async request=>{
+  const {url,layout}=await prepared(f,request);const r=rack(3,3,{locked:true});
+  const first=await request(url,{method:'PUT',body:layoutBody(layout,[r]),version:1});assert.equal(first.status,200);
+  const equipment=equipmentInput([testDevice(r.rackId,{weightKg:null,powerKw:0,coolingKw:0})],{coverage:'DECLARED_COMPLETE',rackLimits:[{rackId:r.rackId,maxWeightKg:100,maxPowerKw:0,maxCoolingKw:0}]});
+  const body={...layoutBody(layout,[r]),equipment};const response=await request(url,{method:'PUT',body,version:2});assert.equal(response.status,200);
+  const checked=await request(`${url}/check`,{body});const report=checked.body.data.equipmentReport;
+  assert.equal(report.status,'INCOMPLETE');assert.equal(report.racks[0].capacities.weightKg.status,'UNKNOWN');assert.equal(report.racks[0].capacities.powerKw.status,'WITHIN_LIMIT');
+  assert.equal(response.body.data.placements[0].locked,true);
+})));
 const planningObstacle=(xM=6,yM=2,patch={})=>({obstacleId:randomUUID(),name:'Test forbidden area',xM,yM,widthM:1,depthM:1,...patch});
 
 test('Rack constraints persist atomically with racks, preserve omitted older-client values and reject stale updates', {skip}, async()=>fixture(async f=>server(f.people,async request=>{

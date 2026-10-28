@@ -526,6 +526,50 @@ Docker 可能保留已下载的镜像缓存，本轮没有清理全局 Docker �
 - 重绑定、布局算法、候选应用、Rack Assistant、正式验证/发布、完整审计和性能实验仍待做。复杂度与输入规模边界见空间约束文档，不能当吞吐量承诺。
 - 下一小步建议设备规格、U 位分配和容量的最小闭环，然后再做自动布局与 Assistant。所有改动保持本地，未 commit/push。
 
+## 2026-10-28：第十二轮，设备上架、U 位与每柜容量假设
+
+### 1. 范围与起点
+
+- 用户同意继续上一轮建议的“设备能上架、能检查、能保存、图上能看到”闭环；本轮不展开自动布局、Assistant 或正式容量服务。
+- 起始 HEAD `ab5575a`，工作区干净，上一轮已由用户提交。继续只改 `AI-INFRA-Rack`，没有 commit/push、改 remotes 或写老师原目录。
+- 沿用现有隔离开发栈，应用 010，旧 9 项跳过；不运行 setup/seed、不 reset 数据或卷。
+
+### 2. 修改与关键设计
+
+- [迁移 010](data-scripts/010_rack_equipment.sql) 在既有强制 RLS 的 rack_plans 增加 equipment JSONB；默认空清单/UNKNOWN/ASSUMED，不改旧方案版本、快照、机柜、空间条件。没有修改已应用的历史迁移。
+- [领域 equipment](packages/rack/src/equipment.js)：严格规格/数量/来源输入，最多 512 设备、256 柜限值；方案内 UUID 唯一，安装只引用同请求布局机柜。未上架用 null rackId/startU 保留设备规格，不消耗柜资源。设备是方案内实例，没有独立共享型号库或全局资产身份。
+- U1 在底部，闭区间占用，支持 1–100 U 的全宽单面设备；同柜区间重叠、超出型号柜高产生可解释诊断；不同柜独立。删除装有设备的机柜必须先卸架，柜的位置锁不限制设备分配。
+- 重量、电力、冷却需求分别求和；未知需求和上限保持 null，显式 0 不代表无限。报告已知小计、总量/未知数、限值来源与状态；已知小计超限即报错，未知不能抵消已知错误。补偿求和和四机器 epsilon 表示误差比较避免小数相加误报，不是工程余量。
+- 型号规格保持不变；可为每柜显式声明三维方案假设限值，记录 equipment 来源说明。未接正式容量预算或扣账，不改变 Facility。
+- [布局服务](apps/api/src/services/rack-layout.js)：GET 返回 equipment，原 check/save body 可选 equipment，省略保留已存值，显式 null 拒绝。check 并列返回 equipmentReport；原空间 report 范围保留，状态独立。保存重算两份报告，以同一版本/来源锁/UUID key/事务更新所有数据；错误整体回滚，旧版本 412，设备冲突 422/RACK_EQUIPMENT_CONFLICT。
+- [设备面板与立面](apps/web/src/rack/RackEquipment.jsx)：规格输入、选择柜/起始 U、迁移/卸架/移除、限值假设、容量表、可滚动柜内图与诊断选择。整份设备加入草稿、check/save body，只有当前 body 的两份报告才能放行保存；未保存内容沿用 tab dirty/重试保护。
+- 新增根 [RACK_EQUIPMENT.md](RACK_EQUIPMENT.md)，同步 API、布局、工作区、基础、运行、README 和总清单；清单按实际范围细分，全局资产与正式容量仍未勾选。
+
+### 3. 验证与证据
+
+| 检查 | 结果 | 证据 |
+| --- | --- | --- |
+| Rack 领域包 | 101 通过、0 失败/跳过（含新增 12）；输入/未知/零/身份/区间/迁移/三维容量/小数边界与 512 清单 | [domain-tests.txt](records/2026-10-28-rack-equipment/domain-tests.txt) |
+| 数据库/API | 37 通过、0 失败/跳过（含新增 5）；设备持久化、精确重试/旧版本/省略兼容、全字段回滚、迁移/卸架/删柜保护、权限/来源与原 RLS 回归 | [api-tests.txt](records/2026-10-28-rack-equipment/api-tests.txt) |
+| Web 定向回归 | 67 通过；设备草稿隔离、输入与立面、容量未知/来源及已有空间、客户端、工作区与导入边界 | [web-tests.txt](records/2026-10-28-rack-equipment/web-tests.txt) |
+| Web build | 成功；保留既有 >500 kB bundle 提示 | [web-build.txt](records/2026-10-28-rack-equipment/web-build.txt) |
+| 迁移 | 本机 010 成功，旧 9 跳过；随机临时空库 10 项首次应用、重复全跳过无漂移，清理仅探针库 | [本机](records/2026-10-28-rack-equipment/migrate.txt)、[脚本](records/2026-10-28-rack-equipment/check-migration.mjs)、[结果](records/2026-10-28-rack-equipment/migration-checks.txt) |
+| 浏览器 | 建柜/设备、超限/重叠/越界/清空 U、卸架保留、修复保存 v2、整页重开、容量与立面确认 | [步骤](records/2026-10-28-rack-equipment/browser-checks.md)、[容量冲突](records/2026-10-28-rack-equipment/capacity-conflict.png)、[U 冲突](records/2026-10-28-rack-equipment/u-conflict.png)、[最终图面](records/2026-10-28-rack-equipment/equipment.png) |
+| 实际 SQL/HTTP | equipment 与数据库一致、快照保留；5U/90kg/3.3kW 汇总一致；admin/viewer GET、viewer check 200，另一组织 GET/check 403；旧三演示和 Facility ETag 保留 | [脚本](records/2026-10-28-rack-equipment/check-live-equipment.mjs)、[结果](records/2026-10-28-rack-equipment/live-checks.txt) |
+
+命令：`npm run test --workspace @ai-infra/rack`；`node --env-file-if-exists=.env --test apps/api/src/tests/rack-plans.test.js`；Web 定向命令见证据首行；`npm run build --workspace @ai-infra/web`；`node --env-file=.env records/2026-10-28-rack-equipment/check-migration.mjs` 和同目录 check-live-equipment.mjs。
+
+没有重跑全仓，不宣称原平台基线全部通过。格式化/HMR 期间一次暂时 502，Retry layout 恢复并保留草稿；最后截图写盘成功，随后浏览器标签标记工具超时，已核对文件存在。不做浏览器故障注入或正式性能实验。
+
+### 4. 保留数据、限制与下一步
+
+- 独立演示 `Rack equipment demo — Hall A1`，ID `cb017b9b-ca11-483b-a5fd-c8f527195072`，v2。C01 为假设 42U 柜，GPU U35–38、ToR U41；5U 占用、37U 空余；90/500 kg，电力/冷却各 3.3/6 kW。整页重开后无未保存草稿。
+- 设备报告在声明范围内 CHECKED_SCOPE_CLEAR；空间报告故意保持 UNKNOWN 障碍/未设净距的 INCOMPLETE，全局 NOT_RUN，配准 NOT_RECORDED，不将演示标成完整工程通过。旧三个演示 v2/v4/v1、设施来源 ETag 与原规格保留；没有把个人演示写入 seed。
+- 尚无全局物理资产身份/不可变设备型号库、深度导轨兼容、双面/半宽安装、机房预算/正式容量分配、PDU/冗余、动态热仿真/楼板载荷。冷却为独立声明总需求，不从功率自动推导。
+- 设备文档为方案内 JSONB、每次全量检查保存，沿用现有简化历史/审计；生产账户隔离、正式性能与大规模诊断需要后续工作。复杂度/输入上限见设备说明，不能当吞吐保证。
+- 下一小步可做可解释的规则式机柜布局候选：只生成预览，重新检查后再应用；之后接 Rack Assistant。机房正式预算、依赖关系和通道规则仍需后续补齐。
+- 所有更改保持本地，HEAD 未推进，未 commit/push，未修改老师原目录。
+
 ## 后续记录格式
 
 每轮追加一个日期标题，至少写清：

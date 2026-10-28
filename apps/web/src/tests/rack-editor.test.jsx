@@ -22,6 +22,7 @@ test('editor draft copies saved racks and retains version and snapshot identity 
     snapshot_id: 's',
     placements: draft.placements,
     constraints:draft.constraints,
+    equipment:draft.equipment,
   });
   assert.equal(validateEditorPlacements(draft.placements), null);
   for (const patch of [{ name: ' ' }, { xM: NaN }, { yM: 10001 }, { rotationDeg: 45 }])

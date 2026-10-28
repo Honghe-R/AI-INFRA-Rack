@@ -1,0 +1,6 @@
+packages/rack/src/equipment.js 57ms
+packages/rack/src/tests/equipment.test.js 23ms
+apps/web/src/rack/RackEquipment.jsx 36ms
+apps/web/src/rack/edit-layout-state.js 11ms
+apps/web/src/rack/RackEditor.jsx 29ms
+apps/web/src/tests/rack-equipment.test.jsx 7ms

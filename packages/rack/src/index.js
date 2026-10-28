@@ -13,3 +13,4 @@ export { checkRackLayout, MAX_LAYOUT_RACKS, MAX_LAYOUT_MODELS } from './layout.j
 export { localizeRoomBoundary, MAX_ROOM_VIEW_POINTS, MAX_ROOM_VIEW_RINGS } from './room-view.js';
 export { normalizeEditableLayout, assertLockedRacksUnchanged } from './edit-layout.js';
 export { EMPTY_SPATIAL_CONSTRAINTS, normalizeSpatialConstraints, localRectangle, rackClearanceBands } from './constraints.js';
+export { EMPTY_EQUIPMENT, normalizeEquipment, checkEquipment } from './equipment.js';

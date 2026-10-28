@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { RackConstraints } from './RackConstraints.jsx';
+import { RackEquipment } from './RackEquipment.jsx';
 import { RoomFloorplan } from './RackRoomView.jsx';
 import {
   beginLayoutDraft,
@@ -7,6 +8,8 @@ import {
   validateEditorPlacements,
   defaultEditorConstraints,
   validateEditorConstraints,
+  defaultEditorEquipment,
+  validateEditorEquipment,
 } from './edit-layout-state.js';
 import { rackError, uncertainCreation } from './rack-plan-state.js';
 
@@ -21,14 +24,23 @@ export function RackEditor({
   onDraftChange,
   onSaved,
 }) {
-  const [state, setState] = useState({ pending: true, data: null, error: null });
+  const [state, setState] = useState({
+    pending: true,
+    data: null,
+    error: null,
+  });
   const [reload, setReload] = useState(0);
   const [checkRetry, setCheckRetry] = useState(0);
   const [selectedId, setSelectedId] = useState(null);
   const [selectedObstacleId, setSelectedObstacleId] = useState(null);
   const [modelId, setModelId] = useState('');
   const [focusRequest, setFocusRequest] = useState(null);
-  const [checkState, setCheckState] = useState({ pending: false, report: null, error: null, body: null });
+  const [checkState, setCheckState] = useState({
+    pending: false,
+    report: null,
+    error: null,
+    body: null,
+  });
   const [busy, setBusy] = useState(false),
     [error, setError] = useState(null),
     [notice, setNotice] = useState(null);
@@ -76,13 +88,23 @@ export function RackEditor({
   const placements = draft?.placements ?? layout?.placements ?? [];
   const snapshot = layout?.snapshot;
   const constraints = draft?.constraints ?? layout?.constraints ?? defaultEditorConstraints();
+  const equipment = draft?.equipment ?? layout?.equipment ?? defaultEditorEquipment();
   const checkBody = snapshot
     ? layoutCheckBody(
-        draft ? { ...draft, constraints } : { snapshotId: snapshot.snapshotId, placements, constraints },
+        draft
+          ? { ...draft, constraints, equipment }
+          : {
+              snapshotId: snapshot.snapshotId,
+              placements,
+              constraints,
+              equipment,
+            },
       )
     : null;
   const checkKey = JSON.stringify(checkBody);
-  const inputError = validateEditorPlacements(placements) || validateEditorConstraints(constraints);
+  const equipmentInputError = validateEditorEquipment(equipment, placements);
+  const inputError =
+    validateEditorPlacements(placements) || validateEditorConstraints(constraints) || equipmentInputError;
   useEffect(() => {
     if (!canReadFacility || !snapshot || inputError) {
       setCheckState({ pending: false, report: null, error: null, body: null });
@@ -92,13 +114,27 @@ export function RackEditor({
     setCheckState({ pending: true, report: null, error: null, body: null });
     const timer = setTimeout(() => {
       client
-        .checkRackLayout(plan.projectId, plan.planId, JSON.parse(checkKey), { signal: c.signal })
+        .checkRackLayout(plan.projectId, plan.planId, JSON.parse(checkKey), {
+          signal: c.signal,
+        })
         .then(({ data }) => {
           if (!c.signal.aborted)
-            setCheckState({ pending: false, report: data.report, error: null, body: checkKey });
+            setCheckState({
+              pending: false,
+              report: data.report,
+              equipmentReport: data.equipmentReport,
+              error: null,
+              body: checkKey,
+            });
         })
         .catch((e) => {
-          if (!c.signal.aborted) setCheckState({ pending: false, report: null, error: e, body: checkKey });
+          if (!c.signal.aborted)
+            setCheckState({
+              pending: false,
+              report: null,
+              error: e,
+              body: checkKey,
+            });
         });
     }, 250);
     return () => {
@@ -132,6 +168,7 @@ export function RackEditor({
   const selectedPositionLocked =
     selected?.locked || layout.placements.some((p) => p.rackId === selectedId && p.locked);
   const currentReport = checkState.body === checkKey ? checkState.report : null;
+  const equipmentReport = checkState.body === checkKey ? checkState.equipmentReport : null;
   const editable = Boolean(
     canWrite && snapshot && draft && !busy && !draft.attempt && !stale && !versionConflict,
   );
@@ -175,7 +212,10 @@ export function RackEditor({
     const attempt = existing ?? {
       key: crypto.randomUUID(),
       version: operation === 'capture' ? layout.version : draft.baseVersion,
-      body: operation === 'capture' ? { contract_version: 1 } : layoutCheckBody(draft),
+      body:
+        operation === 'capture'
+          ? { contract_version: 1 }
+          : layoutCheckBody({ ...draft, constraints, equipment }),
     };
     if (operation === 'capture') setCaptureAttempt(attempt);
     else onDraftChange({ ...draft, attempt });
@@ -184,7 +224,11 @@ export function RackEditor({
     setError(null);
     const signal = lifetime.current.signal;
     try {
-      const opts = { idempotencyKey: attempt.key, version: attempt.version, signal };
+      const opts = {
+        idempotencyKey: attempt.key,
+        version: attempt.version,
+        signal,
+      };
       const result =
         operation === 'capture'
           ? await client.captureRackRoom(plan.projectId, plan.planId, opts)
@@ -282,7 +326,9 @@ export function RackEditor({
                         checkState.pending ||
                         checkState.body !== checkKey ||
                         !currentReport ||
-                        currentReport.diagnostics.length > 0))
+                        currentReport.diagnostics.length > 0 ||
+                        !equipmentReport ||
+                        equipmentReport.diagnostics.length > 0))
                   }
                   onClick={() => mutate('save')}
                 >
@@ -353,7 +399,10 @@ export function RackEditor({
                       aria-pressed={selectedId === p.rackId}
                       onClick={() => {
                         setSelectedId(p.rackId);
-                        setFocusRequest({ rackId: p.rackId, nonce: Date.now() });
+                        setFocusRequest({
+                          rackId: p.rackId,
+                          nonce: Date.now(),
+                        });
                       }}
                     >
                       <strong>
@@ -406,7 +455,11 @@ export function RackEditor({
                     <select
                       value={selected.rotationDeg}
                       disabled={!editable || selectedPositionLocked}
-                      onChange={(e) => updateRack(selected.rackId, { rotationDeg: Number(e.target.value) })}
+                      onChange={(e) =>
+                        updateRack(selected.rackId, {
+                          rotationDeg: Number(e.target.value),
+                        })
+                      }
                     >
                       {[0, 90, 180, 270].map((deg) => (
                         <option key={deg} value={deg}>
@@ -420,7 +473,11 @@ export function RackEditor({
                       type="checkbox"
                       checked={selected.locked}
                       disabled={!editable}
-                      onChange={(e) => updateRack(selected.rackId, { locked: e.target.checked })}
+                      onChange={(e) =>
+                        updateRack(selected.rackId, {
+                          locked: e.target.checked,
+                        })
+                      }
                     />
                     Locked
                   </label>
@@ -429,15 +486,30 @@ export function RackEditor({
                     marked by a thick edge.
                   </p>
                   <div className="rack-actions">
-                    <button onClick={() => setFocusRequest({ rackId: selectedId, nonce: Date.now() })}>
+                    <button
+                      onClick={() =>
+                        setFocusRequest({
+                          rackId: selectedId,
+                          nonce: Date.now(),
+                        })
+                      }
+                    >
                       Focus rack
                     </button>
                     <button
-                      disabled={!editable || selectedPositionLocked}
+                      disabled={
+                        !editable ||
+                        selectedPositionLocked ||
+                        equipment.devices.some((d) => d.rackId === selectedId)
+                      }
                       onClick={() => {
                         onDraftChange({
                           ...draft,
                           placements: placements.filter((p) => p.rackId !== selectedId),
+                          equipment: {
+                            ...equipment,
+                            rackLimits: equipment.rackLimits.filter((l) => l.rackId !== selectedId),
+                          },
                         });
                         setSelectedId(null);
                       }}
@@ -446,7 +518,8 @@ export function RackEditor({
                     </button>
                   </div>
                   <p className="rack-muted">
-                    Save an unlock before moving, replacing or deleting a previously locked rack.
+                    Save an unlock before moving, replacing or deleting a previously locked rack. Unassign its
+                    devices before deleting a rack.
                   </p>
                 </>
               ) : (
@@ -454,6 +527,22 @@ export function RackEditor({
               )}
             </section>
           </div>
+          <RackEquipment
+            equipment={equipment}
+            placements={placements}
+            models={models}
+            editable={editable}
+            selectedRackId={selectedId}
+            onSelectRack={(id) => {
+              setSelectedId(id);
+              if (id) setFocusRequest({ rackId: id, nonce: Date.now() });
+            }}
+            onChange={(value) => onDraftChange({ ...draft, equipment: value })}
+            report={equipmentReport}
+            pending={!inputError && (checkState.pending || checkState.body !== checkKey)}
+            inputError={equipmentInputError}
+            checkError={checkState.error}
+          />
           <RackConstraints
             constraints={constraints}
             editable={editable}
@@ -492,10 +581,16 @@ export function RackEditor({
                           onClick={() => {
                             if (d.rackIds.length) {
                               setSelectedId(d.rackIds[0]);
-                              setFocusRequest({ rackId: d.rackIds[0], nonce: Date.now() });
+                              setFocusRequest({
+                                rackId: d.rackIds[0],
+                                nonce: Date.now(),
+                              });
                             } else if (d.obstacleIds?.length) {
                               setSelectedObstacleId(d.obstacleIds[0]);
-                              setFocusRequest({ obstacleId: d.obstacleIds[0], nonce: Date.now() });
+                              setFocusRequest({
+                                obstacleId: d.obstacleIds[0],
+                                nonce: Date.now(),
+                              });
                             }
                           }}
                         >
@@ -513,7 +608,8 @@ export function RackEditor({
                     ))}
                   </ul>
                   <p className="rack-muted">
-                    Unchecked: {currentReport.uncheckedRules.join(', ')}. No whole-plan validation has run.
+                    Unchecked in spatial report: {currentReport.uncheckedRules.join(', ')}. Equipment and
+                    capacity have a separate report above. No whole-plan validation has run.
                   </p>
                 </>
               )

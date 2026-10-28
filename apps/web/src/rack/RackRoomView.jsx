@@ -421,8 +421,8 @@ export function RoomFloorplan({
         {constraints?.clearance
           ? `front ${constraints.clearance.frontM} m / rear ${constraints.clearance.rearM} m`
           : 'NOT_SET'}{' '}
-        · Rack validation: NOT_RUN. Checks use declared planning inputs; access routes, capacity and
-        engineering accuracy remain unchecked.
+        · Rack validation: NOT_RUN. Spatial checks use declared planning inputs; access routes and
+        engineering accuracy remain unchecked. Equipment and capacity are reported separately below.
       </p>
       <details className="rack-room-source">
         <summary>Coordinates and source</summary>

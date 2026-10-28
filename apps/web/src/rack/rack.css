@@ -85,3 +85,20 @@
 .rack-drawn-obstacle.has-issue polygon { stroke: var(--error); stroke-width: 3; }
 .rack-drawn-obstacle.is-selected polygon { stroke: var(--text); stroke-width: 3; }
 .rack-drawn-obstacle text { font-size: 12px; pointer-events: none; }
+.rack-equipment { margin-top: 16px; }
+.rack-equipment textarea { min-height: 66px; }
+.rack-device-form { border: 1px solid var(--border, #dce0e8); border-radius: 8px; padding: 12px; margin: 12px 0; }
+.rack-equipment .rack-muted { overflow-wrap: anywhere; }
+.rack-table-scroll { overflow-x: auto; }
+.rack-capacity-summary table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.rack-capacity-summary th, .rack-capacity-summary td { padding: 6px; border-bottom: 1px solid #dce0e8; text-align: left; }
+.rack-capacity-summary caption { text-align: left; font-weight: 600; padding: 8px 0; }
+.rack-elevation { max-width: 460px; margin: 18px auto; }
+.rack-u-slots { border: 5px solid #596579; border-radius: 6px; max-height: 420px; overflow-y: auto; }
+.rack-u-slot { display: grid; grid-template-columns: 42px minmax(0, 1fr); min-height: 24px; border-bottom: 1px solid #dce0e8; font-size: 11px; }
+.rack-u-slot > span { padding: 4px; background: #f0f3f8; color: #334155; }
+.rack-u-slot > div { display: flex; flex-wrap: wrap; min-width: 0; }
+.rack-u-slot button { flex: 1; min-width: 0; padding: 2px 6px; border-radius: 0; background: #dbeafe; color: #173e75; font-size: 11px; overflow-wrap: anywhere; }
+.rack-u-slot button[aria-pressed="true"] { background: #b6d4ff; outline: 1px solid #275ec5; outline-offset: -1px; }
+.rack-u-slot.has-issue button { background: #ffe0e0; color: #891c1c; }
+.rack-u-empty { padding: 4px 8px; color: #768398; }

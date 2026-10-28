@@ -233,6 +233,6 @@ export function RackPlanDetail({ plan, roomName }) {
       <dt>Facility lifecycle</dt><dd>{freshness?.lifecycleState ?? 'Unknown'}</dd>
       {freshness?.reasons?.length > 0 && <><dt>Source reasons</dt><dd>{freshness.reasons.join(', ')}</dd></>}
     </dl>
-    <p className="rack-boundary">Fixed room input, rack placements and assumed spatial constraints are saved separately from Facility. Checks cover room boundaries, rack collisions, declared rectangular obstacles and configured front/rear maintenance distances. Side clearances, connected access routes, equipment and capacity remain unchecked. Rack Assistant integration is pending.</p>
+    <p className="rack-boundary">Room input, rack placements, spatial assumptions and plan-local equipment save separately from Facility. Spatial checks and equipment/U/capacity checks report their own scope. Side clearances, connected access routes and engineering validation remain pending. Rack Assistant integration is pending.</p>
   </>;
 }

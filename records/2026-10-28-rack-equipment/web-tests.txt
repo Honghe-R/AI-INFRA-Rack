@@ -1,0 +1,21 @@
+
+> @ai-infra/web@0.1.0 test
+> vitest run src/tests/rack-equipment.test.jsx src/tests/rack-constraints.test.jsx src/tests/rack-editor.test.jsx src/tests/rack-floorplan.test.jsx src/tests/rack-surface.test.jsx src/tests/api-client.test.js src/tests/shell-render.test.jsx src/tests/import-boundaries.test.js
+
+
+ RUN  v2.1.9 C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/web
+
+ ✓ src/tests/api-client.test.js (11 tests) 6ms
+ ✓ src/tests/rack-equipment.test.jsx (5 tests) 19ms
+ ✓ src/tests/import-boundaries.test.js (3 tests) 171ms
+ ✓ src/tests/rack-floorplan.test.jsx (4 tests) 13ms
+ ✓ src/tests/rack-editor.test.jsx (4 tests) 15ms
+ ✓ src/tests/rack-constraints.test.jsx (5 tests) 23ms
+ ✓ src/tests/rack-surface.test.jsx (4 tests) 12ms
+ ✓ src/tests/shell-render.test.jsx (31 tests) 152ms
+
+ Test Files  8 passed (8)
+      Tests  67 passed (67)
+   Start at  21:11:51
+   Duration  2.89s (transform 765ms, setup 0ms, collect 3.52s, tests 412ms, environment 2ms, prepare 2.45s)
+

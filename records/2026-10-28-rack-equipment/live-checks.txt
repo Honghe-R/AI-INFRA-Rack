@@ -1,0 +1,5 @@
+Live equipment demo cb017b9b-ca11-483b-a5fd-c8f527195072: v2, C01 / 42U, GPU U35-38, ToR U41.
+Equipment matches SQL; snapshot preserved; 5 U occupied, 37 free, 90 kg / 500 kg, 3.3 kW / 6 kW power and cooling.
+Equipment CHECKED_SCOPE_CLEAR; spatial INCOMPLETE and whole-plan NOT_RUN remain separate.
+Admin/viewer GET and viewer check 200; other organisation GET/check 403; exact ETag "2".
+Read-only checks left row unchanged; previous three demos retain v2/v4/v1, placements and unknown empty equipment; Facility ETag unchanged.

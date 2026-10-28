@@ -3,6 +3,7 @@ import { ApiError, errors } from '@ai-infra/core';
 import { withTenant } from '@ai-infra/db';
 import { normalizeEditableLayout, assertLockedRacksUnchanged, RackInputError } from '@ai-infra/rack';
 import { normalizeSpatialConstraints, localRectangle, rackClearanceBands } from '@ai-infra/rack';
+import { normalizeEquipment, checkEquipment } from '@ai-infra/rack';
 import { readRackRoomView } from './rack-plans.js';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -26,7 +27,7 @@ async function read(client, projectId, planId) {
   const row = (
     await client.query(
       `SELECT p.plan_id,p.project_id,p.scenario_id,p.version,p.source_revision_id,
-    p.source_container_id,p.source_revision_etag,p.spatial_constraints,r.lifecycle_state,e.etag,s.snapshot_id,s.document,
+    p.source_container_id,p.source_revision_etag,p.spatial_constraints,p.equipment,r.lifecycle_state,e.etag,s.snapshot_id,s.document,
     COALESCE((SELECT jsonb_agg(jsonb_build_object('rackId',q.rack_id,'modelId',q.model_id,'name',q.name,
       'xM',q.x_m,'yM',q.y_m,'rotationDeg',q.rotation_deg,'locked',q.locked) ORDER BY q.rack_id)
       FROM rack_placements q WHERE q.project_id=p.project_id AND q.plan_id=p.plan_id),'[]'::jsonb) AS placements,
@@ -60,6 +61,7 @@ async function read(client, projectId, planId) {
     snapshot: row.document ? { snapshotId: row.snapshot_id, ...row.document } : null,
     placements: row.placements,
     constraints: row.spatial_constraints,
+    equipment: row.equipment,
     models: row.models ?? [],
     validationState: 'NOT_RUN',
   };
@@ -173,7 +175,7 @@ export function createRackLayoutService({ pool }) {
     },
     async check({ projectId, planId, body }) {
       scope(projectId, planId);
-      bodyFields(body, ['contract_version', 'snapshot_id', 'placements', 'constraints']);
+      bodyFields(body, ['contract_version', 'snapshot_id', 'placements', 'constraints', 'equipment']);
       return withTenant(
         pool,
         projectId,
@@ -190,6 +192,10 @@ export function createRackLayoutService({ pool }) {
           return {
             planId,
             snapshotId: layout.snapshot.snapshotId,
+            equipmentReport: checkEquipment(
+              normalizeEquipment(Object.hasOwn(body, 'equipment') ? body.equipment : layout.equipment, entries.map(e => e.placement)),
+              entries.map(e => e.placement), layout.models,
+            ),
             report: await check(
               client,
               layout,
@@ -209,7 +215,7 @@ export function createRackLayoutService({ pool }) {
         body,
         operation === 'capture'
           ? ['contract_version']
-          : ['contract_version', 'snapshot_id', 'placements', 'constraints'],
+          : ['contract_version', 'snapshot_id', 'placements', 'constraints', 'equipment'],
       );
       if (!UUID.test(actorId ?? '')) throw errors.unauthorized();
       if (!key)
@@ -305,14 +311,20 @@ export function createRackLayoutService({ pool }) {
             Object.hasOwn(body, 'constraints') ? body.constraints : layout.constraints,
           );
           const report = await check(client, layout, entries, constraints);
+          const equipment = normalizeEquipment(Object.hasOwn(body, 'equipment') ? body.equipment : layout.equipment, placements);
+          const equipmentReport = checkEquipment(equipment, placements, layout.models);
+          if (equipmentReport.diagnostics.length)
+            throw new ApiError('RACK_EQUIPMENT_CONFLICT', 'Resolve equipment and capacity conflicts before saving.', {
+              status: 422, details: [{ equipmentReport }],
+            });
           if (report.diagnostics.length)
             throw new ApiError('RACK_LAYOUT_CONFLICT', 'Resolve spatial conflicts before saving.', {
               status: 422,
               details: [{ report }],
             });
           await client.query(
-            'UPDATE rack_plans SET spatial_constraints=$3 WHERE project_id=$1 AND plan_id=$2',
-            [projectId, planId, JSON.stringify(constraints)],
+            'UPDATE rack_plans SET spatial_constraints=$3,equipment=$4 WHERE project_id=$1 AND plan_id=$2',
+            [projectId, planId, JSON.stringify(constraints), JSON.stringify(equipment)],
           );
           await client.query('DELETE FROM rack_placements WHERE project_id=$1 AND plan_id=$2', [
             projectId,

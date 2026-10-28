@@ -1,0 +1,3 @@
+Fresh isolated database: all 10 migrations applied; repeated run skips all 10 with no drift.
+rack_plans: RLS enabled and forced. No changes to seeded development project data.
+Dropped only the uniquely named migration probe database created by this check.

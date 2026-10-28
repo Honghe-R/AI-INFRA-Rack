@@ -149,3 +149,9 @@ cursor 只在同项目、同过滤范围内查找，错误范围、不存在或�
 报告新增障碍 ID、FRONT/REAR、障碍数、维护带数和规划来源。非空布局无已知冲突但障碍覆盖 UNKNOWN 或净距未设时为 INCOMPLETE；已声明完整且明确净距后才可能 CHECKED_SCOPE_CLEAR。该状态不推进整体 NOT_RUN。空机柜清单仍检查已提供障碍，存在问题返回 ISSUES_FOUND；无问题返回 NOT_CHECKED。
 
 迁移 009 为旧方案填入未知覆盖、空障碍与 null 净距，不改版本或原机柜。真实 API 32 项通过，迁移 9 项首次/重复通过；证据见 [本轮记录](records/2026-10-28-rack-constraints/)。
+
+## 第十二轮补充：设备与容量
+
+010 迁移新增 rack_plans.equipment，旧方案初始化为空清单/未知覆盖且不推进版本。layout GET 返回 equipment；v1 check/save 请求增加可选 equipment，省略保留存储值、显式 null 拒绝。check 响应并列增加 equipmentReport，空间 report 保持原范围。
+
+支持同方案唯一设备 ID、规格、已上架/未上架状态、U 闭区间与三维容量假设。设备与机柜同一版本/事务保存，复用身份、权限、来源锁和幂等；已知冲突 422/RACK_EQUIPMENT_CONFLICT，不存在/外部柜引用 400，旧版本 412。设备 ID 不是全局物理资产注册，限值不是正式预算，整体 NOT_RUN 不变。完整字段、规则、报告和限制见根 [RACK_EQUIPMENT.md](RACK_EQUIPMENT.md)。

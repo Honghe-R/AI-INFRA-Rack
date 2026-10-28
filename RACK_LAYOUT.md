@@ -1,6 +1,6 @@
 # Rack 布局编辑与保存 v1
 
-日期：2026-10-28。已完成机柜手工编辑的小闭环；本轮新增 [规划禁放区和前后维护净距](RACK_CONSTRAINTS.md)。设备、容量、算法和 Rack Assistant 尚未接入。
+日期：2026-10-28。已完成机柜手工编辑、[规划禁放区和前后维护净距](RACK_CONSTRAINTS.md)，现已补 [设备上架、U 位与容量假设](RACK_EQUIPMENT.md)。算法和 Rack Assistant 尚未接入。
 
 ## 本地更新与演示
 
@@ -30,7 +30,7 @@
 
 坐标沿用 [平面图 contract](RACK_FLOORPLAN.md)：受支持的 WGS84 UTM 投影米，平移为局部 X 东/Y 北；机柜中心为位置，逆时针四分之一转。最大 256 柜，坐标 ±10000 m，名称 1–160 字符，型号只能来自服务端目录。拒绝未知字段、重复 ID、伪造项目/方案归属、非有限数和非法方向。
 
-保存成功整个机柜集合原子替换，推进方案版本、更新修改人/时间并记录命令；失败整体回滚。不修改 Facility 表、几何或 ETag。没有设备数据、历史版本恢复、删除方案或来源重绑定 API。
+保存成功整个机柜集合原子替换，同时保存空间条件及设备文档，推进方案版本、更新修改人/时间并记录命令；失败整体回滚。不修改 Facility 表、几何或 ETag。没有历史版本恢复、删除方案或来源重绑定 API。
 
 ## HTTP contract
 
@@ -86,7 +86,7 @@ check 和 save 的 body 相同；当前还可携带 constraints，未提供时�
 
 报告状态为 `ISSUES_FOUND`、`INCOMPLETE`、`CHECKED_SCOPE_CLEAR` 或空布局 `NOT_CHECKED`；包含 `scope,diagnostics,racksChecked,pairsChecked,obstacleCoverage,uncheckedRules`。诊断有 code、severity、双方 rackIds 和文字。
 
-当前规则扩展为显式矩形规划障碍和前后维护带。覆盖 UNKNOWN 或未设置净距时返回 INCOMPLETE；CHECKED_SCOPE_CLEAR 仅针对明确声明的输入和已列规则。侧向净距、通道、设备、U 位、重量、电力、冷却和工程精度仍未检查。方案 `validationState` 仍为 `NOT_RUN`，不自动发布/冻结。
+当前空间规则包含显式矩形规划障碍和前后维护带。覆盖 UNKNOWN 或未设置净距时返回 INCOMPLETE；CHECKED_SCOPE_CLEAR 仅针对明确声明的输入和已列规则。设备/U 位/重量/电力/冷却总量另由 equipmentReport 检查，见 [设备 contract](RACK_EQUIPMENT.md)。侧向净距、连续通道、正式预算与工程精度尚未检查。方案 `validationState` 仍为 `NOT_RUN`，不自动发布/冻结。
 现有 Facility 合成数据配准审核为 NOT_RECORDED；型号是假设规格，容量未知。图上能放置不等于工程方案可实施。
 
 已保存锁定柜必须先独立保存解锁，再移动/旋转/替换型号/删除；同请求同时解锁并移动也拒绝。名称可修改。前端同步禁用受限操作，后端独立执行规则。
@@ -103,4 +103,6 @@ check 和 save 的 body 相同；当前还可携带 constraints，未提供时�
 领域 83 项、真实 DB/API 26 项、相关 Web 57 项通过，Web 构建成功；见 [证据目录](records/2026-10-28-rack-editor/) 和 [进展](PROGRESS.md)。验证仅覆盖对应范围，不代表全仓或工程校核通过。
 实际页面已验证添加、重叠拦截、表单改位置/旋转、锁定、拖动、切换工具保留、dirty 关闭保护及保存重读。并发冲突和事务失败回滚主要由真实 API/数据库测试验证。
 没有浏览器断网响应丢失故障注入；未做完整压力/性能实验、正式审计、最小权限生产部署或完整无障碍审计。
-障碍/前后净距增量已完成，见 [本轮 contract](RACK_CONSTRAINTS.md)。下一步做设备及容量闭环，之后推进算法、候选应用与 Rack Assistant。
+障碍/前后净距和设备/U 位/容量假设闭环已完成，见 [空间 contract](RACK_CONSTRAINTS.md) 和 [设备 contract](RACK_EQUIPMENT.md)。下一步推进规则式布局候选，再接 Rack Assistant；正式预算与依赖仍需单独补齐。
+
+第十二轮：layout 响应增加 equipment，check 并列返回 equipmentReport，check/save v1 body 可选 equipment，省略保留已存值。设备冲突返回 422/RACK_EQUIPMENT_CONFLICT。保存同时重算两份报告，再原子更新所有文档；权限、来源锁、版本与幂等不变。完整字段和语义以设备 contract 为准。

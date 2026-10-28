@@ -1,0 +1,620 @@
+
+> @ai-infra/rack@0.1.0 test
+> node --test src/tests/*.test.js
+
+TAP version 13
+# Subtest: planning constraints retain unknown coverage and null clearance without inventing engineering defaults
+ok 1 - planning constraints retain unknown coverage and null clearance without inventing engineering defaults
+  ---
+  duration_ms: 1.7897
+  type: 'test'
+  ...
+# Subtest: planning obstacles normalize identities and references without changing callers
+ok 2 - planning obstacles normalize identities and references without changing callers
+  ---
+  duration_ms: 0.3595
+  type: 'test'
+  ...
+# Subtest: planning inputs reject incomplete, injected, duplicate and oversized assumptions
+ok 3 - planning inputs reject incomplete, injected, duplicate and oversized assumptions
+  ---
+  duration_ms: 1.614
+  type: 'test'
+  ...
+# Subtest: front and rear maintenance bands rotate with exact quarter turns and preserve asymmetric distances
+ok 4 - front and rear maintenance bands rotate with exact quarter turns and preserve asymmetric distances
+  ---
+  duration_ms: 0.6859
+  type: 'test'
+  ...
+# Subtest: null and explicit zero produce no degenerate maintenance polygons; one-sided requirements remain one-sided
+ok 5 - null and explicit zero produce no degenerate maintenance polygons; one-sided requirements remain one-sided
+  ---
+  duration_ms: 0.2828
+  type: 'test'
+  ...
+# Subtest: sub-millimetre planning requirements are rejected instead of producing degenerate bands
+ok 6 - sub-millimetre planning requirements are rejected instead of producing degenerate bands
+  ---
+  duration_ms: 0.2561
+  type: 'test'
+  ...
+# Subtest: editable layout derives dimensions from the server catalog, normalizes identities and leaves input unchanged
+ok 7 - editable layout derives dimensions from the server catalog, normalizes identities and leaves input unchanged
+  ---
+  duration_ms: 2.867
+  type: 'test'
+  ...
+# Subtest: editable layout rejects duplicate identities, scope injection, unknown models and unbounded collections
+ok 8 - editable layout rejects duplicate identities, scope injection, unknown models and unbounded collections
+  ---
+  duration_ms: 2.7848
+  type: 'test'
+  ...
+# Subtest: saved locks allow name edits and an explicit unlock but forbid moving, rotating, replacement and deletion
+ok 9 - saved locks allow name edits and an explicit unlock but forbid moving, rotating, replacement and deletion
+  ---
+  duration_ms: 1.3795
+  type: 'test'
+  ...
+# Subtest: equipment normalization isolates and freezes nested inputs, preserves unknown and explicit zero
+ok 10 - equipment normalization isolates and freezes nested inputs, preserves unknown and explicit zero
+  ---
+  duration_ms: 3.0982
+  type: 'test'
+  ...
+# Subtest: equipment rejects malformed, missing, injected and unbounded fields
+ok 11 - equipment rejects malformed, missing, injected and unbounded fields
+  ---
+  duration_ms: 3.0161
+  type: 'test'
+  ...
+# Subtest: one device identity cannot be installed twice, even with UUID case differences
+ok 12 - one device identity cannot be installed twice, even with UUID case differences
+  ---
+  duration_ms: 0.236
+  type: 'test'
+  ...
+# Subtest: unknown/foreign/deleted rack references and duplicate limits are rejected
+ok 13 - unknown/foreign/deleted rack references and duplicate limits are rejected
+  ---
+  duration_ms: 0.6617
+  type: 'test'
+  ...
+# Subtest: unassigned devices retain specs without consuming U or capacity and remain incomplete
+ok 14 - unassigned devices retain specs without consuming U or capacity and remain incomplete
+  ---
+  duration_ms: 1.2342
+  type: 'test'
+  ...
+# Subtest: U1 bottom, inclusive end and adjacent full-width devices are legal; overflow and overlap diagnose both objects
+ok 15 - U1 bottom, inclusive end and adjacent full-width devices are legal; overflow and overlap diagnose both objects
+  ---
+  duration_ms: 0.6677
+  type: 'test'
+  ...
+# Subtest: same U positions in different racks are independent; moving preserves device identity
+ok 16 - same U positions in different racks are independent; moving preserves device identity
+  ---
+  duration_ms: 0.3434
+  type: 'test'
+  ...
+# Subtest: capacity sums all dimensions and explicit assumed limits without changing the catalog
+ok 17 - capacity sums all dimensions and explicit assumed limits without changing the catalog
+  ---
+  duration_ms: 0.3572
+  type: 'test'
+  ...
+# Subtest: unknown demand is not zero; a known lower bound can still exceed the limit
+ok 18 - unknown demand is not zero; a known lower bound can still exceed the limit
+  ---
+  duration_ms: 0.5234
+  type: 'test'
+  ...
+# Subtest: unknown model limits, zero limits, exact equality, arithmetic rounding and small real exceedance stay distinct
+ok 19 - unknown model limits, zero limits, exact equality, arithmetic rounding and small real exceedance stay distinct
+  ---
+  duration_ms: 1.9405
+  type: 'test'
+  ...
+# Subtest: model capacity fallback and report incompleteness are scoped to declared inventory
+ok 20 - model capacity fallback and report incompleteness are scoped to declared inventory
+  ---
+  duration_ms: 0.5504
+  type: 'test'
+  ...
+# Subtest: 512-device inventory is checked fully with bounded totals and no mutation
+ok 21 - 512-device inventory is checked fully with bounded totals and no mutation
+  ---
+  duration_ms: 5.0548
+  type: 'test'
+  ...
+# Subtest: separated racks reuse single-rack checks and report complete pair coverage
+ok 22 - separated racks reuse single-rack checks and report complete pair coverage
+  ---
+  duration_ms: 4.0954
+  type: 'test'
+  ...
+# Subtest: interior overlap returns one diagnostic with both rack identities and intersection bounds
+ok 23 - interior overlap returns one diagnostic with both rack identities and intersection bounds
+  ---
+  duration_ms: 0.7598
+  type: 'test'
+  ...
+# Subtest: identical locations and full containment are collisions even without crossing edges
+ok 24 - identical locations and full containment are collisions even without crossing edges
+  ---
+  duration_ms: 0.7545
+  type: 'test'
+  ...
+# Subtest: side and corner contacts are allowed by the footprint rule and do not claim clearance
+ok 25 - side and corner contacts are allowed by the footprint rule and do not claim clearance
+  ---
+  duration_ms: 0.8141
+  type: 'test'
+  ...
+# Subtest: small positive gaps and overlaps retain their sign without hidden tolerance
+ok 26 - small positive gaps and overlaps retain their sign without hidden tolerance
+  ---
+  duration_ms: 1.0122
+  type: 'test'
+  ...
+# Subtest: every pair uses the rotated rectangular footprint rather than unrotated dimensions
+ok 27 - every pair uses the rotated rectangular footprint rather than unrotated dimensions
+  ---
+  duration_ms: 0.6297
+  type: 'test'
+  ...
+# Subtest: all unordered pairs are visited once in deterministic input order, including locked racks
+ok 28 - all unordered pairs are visited once in deterministic input order, including locked racks
+  ---
+  duration_ms: 0.4931
+  type: 'test'
+  ...
+# Subtest: batch diagnostics retain wall and obstacle failures before pair findings
+ok 29 - batch diagnostics retain wall and obstacle failures before pair findings
+  ---
+  duration_ms: 0.6376
+  type: 'test'
+  ...
+# Subtest: unknown rack inventory or obstacle inventory prevents an overall clear conclusion
+ok 30 - unknown rack inventory or obstacle inventory prevents an overall clear conclusion
+  ---
+  duration_ms: 0.6208
+  type: 'test'
+  ...
+# Subtest: a known pair collision is still a failure with an incomplete inventory
+ok 31 - a known pair collision is still a failure with an incomplete inventory
+  ---
+  duration_ms: 0.6601
+  type: 'test'
+  ...
+# Subtest: an empty inventory is NOT_CHECKED rather than automatically passing a plan
+ok 32 - an empty inventory is NOT_CHECKED rather than automatically passing a plan
+  ---
+  duration_ms: 0.3593
+  type: 'test'
+  ...
+# Subtest: one fully listed rack has zero pairs and only passes the bounded check scope
+ok 33 - one fully listed rack has zero pairs and only passes the bounded check scope
+  ---
+  duration_ms: 0.7434
+  type: 'test'
+  ...
+# Subtest: layout rejects missing records, unknown fields and absent inventory declaration
+ok 34 - layout rejects missing records, unknown fields and absent inventory declaration
+  ---
+  duration_ms: 1.1768
+  type: 'test'
+  ...
+# Subtest: model and placement arrays must be explicit, bounded and have no sparse slots
+ok 35 - model and placement arrays must be explicit, bounded and have no sparse slots
+  ---
+  duration_ms: 0.5719
+  type: 'test'
+  ...
+# Subtest: room project and every rack project/plan must match the declared layout
+ok 36 - room project and every rack project/plan must match the declared layout
+  ---
+  duration_ms: 0.2765
+  type: 'test'
+  ...
+# Subtest: duplicate rack and model identities are refused after UUID normalization
+ok 37 - duplicate rack and model identities are refused after UUID normalization
+  ---
+  duration_ms: 0.216
+  type: 'test'
+  ...
+# Subtest: missing model references and malformed model dimensions do not get skipped
+ok 38 - missing model references and malformed model dimensions do not get skipped
+  ---
+  duration_ms: 0.2588
+  type: 'test'
+  ...
+# Subtest: normalized model, project and plan IDs resolve without case-sensitive false mismatches
+ok 39 - normalized model, project and plan IDs resolve without case-sensitive false mismatches
+  ---
+  duration_ms: 0.2541
+  type: 'test'
+  ...
+# Subtest: the maximum supported rack inventory is accepted and visits exactly n(n-1)/2 pairs
+ok 40 - the maximum supported rack inventory is accepted and visits exactly n(n-1)/2 pairs
+  ---
+  duration_ms: 12.4111
+  type: 'test'
+  ...
+# Subtest: reports and nested collision evidence are immutable and no input is changed
+ok 41 - reports and nested collision evidence are immutable and no input is changed
+  ---
+  duration_ms: 0.984
+  type: 'test'
+  ...
+# Subtest: moving a conflicting rack and rerunning clears findings without stale mutable state
+ok 42 - moving a conflicting rack and rerunning clears findings without stale mutable state
+  ---
+  duration_ms: 0.3339
+  type: 'test'
+  ...
+# Subtest: the versioned fixture keeps unknown engineering limits explicit
+ok 43 - the versioned fixture keeps unknown engineering limits explicit
+  ---
+  duration_ms: 1.4198
+  type: 'test'
+  ...
+# Subtest: explicit zero capacity is preserved and negative limits are rejected
+ok 44 - explicit zero capacity is preserved and negative limits are rejected
+  ---
+  duration_ms: 0.9186
+  type: 'test'
+  ...
+# Subtest: dimensions require positive finite numbers, not coerced strings
+ok 45 - dimensions require positive finite numbers, not coerced strings
+  ---
+  duration_ms: 0.5716
+  type: 'test'
+  ...
+# Subtest: U capacity requires a positive safe integer
+ok 46 - U capacity requires a positive safe integer
+  ---
+  duration_ms: 0.234
+  type: 'test'
+  ...
+# Subtest: a source is required and cannot silently claim a known specification
+ok 47 - a source is required and cannot silently claim a known specification
+  ---
+  duration_ms: 0.201
+  type: 'test'
+  ...
+# Subtest: unknown fields fail instead of hiding a misspelled unit or capacity
+ok 48 - unknown fields fail instead of hiding a misspelled unit or capacity
+  ---
+  duration_ms: 0.2842
+  type: 'test'
+  ...
+# Subtest: identifiers reject invalid values and normalise UUID casing
+ok 49 - identifiers reject invalid values and normalise UUID casing
+  ---
+  duration_ms: 0.3212
+  type: 'test'
+  ...
+# Subtest: names must be bounded non-empty text
+ok 50 - names must be bounded non-empty text
+  ---
+  duration_ms: 0.2599
+  type: 'test'
+  ...
+# Subtest: constructors reject arrays and missing records
+ok 51 - constructors reject arrays and missing records
+  ---
+  duration_ms: 0.3787
+  type: 'test'
+  ...
+# Subtest: local coordinates permit negative positions but refuse missing or non-finite data
+ok 52 - local coordinates permit negative positions but refuse missing or non-finite data
+  ---
+  duration_ms: 0.6499
+  type: 'test'
+  ...
+# Subtest: rotation and lock defaults do not coerce null or strings
+ok 53 - rotation and lock defaults do not coerce null or strings
+  ---
+  duration_ms: 0.476
+  type: 'test'
+  ...
+# Subtest: returned records do not alias caller-owned mutable input
+ok 54 - returned records do not alias caller-owned mutable input
+  ---
+  duration_ms: 1.0339
+  type: 'test'
+  ...
+# Subtest: the unrotated footprint is centred at its placement and uses metres
+ok 55 - the unrotated footprint is centred at its placement and uses metres
+  ---
+  duration_ms: 1.186
+  type: 'test'
+  ...
+# Subtest: all quarter-turn rotations keep the physical front edge identifiable
+ok 56 - all quarter-turn rotations keep the physical front edge identifiable
+  ---
+  duration_ms: 0.482
+  type: 'test'
+  ...
+# Subtest: footprints cannot silently use the wrong model or overflow coordinates
+ok 57 - footprints cannot silently use the wrong model or overflow coordinates
+  ---
+  duration_ms: 0.2275
+  type: 'test'
+  ...
+# Subtest: geometry is immutable and never claims engineering feasibility
+ok 58 - geometry is immutable and never claims engineering feasibility
+  ---
+  duration_ms: 0.1735
+  type: 'test'
+  ...
+# Subtest: unrepresentable dimensions are rejected rather than yielding zero-area footprints
+ok 59 - unrepresentable dimensions are rejected rather than yielding zero-area footprints
+  ---
+  duration_ms: 0.1525
+  type: 'test'
+  ...
+# Subtest: an empty plan starts at its own version 1 and has never been validated
+ok 60 - an empty plan starts at its own version 1 and has never been validated
+  ---
+  duration_ms: 3.3313
+  type: 'test'
+  ...
+# Subtest: plan creation does not mutate input or keep caller-owned nested references
+ok 61 - plan creation does not mutate input or keep caller-owned nested references
+  ---
+  duration_ms: 1.3765
+  type: 'test'
+  ...
+# Subtest: caller cannot assert saved versions, validation, existing racks or lifecycle state
+ok 62 - caller cannot assert saved versions, validation, existing racks or lifecycle state
+  ---
+  duration_ms: 0.7912
+  type: 'test'
+  ...
+# Subtest: every plan and facility identity is required and must be a UUID
+ok 63 - every plan and facility identity is required and must be a UUID
+  ---
+  duration_ms: 1.0575
+  type: 'test'
+  ...
+# Subtest: UUID casing is normalized before plan ownership comparisons
+ok 64 - UUID casing is normalized before plan ownership comparisons
+  ---
+  duration_ms: 0.1768
+  type: 'test'
+  ...
+# Subtest: a plan refuses a source declared in a different project or scenario
+ok 65 - a plan refuses a source declared in a different project or scenario
+  ---
+  duration_ms: 0.2833
+  type: 'test'
+  ...
+# Subtest: names are bounded nonempty text and valid names are trimmed
+ok 66 - names are bounded nonempty text and valid names are trimmed
+  ---
+  duration_ms: 0.2973
+  type: 'test'
+  ...
+# Subtest: reference and plan reject missing records, arrays and unknown fields
+ok 67 - reference and plan reject missing records, arrays and unknown fields
+  ---
+  duration_ms: 0.3498
+  type: 'test'
+  ...
+# Subtest: source token is mandatory, bounded and never coerced or silently trimmed
+ok 68 - source token is mandatory, bounded and never coerced or silently trimmed
+  ---
+  duration_ms: 0.6688
+  type: 'test'
+  ...
+# Subtest: unchanged source compares normalized identity while preserving opaque token semantics
+ok 69 - unchanged source compares normalized identity while preserving opaque token semantics
+  ---
+  duration_ms: 0.5539
+  type: 'test'
+  ...
+# Subtest: a changed upstream revision token marks the reference stale
+ok 70 - a changed upstream revision token marks the reference stale
+  ---
+  duration_ms: 0.2922
+  type: 'test'
+  ...
+# Subtest: matching tokens cannot disguise a changed project, scenario, revision or room
+ok 71 - matching tokens cannot disguise a changed project, scenario, revision or room
+  ---
+  duration_ms: 0.2481
+  type: 'test'
+  ...
+# Subtest: source changes take precedence over token changes and list all changed identity fields
+ok 72 - source changes take precedence over token changes and list all changed identity fields
+  ---
+  duration_ms: 0.1065
+  type: 'test'
+  ...
+# Subtest: source comparison validates both arguments and returns deeply immutable diagnostics
+ok 73 - source comparison validates both arguments and returns deeply immutable diagnostics
+  ---
+  duration_ms: 0.1853
+  type: 'test'
+  ...
+# Subtest: plan output is JSON data, with no fabricated timestamp or automatic persistence
+ok 74 - plan output is JSON data, with no fabricated timestamp or automatic persistence
+  ---
+  duration_ms: 0.119
+  type: 'test'
+  ...
+# Subtest: room display preserves a concave outline and holes, using translation only
+ok 75 - room display preserves a concave outline and holes, using translation only
+  ---
+  duration_ms: 2.2119
+  type: 'test'
+  ...
+# Subtest: display frame preserves rotation and arbitrary ring winding
+ok 76 - display frame preserves rotation and arbitrary ring winding
+  ---
+  duration_ms: 0.2439
+  type: 'test'
+  ...
+# Subtest: only matching WGS84 UTM definitions have an explicit metre contract
+ok 77 - only matching WGS84 UTM definitions have an explicit metre contract
+  ---
+  duration_ms: 1.3224
+  type: 'test'
+  ...
+# Subtest: invalid topology assertion, 3D and other geometry types are refused
+ok 78 - invalid topology assertion, 3D and other geometry types are refused
+  ---
+  duration_ms: 0.1422
+  type: 'test'
+  ...
+# Subtest: malformed, unclosed, degenerate and nonfinite coordinates never reach the drawing
+ok 79 - malformed, unclosed, degenerate and nonfinite coordinates never reach the drawing
+  ---
+  duration_ms: 0.2691
+  type: 'test'
+  ...
+# Subtest: geometry complexity and extents are bounded without simplifying a boundary
+ok 80 - geometry complexity and extents are bounded without simplifying a boundary
+  ---
+  duration_ms: 0.3739
+  type: 'test'
+  ...
+# Subtest: room snapshot keeps explicit local units, origin, provenance and versioned facility input
+ok 81 - room snapshot keeps explicit local units, origin, provenance and versioned facility input
+  ---
+  duration_ms: 2.3995
+  type: 'test'
+  ...
+# Subtest: snapshot copies and deeply freezes nested bounds, obstacles and provenance
+ok 82 - snapshot copies and deeply freezes nested bounds, obstacles and provenance
+  ---
+  duration_ms: 0.4732
+  type: 'test'
+  ...
+# Subtest: missing records, unknown polygon input, unsupported versions, units and coordinate frames are rejected
+ok 83 - missing records, unknown polygon input, unsupported versions, units and coordinate frames are rejected
+  ---
+  duration_ms: 0.9496
+  type: 'test'
+  ...
+# Subtest: snapshot identity, descriptive fields and provenance cannot be absent or fabricated as verified
+ok 84 - snapshot identity, descriptive fields and provenance cannot be absent or fabricated as verified
+  ---
+  duration_ms: 0.6615
+  type: 'test'
+  ...
+# Subtest: rectangles reject nonfinite values, wrong types, zero, reversed and overflowing extents
+ok 85 - rectangles reject nonfinite values, wrong types, zero, reversed and overflowing extents
+  ---
+  duration_ms: 0.8888
+  type: 'test'
+  ...
+# Subtest: negative local coordinates are supported without silently moving the origin
+ok 86 - negative local coordinates are supported without silently moving the origin
+  ---
+  duration_ms: 0.7326
+  type: 'test'
+  ...
+# Subtest: obstacle array and completeness declaration are required; sparse arrays cannot hide missing data
+ok 87 - obstacle array and completeness declaration are required; sparse arrays cannot hide missing data
+  ---
+  duration_ms: 0.4234
+  type: 'test'
+  ...
+# Subtest: obstacle schema, identities, names and bounds are checked rather than ignored
+ok 88 - obstacle schema, identities, names and bounds are checked rather than ignored
+  ---
+  duration_ms: 0.3467
+  type: 'test'
+  ...
+# Subtest: obstacle identities are unique after UUID normalization; overlapping distinct obstacles remain valid
+ok 89 - obstacle identities are unique after UUID normalization; overlapping distinct obstacles remain valid
+  ---
+  duration_ms: 0.5021
+  type: 'test'
+  ...
+# Subtest: obstacles outside the room are refused while obstacles touching walls are accepted
+ok 90 - obstacles outside the room are refused while obstacles touching walls are accepted
+  ---
+  duration_ms: 2.381
+  type: 'test'
+  ...
+# Subtest: clear placement reports only checked scope and retains synthetic source evidence
+ok 91 - clear placement reports only checked scope and retains synthetic source evidence
+  ---
+  duration_ms: 1.7502
+  type: 'test'
+  ...
+# Subtest: protrusion beyond each of the four walls returns a structured issue rather than an input exception
+ok 92 - protrusion beyond each of the four walls returns a structured issue rather than an input exception
+  ---
+  duration_ms: 1.8766
+  type: 'test'
+  ...
+# Subtest: being exactly on the room boundary is contained, without implying maintenance clearance
+ok 93 - being exactly on the room boundary is contained, without implying maintenance clearance
+  ---
+  duration_ms: 1.4326
+  type: 'test'
+  ...
+# Subtest: obstacle containment, overlap, edge and corner contact all count as conflicts
+ok 94 - obstacle containment, overlap, edge and corner contact all count as conflicts
+  ---
+  duration_ms: 0.7929
+  type: 'test'
+  ...
+# Subtest: a tiny positive gap is clear and a tiny overlap is detected, with no hidden rounding tolerance
+ok 95 - a tiny positive gap is clear and a tiny overlap is detected, with no hidden rounding tolerance
+  ---
+  duration_ms: 0.2276
+  type: 'test'
+  ...
+# Subtest: all quarter-turns use the rotated footprint for wall and obstacle checks
+ok 96 - all quarter-turns use the rotated footprint for wall and obstacle checks
+  ---
+  duration_ms: 0.4537
+  type: 'test'
+  ...
+# Subtest: missing obstacle coverage never becomes a pass merely because no known conflicts exist
+ok 97 - missing obstacle coverage never becomes a pass merely because no known conflicts exist
+  ---
+  duration_ms: 0.2889
+  type: 'test'
+  ...
+# Subtest: known failures are still reported when the obstacle inventory is incomplete
+ok 98 - known failures are still reported when the obstacle inventory is incomplete
+  ---
+  duration_ms: 0.1268
+  type: 'test'
+  ...
+# Subtest: all simultaneous wall and obstacle findings are returned in deterministic order
+ok 99 - all simultaneous wall and obstacle findings are returned in deterministic order
+  ---
+  duration_ms: 0.1869
+  type: 'test'
+  ...
+# Subtest: wrong project, model or malformed placement is rejected before producing a spatial verdict
+ok 100 - wrong project, model or malformed placement is rejected before producing a spatial verdict
+  ---
+  duration_ms: 0.318
+  type: 'test'
+  ...
+# Subtest: report evidence is deeply immutable and checking changes no inputs
+ok 101 - report evidence is deeply immutable and checking changes no inputs
+  ---
+  duration_ms: 0.5301
+  type: 'test'
+  ...
+1..101
+# tests 101
+# suites 0
+# pass 101
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 282.2137

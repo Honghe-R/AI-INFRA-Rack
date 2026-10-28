@@ -18,6 +18,6 @@
 
 图面读取固定快照，来源变化后仍能查看旧图和机柜，但阻止新写入；不自动重绑定，也没有实时推送。合成 Facility 和假设机柜规格均明确标识；空间检查无冲突不是完整工程验证。
 
-已增加 [规划矩形禁放区与前后维护净距](RACK_CONSTRAINTS.md)：编辑时在 Planning constraints 设置，保存与机柜同一事务。设备、容量、通道连通、布局优化和 Rack Assistant 尚未实现。全局 Ask about Rack 仍是既有入口，不能当作 Rack 业务集成。
+已增加 [规划矩形禁放区与前后维护净距](RACK_CONSTRAINTS.md) 和 [设备/U 位与容量假设](RACK_EQUIPMENT.md)：在 Planning constraints 与 Equipment & capacity 设置，同机柜一起保存。设备可上架/迁移/卸架、查看柜内 U 位图和三维用量；选柜后显示容量表。通道连通、正式预算、布局优化和 Rack Assistant 尚未实现。全局 Ask about Rack 仍是既有入口，不能当作 Rack 业务集成。
 
 历史证据分别见 [方案工作区](records/2026-10-28-rack-ui/)、[坐标显示](records/2026-10-28-rack-floorplan/)，本轮见 [机柜编辑](records/2026-10-28-rack-editor/)。本轮未进行浏览器断网响应丢失故障注入。
