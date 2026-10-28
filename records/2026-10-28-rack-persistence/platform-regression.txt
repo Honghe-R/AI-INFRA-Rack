@@ -1,0 +1,6 @@
+Database connected; PostGIS 3.4 USE_GEOS=1 USE_PROJ=1 USE_STATS=1; 7 migrations recorded.
+Cascade Ridge Campus: project/scenario/facility/assets HTTP 200; 10 containers, 22 geometries, 5 assets; foreign identity denied (403).
+Northern DC Campus: project/scenario/facility/assets HTTP 200; 9 containers, 13 geometries, 5 assets; foreign identity denied (403).
+RustFS through existing S3 driver: PUT/HEAD/GET/signed download succeeded.
+Local synthetic grid tiles: HTTP 200 image/png. These are not geographic basemap imagery.
+Runtime smoke checks passed. This is not a full repository test or a database RLS security audit.

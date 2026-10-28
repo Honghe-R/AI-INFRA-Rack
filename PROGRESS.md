@@ -9,11 +9,11 @@
 | 内容 | 状态 |
 | --- | --- |
 | 起始基线 | 当前副本初始提交 `638a769`；第一轮开始时工作区干净，后续保留前轮未提交修改 |
-| 已实现 | Rack 型号/实例、局部占地、空内存方案、设施来源比较、矩形机房、单柜越界/障碍、多柜碰撞与汇总；74 项单元测试 |
+| 已实现 | Rack 领域基础与三项空间规则（74 项测试）；另有空方案持久化/创建读取 API、项目权限与来源核对（10 项数据库/API 集成测试） |
 | 已记录 | 基础契约、坐标、方案初始状态/版本、来源比较、三项空间规则、清单覆盖声明与未检查范围、遗留问题 |
-| 部分推进 | 总清单阶段 0–2；阶段 3 仅领域包；阶段 5 提前完成三项离线空间规则，存储/服务仍未完成 |
+| 部分推进 | 总清单阶段 0–2；阶段 3 完成空方案存储/权限/API 最小切片；阶段 5 提前完成三项离线空间规则 |
 | 运行基线 | 原平台已接通独立 PostgreSQL/PostGIS 与 S3 对象存储，两个示例项目可读；见 2026-10-28 记录 |
-| 尚未开始 | Rack 数据表、权限、API、正式工作区编辑页面、设备分配、净距/通道/容量等其他规则、布局算法、候选、Assistant |
+| 尚未开始 | 机柜/设备表与保存、正式工作区页面、设备分配、净距/通道/容量等其他规则、布局算法、候选、Assistant |
 | Git | 所有修改留在工作区，未提交、未推送；远程地址保持原样 |
 
 当前安排：2026-10-28 用户恢复数据库/平台初始化并允许 Docker；已完成隔离的本地开发运行基线，后续继续按小步推进 Rack 功能。
@@ -304,6 +304,50 @@ Docker 可能保留已下载的镜像缓存，本轮没有清理全局 Docker �
 - 本地数据库沿用初始化超级用户，不能据此声称 RLS 已验证；生产账号隔离仍待做。
 - Assistant 没有配置 LLM，仍返回不可用；正式 Rack 编辑页面、Rack 存储/API/保存仍未实现。
 - 后续选择一个 Rack 小闭环继续；本轮没有推进其余全部阶段，没有修改老师原目录。
+
+## 2026-10-28：第七轮，空 Rack 方案持久化
+
+### 1. 目标与实际修改
+
+- 接通“创建空方案 → 数据库保存 → 按 ID 重新读取”的后端闭环，不展开完整 Rack 页面、编辑、算法或 Assistant。
+- 本轮起始 HEAD 为用户已提交的 `9777b5f`。已有环境保留，没有重跑 seed 或改动示例业务行。
+- 新增 [迁移 007](data-scripts/007_rack_plans.sql)：`rack_plans`、复合外键、项目内唯一创建 key、基础 CHECK、索引、启用并强制 RLS。
+- 新增 [服务](apps/api/src/services/rack-plans.js)、[路由](apps/api/src/routes/rack.js)，在 API 中装配；API workspace 依赖已有 Rack 领域包，lockfile 只新增这一条 workspace 依赖，没有新增第三方包。
+- 增加 `rack.read/write`、预设映射和客户端生成导出；普通编辑者可创建，viewer/org-admin 只读，未扩大 system-admin/showcase 的 Rack 内容访问。
+- 新增 [API contract](RACK_API.md)、[集成测试](apps/api/src/tests/rack-plans.test.js)，更新基础设计、清单和运行说明。
+- `.gitattributes` 固定生成权限目录为 LF，避免 Windows 检出使既有字节一致性测试再次失败。
+- 上一轮通用运行检查改为对照磁盘迁移数量，新增迁移后仍可运行；原证据文本作为历史结果保留。
+
+### 2. 设计选择与边界
+
+- 方案 ID/时间/创建人由服务端产生；项目来自路径，状态固定为独立 `1 / DRAFT / NOT_RUN`，不接受客户端覆盖或非空 placements。
+- 首个存储切片只允许 HALL + DRAFT 设施来源；数据库核对项目/场景/revision/容器，锁住来源并检查当前 ETag，然后插入。
+- 没有复制机房边界或转换局部坐标；保存空方案不代表空间/容量可以验证。
+- 同项目同 key 同规范化请求重放原方案，改变请求则 409；并发 key 锁与唯一约束避免重复创建。
+- GET 与幂等重试重新读权威 ETag，报告 UNCHANGED/STALE/UNAVAILABLE；不改绑保存引用、不更新 Rack 版本，也不跟随 Facility 冻结 Rack 状态。
+- 新表复合外键拒绝跨项目/场景来源，RLS 按事务项目限制读写。内部服务仍要求调用入口先授权。
+- 来源容器删除因引用被阻止；完整解绑/归档与 Facility 删除错误交互仍待后续设计。冻结输入 checksum、机柜存储、修改并发、列表/分页、完整审计与 UI 都未实现。
+
+### 3. 验证与证据
+
+| 检查 | 结果 | 证据 |
+| --- | --- | --- |
+| 现有本地库升级 | 007 成功，旧 6 个迁移跳过 | [migrate.txt](records/2026-10-28-rack-persistence/migrate.txt) |
+| 独立空库迁移与重复执行 | 7 个全应用，再执行 7 个全跳过；仅删除本检查创建的独立临时库 | [migration-checks.txt](records/2026-10-28-rack-persistence/migration-checks.txt) |
+| Rack API/数据库测试 | 10 通过、0 失败、0 跳过；覆盖真实 FK、普通非 owner/非 superuser 的 RLS、权限、过期和并发来源更新 | [rack-api-tests.txt](records/2026-10-28-rack-persistence/rack-api-tests.txt) |
+| RBAC 包回归 | 72 通过、0 失败、0 跳过，含数据库 catalog/preset 一致性和客户端一致性 | [rbac-tests.txt](records/2026-10-28-rack-persistence/rbac-tests.txt) |
+| Rack 领域回归 | 74 通过、0 失败、0 跳过 | [rack-tests.txt](records/2026-10-28-rack-persistence/rack-tests.txt) |
+| 真实运行 API + Vite 代理 | 创建 201，viewer 读取 200，同 key 重试 200，viewer 写/异组织读 403，旧来源 409；临时方案已按唯一 key 清理 | [live-api-checks.txt](records/2026-10-28-rack-persistence/live-api-checks.txt) |
+| Web 构建 | 成功；保留原 esbuild/oxc 配置提示和较大 bundle 提示 | [web-build.txt](records/2026-10-28-rack-persistence/web-build.txt) |
+
+初次测试文件有括号语法错误，修正后运行；首次真实 API 检查恰逢开发 watcher 重启出现代理连接拒绝，等待服务恢复后重跑通过。
+以上是针对改动的验证；没有重跑全仓测试，也不宣称第一轮全部基线失败已修复。本地 API 仍用初始化数据库用户，新表的普通角色 RLS 测试不等于平台全量数据库权限审计。
+
+### 4. 下一步与操作约束
+
+- 先补方案列表与工作区创建/查看入口；随后独立处理真实几何输入、机柜编辑和保存。
+- 当前平台外观未变；正式 Rack 页仍占位，空方案 API 不能当成完整机柜布局保存。
+- 只修改 Rack 副本；没有 commit、push 或改变 remotes，老师原目录没有改动。
 
 ## 后续记录格式
 

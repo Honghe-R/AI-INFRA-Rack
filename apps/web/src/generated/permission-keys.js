@@ -41,6 +41,11 @@ export const FACILITY_KEYS = Object.freeze({
   SHARE: 'facility.share',
 });
 
+export const RACK_KEYS = Object.freeze({
+  READ: 'rack.read',
+  WRITE: 'rack.write',
+});
+
 /** Every registered key, for drift checks and administration surfaces. */
 export const ALL_PERMISSION_KEYS = Object.freeze([
   'asset.delete',
@@ -74,6 +79,8 @@ export const ALL_PERMISSION_KEYS = Object.freeze([
   'project.member.manage',
   'project.read',
   'project.write',
+  'rack.read',
+  'rack.write',
   'system.admin',
   'system.catalog.manage',
 ]);

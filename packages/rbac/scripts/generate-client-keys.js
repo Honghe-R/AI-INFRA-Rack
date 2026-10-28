@@ -2,7 +2,7 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { CATALOG, FACILITY_KEYS, PLATFORM_KEYS, catalogKeys } from '../src/index.js';
+import { CATALOG, FACILITY_KEYS, PLATFORM_KEYS, RACK_KEYS, catalogKeys } from '../src/index.js';
 
 export const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 export const CLIENT_CATALOG_PATH = resolve(REPO_ROOT, 'apps/web/src/generated/permission-keys.js');
@@ -34,6 +34,10 @@ ${render(Object.entries(PLATFORM_KEYS))}
 
 export const FACILITY_KEYS = Object.freeze({
 ${render(Object.entries(FACILITY_KEYS))}
+});
+
+export const RACK_KEYS = Object.freeze({
+${render(Object.entries(RACK_KEYS))}
 });
 
 /** Every registered key, for drift checks and administration surfaces. */

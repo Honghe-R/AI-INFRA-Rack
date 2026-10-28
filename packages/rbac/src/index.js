@@ -6,6 +6,7 @@ export {
   MAP_KEYS,
   ONBOARDING_KEYS,
   PLATFORM_KEYS,
+  RACK_KEYS,
   SHOWCASE_READ_KEYS,
   SYSTEM_KEYS,
   catalogKeys,

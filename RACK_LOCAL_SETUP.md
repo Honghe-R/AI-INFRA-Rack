@@ -14,7 +14,7 @@ npm run dev
 ```
 
 `rack:setup` 从 `.env.rack.example` 生成被 Git 忽略的 `.env`，随机生成本地凭证，
-启动 `compose.rack.yaml` 中的两个依赖，执行原平台六个迁移、身份/权限示例和 Facility 示例初始化。
+启动 `compose.rack.yaml` 中的两个依赖，执行全部迁移（当前 7 个）、身份/权限示例和 Facility 示例初始化。
 已有 `.env` 不会被覆盖；如不符合 Rack 隔离配置会停止并说明原因。
 不要在终端预先导出其他数据库、Compose 或存储配置；初始化助手会拒绝相关环境覆盖，避免操作其他环境。
 
@@ -80,7 +80,8 @@ node --env-file=.env records/2026-10-28-platform/check-runtime.mjs
 最后一条需要 `npm run dev` 正在运行；读取两个示例项目，并在对象存储中创建、读取、删除一个唯一临时检查文件。
 运行证据见 [records/2026-10-28-platform](records/2026-10-28-platform)。
 
-本轮只接通原平台。**正式 Rack 页面仍是占位，Rack 表/API/保存尚未实现**；
+原平台已接通，另有 [空 Rack 方案创建/读取 API](RACK_API.md)。已有环境更新代码后先运行 `npm run migrate`，不必重跑 seed。
+**正式 Rack 页面仍是占位，机柜保存尚未实现**；
 现有 Rack 规则仍通过独立只读预览展示。Assistant 尚无 LLM 服务配置，不能对话。
 当前本地数据库沿用初始化用户（超级用户）连接，适合这份单机开发基线；
 生产部署须拆分迁移/应用账号并重新验证数据库 RLS。两组织的 API 拒绝检查不能代替 RLS 安全审计。

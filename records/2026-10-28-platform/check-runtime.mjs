@@ -2,6 +2,7 @@
 // Reads seeded data; creates and removes one unique storage smoke-test object.
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
+import { readdir } from 'node:fs/promises';
 import { createPool } from '@ai-infra/db';
 import { createStorage } from '@ai-infra/storage';
 import { loadConfig } from '@ai-infra/core';
@@ -23,8 +24,9 @@ async function json(path, subject = 'dev-user') {
 try {
   const extensions = await pool.query('SELECT PostGIS_Version() AS postgis');
   const migrations = await pool.query('SELECT count(*)::int AS n FROM schema_migrations');
-  assert.equal(migrations.rows[0].n, 6);
-  console.log(`Database connected; PostGIS ${extensions.rows[0].postgis}; 6 migrations recorded.`);
+  const expected = (await readdir(new URL('../../data-scripts/', import.meta.url))).filter(name => name.endsWith('.sql')).length;
+  assert.equal(migrations.rows[0].n, expected);
+  console.log(`Database connected; PostGIS ${extensions.rows[0].postgis}; ${expected} migrations recorded.`);
   assert.equal((await fetch(`${process.env.API_URL}/readyz`)).status, 200);
   assert.equal((await fetch(`${process.env.API_URL}/api/v1/projects`)).status, 401);
 

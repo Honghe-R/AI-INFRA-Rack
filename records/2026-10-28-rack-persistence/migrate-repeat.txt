@@ -1,0 +1,9 @@
+
+> ai-network-infra-simulator@0.1.0 migrate
+> npm --workspace @ai-infra/db run migrate
+
+
+> @ai-infra/db@0.1.0 migrate
+> node --env-file-if-exists=../../.env bin/migrate.js
+
+{"skipped":7,"timestamp":"2026-10-28T00:43:13.743Z","level":"info","service":"ai-infra-migrate","service_version":"0.1.0","message":"migration.up_to_date"}

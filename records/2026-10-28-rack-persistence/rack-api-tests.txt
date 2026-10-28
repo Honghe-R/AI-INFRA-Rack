@@ -1,0 +1,70 @@
+TAP version 13
+# Subtest: Rack create/read persists a server-owned empty draft without changing Facility
+ok 1 - Rack create/read persists a server-owned empty draft without changing Facility
+  ---
+  duration_ms: 233.7373
+  type: 'test'
+  ...
+# Subtest: Rack simultaneous creation retries converge; key reuse with different input conflicts
+ok 2 - Rack simultaneous creation retries converge; key reuse with different input conflicts
+  ---
+  duration_ms: 169.3845
+  type: 'test'
+  ...
+# Subtest: Rack enforces authentication, role permissions and plan project scope
+ok 3 - Rack enforces authentication, role permissions and plan project scope
+  ---
+  duration_ms: 195.8986
+  type: 'test'
+  ...
+# Subtest: Rack rejects invalid input, forged server fields and missing retry keys without inserting
+ok 4 - Rack rejects invalid input, forged server fields and missing retry keys without inserting
+  ---
+  duration_ms: 144.4703
+  type: 'test'
+  ...
+# Subtest: Rack verifies the real room, revision, scenario and current token before creation
+ok 5 - Rack verifies the real room, revision, scenario and current token before creation
+  ---
+  duration_ms: 187.2027
+  type: 'test'
+  ...
+# Subtest: Rack cannot create from frozen Facility input in this first slice
+ok 6 - Rack cannot create from frozen Facility input in this first slice
+  ---
+  duration_ms: 88.558
+  type: 'test'
+  ...
+# Subtest: Rack read and replay expose changed upstream input without rebinding the plan
+ok 7 - Rack read and replay expose changed upstream input without rebinding the plan
+  ---
+  duration_ms: 140.3852
+  type: 'test'
+  ...
+# Subtest: Rack database composite foreign keys reject a cross-project room even for an owner connection
+ok 8 - Rack database composite foreign keys reject a cross-project room even for an owner connection
+  ---
+  duration_ms: 104.0919
+  type: 'test'
+  ...
+# Subtest: Rack RLS isolates reads and writes under a real non-owner non-superuser role
+ok 9 - Rack RLS isolates reads and writes under a real non-owner non-superuser role
+  ---
+  duration_ms: 105.1742
+  type: 'test'
+  ...
+# Subtest: a concurrent Facility token update completes before Rack accepts the expected source version
+ok 10 - a concurrent Facility token update completes before Rack accepts the expected source version
+  ---
+  duration_ms: 128.1478
+  type: 'test'
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 10
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1634.9072

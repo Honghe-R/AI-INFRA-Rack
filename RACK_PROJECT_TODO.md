@@ -102,11 +102,7 @@
 
 ```powershell
 npm ci
-if (-not (Test-Path .env)) { Copy-Item .env.example .env }
-npm run dev:up
-npm run migrate
-npm run dev:seed
-npm run dev:seed:facility
+npm run rack:setup
 npm run dev
 ```
 
@@ -209,6 +205,16 @@ npm run dev
 **验收：**手工操作、算法和 Assistant 都能基于同一套模型、规则和变更 contract 工作。
 
 ## 7. 阶段 3：新增存储、权限与服务骨架
+
+已完成的最小切片（不代表完整阶段完成）：
+
+- [x] 新增空 Rack Plan 表及迁移 007，复合外键固定项目/场景/revision/机房引用。
+- [x] 通过 API 创建/读取版本 1 的空草稿，创建核对 HALL 与当前设施 ETag；读取报告来源过期。
+- [x] 增加 rack.read/write 及预设映射，生成客户端目录，保留标准 correlation ID。
+- [x] 创建支持同项目幂等 key 与并发重试；过期、伪造归属和只读角色写入被拒绝。
+- [x] 验证空数据库迁移、重复迁移、真实普通角色下新表 RLS，以及真实运行 API 调用。
+
+contract 与限制见 [RACK_API.md](RACK_API.md)。还没有机柜/设备表、变更/校验/规划服务或正式 Rack 页面；下方完整任务继续保留。
 
 - [ ] 建议新增独立 Rack 领域包、API 路由和前端 Rack 目录；具体路径跟随最终架构决定。
 - [ ] 依赖保持单向：API 使用领域包，领域包不依赖 app；浏览器不直接导入后端领域/数据库包。

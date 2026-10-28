@@ -4,6 +4,7 @@ import {
   CATALOG,
   FACILITY_KEYS,
   PLATFORM_KEYS,
+  RACK_KEYS,
   PRESET_KEYS,
   ROLE_PRESETS,
   SHOWCASE_READ_KEYS,
@@ -46,6 +47,20 @@ test('the workspace keys declared in the bundle are all present', () => {
   for (const key of ['asset.read', 'asset.write', 'asset.delete']) {
     assert.ok(isKnownKey(key), `missing declared workspace key ${key}`);
   }
+});
+
+test('Rack read/write grants are project-scoped and preserve read-only roles', () => {
+  for (const key of Object.values(RACK_KEYS)) assert.equal(getCatalogEntry(key).scope, 'project');
+  for (const role of ['project-admin', 'project-editor']) {
+    assert.ok(ROLE_PRESETS[role].keys.includes(RACK_KEYS.READ));
+    assert.ok(ROLE_PRESETS[role].keys.includes(RACK_KEYS.WRITE));
+  }
+  for (const role of ['project-viewer', 'organisation-admin']) {
+    assert.ok(ROLE_PRESETS[role].keys.includes(RACK_KEYS.READ));
+    assert.ok(!ROLE_PRESETS[role].keys.includes(RACK_KEYS.WRITE));
+  }
+  assert.ok(!ROLE_PRESETS['system-admin'].keys.includes(RACK_KEYS.WRITE));
+  assert.ok(!SHOWCASE_READ_KEYS.has(RACK_KEYS.READ));
 });
 
 test('lookup helpers fail closed for an unknown key', () => {

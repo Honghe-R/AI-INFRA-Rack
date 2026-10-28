@@ -20,7 +20,8 @@
 - 矩形机房输入副本，以及单个机柜的越界/障碍检查（第三轮补充，见第 10 节）。
 - 多柜清单的声明归属/型号引用检查、柜间占地碰撞及结构化汇总（第四轮补充，见第 11 节）。
 
-尚未实现：数据库表、Rack 权限、HTTP API、页面、设备分配、完整约束引擎、布局算法、候选应用、Assistant、正式验证和发布。
+2026-10-28 已另在 API 服务层补空方案表、rack.read/write、创建/读取 HTTP API，见 [RACK_API.md](RACK_API.md)；领域包仍不依赖数据库或 app。
+尚未实现：机柜存储/保存、工作区页面、设备分配、完整约束引擎、布局算法、候选应用、Assistant、正式验证和发布。
 
 ## 2. 首版业务范围的设计方向
 
@@ -70,7 +71,7 @@
 - 不将数字字符串、null、NaN 或 Infinity 静默转换成有效参数。
 - 构造输出及嵌套来源为冻结对象，与调用者输入分离；构造不修改输入。
 - 输入错误为 `RackInputError`，包含 `code = RACK_INPUT_INVALID` 和 `details: [{ field, reason }]`。
-- 这只是领域错误；尚未映射成 HTTP 状态码，也未实现对所有错误一次性汇总。
+- 领域错误本身不依赖 HTTP；现有空方案路由将其映射为 400，尚未实现对所有错误一次性汇总。
 - `CONTRACT_VERSION = 1` 对应示例封装中的 `contractVersion`。当前不接收网络文档，未来 API 必须另检查封装版本。
 
 示例：[basic-rack.json](packages/rack/examples/basic-rack.json)。型号和实例的完整字段可以直接在该文件中查看。
@@ -110,19 +111,19 @@ Rack Plan 的初始 `version = 1` 不等于上游设施的 ETag，也不表示�
 
 ```mermaid
 flowchart LR
-    UI["Rack 页面（待实现）"] --> HTTP["Rack API（待实现）"]
-    AI["Rack Assistant 工具（待实现）"] --> SVC["命令/查询服务（待实现）"]
+    UI["Rack 页面（待实现）"] --> HTTP["Rack API（已支持空方案创建/读取）"]
+    AI["Rack Assistant 工具（待实现）"] --> SVC["空方案服务（已实现）"]
     HTTP --> SVC
     SVC --> DOMAIN["Rack 数据契约/局部几何（本轮）"]
     SVC --> RULES["工程规则/规划算法（待实现）"]
-    SVC --> DB["持久化/项目隔离（待实现）"]
+    SVC --> DB["空方案持久化/项目隔离（已实现）"]
 ```
 
-浏览器通过 API 访问 Rack 服务，不直接导入后端 package；领域包不反向导入 app。本轮没有修改平台路由、权限、数据库和工作区页面。
+浏览器通过 API 访问 Rack 服务，不直接导入后端 package；领域包不反向导入 app。空方案服务在 `apps/api/src/services/rack-plans.js`，路由负责 HTTP 适配并沿用权限 guard；工作区页面仍待实现。
 
-## 7. 后续 API 草案（全部未实现）
+## 7. API 进展与后续草案
 
-后续以 `/api/v1/projects/:projectId/rack/plans` 为候选资源前缀，最终必须与数据模型和权限一起评审。
+已实现 `/api/v1/projects/:projectId/rack/plans` 的 POST 和 `GET /:planId`，准确 contract 见 [RACK_API.md](RACK_API.md)。下表其余操作仍是草案。
 
 | 操作方向 | 建议方法/资源 | 关键前提 |
 | --- | --- | --- |
@@ -132,15 +133,15 @@ flowchart LR
 | 生成候选 | POST / plans/:planId/candidates | 只生成建议，不直接保存为正式方案 |
 | 应用候选 | POST / plans/:planId/candidates/:candidateId/apply | 确认、重新授权、版本与来源复核 |
 
-未来 HTTP 成功/错误沿用平台响应封装和 correlation ID；权限建议为 `rack.read`、`rack.write`、`rack.validate.run`、`rack.plan.run`，当前没有注册任何一个。
+HTTP 成功/错误沿用平台响应封装和 correlation ID；已注册 `rack.read`、`rack.write`。`rack.validate.run`、`rack.plan.run` 仍未注册或实现。
 
-完整请求/响应示例、列表分页、方案幂等创建、容量来源、设备模型、删除策略、任务超时和安全限制都仍待设计。
+空方案请求/响应、幂等创建、真实来源引用和拒绝行为已记录；列表分页、变更并发控制、容量、设备、完整删除策略、任务和完整安全审计仍待设计。
 
 ## 8. 下一个小阶段
 
-2026-10-28 用户恢复平台初始化并允许 Docker，原平台已通过独立栈运行，见 [本地运行说明](RACK_LOCAL_SETUP.md)。已建立矩形机房、单柜规则与多柜碰撞检查，下一小步可定义前后维护净距及缺失值语义，或单独设计 Rack 空方案的存储闭环。
+2026-10-28 用户恢复平台初始化并允许 Docker，原平台已通过独立栈运行，见 [本地运行说明](RACK_LOCAL_SETUP.md)。空方案创建/读取存储闭环已完成；下一小步可补方案列表及工作区创建/查看入口，仍不同时展开完整机柜编辑与算法。
 真实设施几何、局部坐标转换和完整输入快照绑定仍待做。
-原平台数据库、迁移和示例初始化已完成，Compose 项目名、数据卷和端口均已隔离；Rack 专用存储尚未开始。
+原平台数据库、迁移和示例初始化已完成，Compose 项目名、数据卷和端口均已隔离；Rack 专用存储目前只有空方案。
 
 下一轮只选一个小闭环；不同时展开 UI、完整算法和 Assistant。
 

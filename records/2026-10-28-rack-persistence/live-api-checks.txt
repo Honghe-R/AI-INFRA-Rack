@@ -1,0 +1,4 @@
+Live Vite proxy + API: create 201, viewer read 200, same-key replay 200/same plan.
+Viewer create 403; foreign organisation read 403; stale source create 409.
+Persisted plan is version 1 / DRAFT / NOT_RUN, empty placements, source UNCHANGED.
+Removed only this check's temporary plan by project and unique creation key.

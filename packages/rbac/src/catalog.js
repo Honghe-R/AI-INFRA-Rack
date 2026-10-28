@@ -66,9 +66,13 @@ export const FACILITY_KEYS = Object.freeze({
   SHARE: 'facility.share',
 });
 
+export const RACK_KEYS = Object.freeze({ READ: 'rack.read', WRITE: 'rack.write' });
+
 const { SYSTEM, ORGANISATION, PROJECT, GLOBAL } = KEY_SCOPE;
 
 export const CATALOG = Object.freeze([
+  entry(RACK_KEYS.READ, 'Read Rack plans', 'Read Rack plans and their facility source status.', PROJECT),
+  entry(RACK_KEYS.WRITE, 'Write Rack plans', 'Create Rack plans within a project.', PROJECT),
   entry(PLATFORM_KEYS.PROJECT_READ, 'Read projects', 'Read project and scenario metadata.', PROJECT),
   entry(PLATFORM_KEYS.PROJECT_WRITE, 'Write projects', 'Create and edit projects and scenarios.', PROJECT),
   entry(PLATFORM_KEYS.PROJECT_MEMBER_MANAGE, 'Manage project members', 'Assign and revoke project-scoped roles.', PROJECT),

@@ -1,0 +1,2 @@
+# The generated catalog has a byte-parity test; keep it stable on Windows checkouts.
+apps/web/src/generated/permission-keys.js text eol=lf

@@ -1,4 +1,4 @@
-import { FACILITY_KEYS as F, MAP_KEYS as M, PLATFORM_KEYS as P } from './catalog.js';
+import { FACILITY_KEYS as F, MAP_KEYS as M, PLATFORM_KEYS as P, RACK_KEYS as R } from './catalog.js';
 
 /**
  * Role presets: named, hardcoded bundles of permission keys (blueprint §4).
@@ -26,6 +26,7 @@ export const ROLE_PRESETS = Object.freeze({
     keys: Object.freeze([
       P.ORG_READ, P.ORG_ADMIN, P.PROJECT_READ, P.PROJECT_WRITE, P.PROJECT_MEMBER_MANAGE,
       P.ASSET_READ, P.ASSET_WRITE, P.ASSET_DELETE, F.READ,
+      R.READ,
       M.READ, M.USAGE_READ, M.MANAGE,
     ]),
   }),
@@ -41,6 +42,7 @@ export const ROLE_PRESETS = Object.freeze({
       F.UTILITY_WRITE, F.PHASE_WRITE, F.IMPORT_INITIATE, F.IMPORT_MAP, F.IMPORT_APPLY,
       F.VALIDATE_RUN, F.CAPACITY_REQUEST, F.CAPACITY_ALLOCATE, F.PUBLISH, F.APPROVE,
       F.WAIVER_GRANT, F.DOCUMENT_MANAGE, F.EXPORT, F.SHARE,
+      R.READ, R.WRITE,
       M.READ, M.USAGE_READ, M.MANAGE,
     ]),
   }),
@@ -54,6 +56,7 @@ export const ROLE_PRESETS = Object.freeze({
       F.READ, F.DRAFT_CREATE, F.ENTITY_WRITE, F.GEOMETRY_WRITE, F.CONSTRAINT_WRITE,
       F.UTILITY_WRITE, F.PHASE_WRITE, F.IMPORT_INITIATE, F.IMPORT_MAP, F.IMPORT_APPLY,
       F.VALIDATE_RUN, F.CAPACITY_REQUEST, F.EXPORT, F.SHARE,
+      R.READ, R.WRITE,
       M.READ,
     ]),
   }),
@@ -62,7 +65,7 @@ export const ROLE_PRESETS = Object.freeze({
     name: 'Project viewer',
     scopeHint: 'project',
     description: 'Read-only access to project content.',
-    keys: Object.freeze([P.PROJECT_READ, P.ASSET_READ, F.READ, M.READ]),
+    keys: Object.freeze([P.PROJECT_READ, P.ASSET_READ, F.READ, M.READ, R.READ]),
   }),
 });
 

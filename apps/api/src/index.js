@@ -25,6 +25,7 @@ import { registerHealthRoutes } from './routes/health.js';
 import { registerMapRoutes } from './routes/map.js';
 import { registerProjectRoutes } from './routes/projects.js';
 import { registerSelfRoutes } from './routes/me.js';
+import { registerRackRoutes } from './routes/rack.js';
 
 const config = loadConfig();
 const logger = createLogger({
@@ -82,6 +83,7 @@ if (pool) {
   registerAdminRoutes(router, { repository, evaluator });
   registerProjectRoutes(router, { pool });
   registerFacilityRoutes(router, { pool });
+  registerRackRoutes(router, { pool });
 
   // Validation: the service serves the reads and the local runs, and the worker
   // drains queued FULL batches.

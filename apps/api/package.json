@@ -20,6 +20,7 @@
     "@ai-infra/imports": "*",
     "@ai-infra/maps": "*",
     "@ai-infra/rbac": "*",
+    "@ai-infra/rack": "*",
     "@ai-infra/secrets": "*",
     "@ai-infra/storage": "*"
   }
