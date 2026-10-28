@@ -570,6 +570,39 @@ Docker 可能保留已下载的镜像缓存，本轮没有清理全局 Docker �
 - 下一小步可做可解释的规则式机柜布局候选：只生成预览，重新检查后再应用；之后接 Rack Assistant。机房正式预算、依赖关系和通道规则仍需后续补齐。
 - 所有更改保持本地，HEAD 未推进，未 commit/push，未修改老师原目录。
 
+## 2026-10-28：第十三轮，本地 Catalog、型号版本绑定与主画布增强
+
+### 范围与修改
+
+- 起始 HEAD `d6484b4`、工作区干净；只修改 AI-INFRA-Rack。参考用户提供的老师截图，未导入线上数据、未写老师平台或原目录；不 commit/push、不改 remotes。
+- 新增 [目录领域定义](packages/rack/src/catalog.js)、[规则示例](packages/rack/src/catalog-examples.js)：11 个组件版本、5 个组合型号；固定组件版本，机箱派生 U 高度，整机资源独立声明 ASSUMED，未知保留 null。没有把 PSU/冷板额定值当设备消耗或预算。
+- 新增项目 rack.read 保护的 GET /rack/catalog，无写接口；前端 Catalog 从占位变为 Models / Technologies / Rule examples，支持筛选、组合清单、字段来源与真实规则报告。目录为随代码发布的只读示例，不是外部同步、数据库目录服务或审批系统。
+- 设备新增可选 catalogRef {modelId,version}；领域 normalize 在 check/save 核对精确型号及四项规格，拒绝伪造或回退 latest。UI 可从型号添加未上架设备，固定规格只读；显式 Detach 转自定义假设保留身份/安装。旧设备和省略兼容保留。
+- 复用原 JSONB、If-Match、幂等 key、来源锁、原子事务和 RLS，没有新迁移，没有 setup/seed/reset。v1 定义指纹测试固定内容，变更需新版本并留存旧版本。
+- 主画布新增 Expand map（浏览器 Fullscreen API，失败显示原因）、Fit racks、U/功率显示着色、障碍和维护带显示开关。已有机柜默认聚焦；隐藏图层不取消检查，颜色来自当前完整请求的报告。80% 是显示阈值，不是保存规则。原房间约 106×92 m，整房缩放时柜体很小，保留 Fit room 与局部聚焦两种查看方式。
+- 新增 [六柜脚本](scripts/rack-catalog-demo.mjs)，只访问 localhost 且检查隔离栈配置，仅允许已知合成 Facility；通过正常 API 创建独立方案并检查/保存，重复不覆盖已有非空方案。脚本不适用于真实设施。
+- 根目录新增 [RACK_CATALOG.md](RACK_CATALOG.md)，更新 README、基础设计和待办；原早期文档仍保留历史边界，以本轮补充为准。
+
+### 验证与证据
+
+| 检查 | 实际结果 | 证据 |
+| --- | --- | --- |
+| Rack 领域 | 107 通过，0 失败/跳过；新增版本、规格防伪、未知与组合/示例测试 | [domain-tests.txt](records/2026-10-28-rack-catalog/domain-tests.txt) |
+| 数据库/API | 39 通过，0 失败/跳过；新增目录授权、固定引用持久化/回放、伪造回滚/旧版本/转自定义 | [api-tests.txt](records/2026-10-28-rack-catalog/api-tests.txt) |
+| Web 定向回归 | 最终 82 通过，10 文件；含 Catalog 渲染/客户端/草稿、着色/聚焦、原 Rack 与 shell/导入边界 | [web-tests.txt](records/2026-10-28-rack-catalog/web-tests.txt) |
+| Web build | 成功，保留原 >500 kB 包大小及 esbuild/oxc 提示 | [web-build.txt](records/2026-10-28-rack-catalog/web-build.txt) |
+| 独立演示 | 正常 API check/save 后 GET 精确相等；重复脚本保留 v2，不覆盖 | [创建](records/2026-10-28-rack-catalog/demo-create.txt)、[重复](records/2026-10-28-rack-catalog/demo-repeat.txt) |
+| 旧数据/权限 | 复用 SQL/HTTP 检查，四个旧示例及 Facility ETag 保留；viewer 读/检查 200、另一组织 403 | [previous-demos.txt](records/2026-10-28-rack-catalog/previous-demos.txt) |
+
+命令：npm run test --workspace @ai-infra/rack；node --env-file-if-exists=.env --test apps/api/src/tests/rack-plans.test.js；Web 命令在证据首行；npm run build --workspace @ai-infra/web。没有重跑全仓、性能实验或本轮实际浏览器点击回归；前端验证为定向渲染/状态测试、构建和运行 HTTP。
+
+### 本机数据、运行与限制
+
+- 新方案 **Rack catalog demo — six racks**，ID `e446aafb-1846-4a69-af10-636fd50ba87c`，v2；6 柜、17 台型号设备、一个假设禁放区、前 1 m/后 0.5 m 维护带。空间 CHECKED_SCOPE_CLEAR；部分资源未知，设备 INCOMPLETE、整体 NOT_RUN。
+- 原来四个示例保持不变。开始验证时本地服务已停，重新启动副本 npm run dev；日志在忽略的 .local-runtime/catalog-dev.log。Vite 在本机监听 IPv6 localhost，因此演示脚本使用 localhost；首次 IPv4 请求失败发生在任何写入前，修正后完成。
+- 未做外部目录同步、目录编辑审批、全局硬件资产、正式预算、连续通道、候选、Assistant 或工程认证。仍以可解释布局候选为后续方向。
+- 全部工作留本地，未执行 commit/push；老师原目录和线上平台未改。
+
 ## 后续记录格式
 
 每轮追加一个日期标题，至少写清：

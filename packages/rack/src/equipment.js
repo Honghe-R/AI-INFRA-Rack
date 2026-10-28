@@ -1,4 +1,5 @@
 import { record, fail, text, uuid } from './input.js';
+import { assertCatalogDevice } from './catalog.js';
 
 export const EMPTY_EQUIPMENT = Object.freeze({
   coverage: 'UNKNOWN',
@@ -47,7 +48,7 @@ export function normalizeEquipment(input, placements) {
     record(
       d,
       'device',
-      new Set(['deviceId', 'name', 'heightU', 'weightKg', 'powerKw', 'coolingKw', 'rackId', 'startU']),
+      new Set(['deviceId', 'name', 'heightU', 'weightKg', 'powerKw', 'coolingKw', 'rackId', 'startU', 'catalogRef']),
     );
     const deviceId = uuid(d.deviceId, 'deviceId');
     if (ids.has(deviceId)) fail('deviceId', 'must be unique within this plan inventory');
@@ -63,6 +64,7 @@ export function normalizeEquipment(input, placements) {
       weightKg: quantity(d.weightKg, 'device.weightKg'),
       powerKw: quantity(d.powerKw, 'device.powerKw'),
       coolingKw: quantity(d.coolingKw, 'device.coolingKw'),
+      ...(Object.hasOwn(d, 'catalogRef') ? { catalogRef: assertCatalogDevice(d) } : {}),
       rackId,
       startU: rackId === null ? null : integer(d.startU, 'device.startU', 10000),
     });

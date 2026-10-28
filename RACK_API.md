@@ -155,3 +155,7 @@ cursor 只在同项目、同过滤范围内查找，错误范围、不存在或�
 010 迁移新增 rack_plans.equipment，旧方案初始化为空清单/未知覆盖且不推进版本。layout GET 返回 equipment；v1 check/save 请求增加可选 equipment，省略保留存储值、显式 null 拒绝。check 响应并列增加 equipmentReport，空间 report 保持原范围。
 
 支持同方案唯一设备 ID、规格、已上架/未上架状态、U 闭区间与三维容量假设。设备与机柜同一版本/事务保存，复用身份、权限、来源锁和幂等；已知冲突 422/RACK_EQUIPMENT_CONFLICT，不存在/外部柜引用 400，旧版本 412。设备 ID 不是全局物理资产注册，限值不是正式预算，整体 NOT_RUN 不变。完整字段、规则、报告和限制见根 [RACK_EQUIPMENT.md](RACK_EQUIPMENT.md)。
+
+## 第十三轮：只读 Catalog 与固定型号引用
+
+GET /api/v1/projects/:projectId/rack/catalog 需要 rack.read，返回精确版本组件/型号及规则示例，无写接口。equipment.devices 可选 catalogRef {modelId,version}，check/save 核对四项规格，非法引用/规格返回 400/RACK_INPUT_INVALID。省略引用为方案自定义假设，原事务/版本/权限语义保留。详见 [RACK_CATALOG.md](RACK_CATALOG.md)。

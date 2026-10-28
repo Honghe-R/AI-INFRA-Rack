@@ -102,3 +102,19 @@
 .rack-u-slot button[aria-pressed="true"] { background: #b6d4ff; outline: 1px solid #275ec5; outline-offset: -1px; }
 .rack-u-slot.has-issue button { background: #ffe0e0; color: #891c1c; }
 .rack-u-empty { padding: 4px 8px; color: #768398; }
+.rack-catalog-picker { margin: 16px 0; border: 1px solid var(--line); border-radius: var(--radius-md); padding: 12px; }
+.rack-catalog-picker label { display: grid; gap: 8px; }
+.rack-catalog-picker select { width: 100%; }
+.rack-catalog-binding { border-left: 3px solid var(--accent); padding: 0 12px 8px; }
+.rack-map-layers { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; padding: 12px 0; }
+.rack-map-layers label { display: flex; align-items: center; gap: 6px; font-size: var(--text-sm); }
+.rack-map-legend { font-size: var(--text-sm); color: var(--text-muted); }
+.rack-drawn-rack[data-load="clear"] polygon { fill: #b8d7f5; }
+.rack-drawn-rack[data-load="high"] polygon { fill: #f8d78b; }
+.rack-drawn-rack[data-load="issue"] polygon, .rack-drawn-rack.has-issue polygon { fill: #f9b5b5; }
+.rack-drawn-rack[data-load="unknown"] polygon { fill: #d8dce4; }
+.rack-drawn-rack.has-issue polygon { fill: #f9b5b5; stroke: var(--error); stroke-width: 3; }
+.rack-drawn-rack text.rack-load-label { font-size: 10px; fill: #152439; }
+.rack-floorplan:fullscreen { background: var(--surface); color: var(--text); padding: 16px; overflow: auto; box-sizing: border-box; }
+.rack-floorplan:fullscreen .rack-room-canvas { width: min(100%, calc((100dvh - 210px) * 800 / 440)); margin: 0 auto; }
+.rack-floorplan::backdrop { background: var(--surface-sunken); }

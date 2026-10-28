@@ -1,5 +1,5 @@
 import { ApiError } from '@ai-infra/core';
-import { RackInputError } from '@ai-infra/rack';
+import { RackInputError, getRackCatalog, getCatalogExamples } from '@ai-infra/rack';
 import { RACK_KEYS, FACILITY_KEYS } from '@ai-infra/rbac';
 import { createRackPlanService } from '../services/rack-plans.js';
 import { createRackLayoutService } from '../services/rack-layout.js';
@@ -16,6 +16,9 @@ async function adapt(operation) {
 }
 
 export function registerRackRoutes(router, { pool, guard }) {
+  router.get('/api/v1/projects/:projectId/rack/catalog', ctx => ({
+    data: { ...getRackCatalog(), projectId: ctx.params.projectId, examples: getCatalogExamples() },
+  }), { permission: RACK_KEYS.READ, projectParam: 'projectId' });
   const service = createRackPlanService({ pool });
   const layouts = createRackLayoutService({ pool });
   const base = '/api/v1/projects/:projectId/rack/plans';

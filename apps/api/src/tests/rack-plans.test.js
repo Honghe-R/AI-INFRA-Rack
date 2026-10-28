@@ -10,6 +10,7 @@ import { createRouter } from '../router.js';
 import { registerRackRoutes } from '../routes/rack.js';
 import { createRackPlanService } from '../services/rack-plans.js';
 import { createRackLayoutService } from '../services/rack-layout.js';
+import { getRackCatalog } from '@ai-infra/rack';
 
 const skip = process.env.DATABASE_URL ? false : 'DATABASE_URL is not set';
 let pool, repository;
@@ -453,6 +454,53 @@ test('a concurrent Facility token update completes before Rack accepts the expec
     await otherPool.end();
   }
 }));
+
+test('Rack catalog is a guarded read-only project endpoint with versioned composition and real rule examples', {skip}, async () => fixture(async f => server(f.people, async request => {
+  const url = `/api/v1/projects/${f.a.projectId}/rack/catalog`;
+  const before = (await pool.query('SELECT count(*)::int AS n FROM rack_plans WHERE project_id=$1', [f.a.projectId])).rows[0].n;
+  for (const user of ['admin', 'editor', 'viewer']) {
+    const response = await request(url, { user });
+    assert.equal(response.status, 200); assert.equal(response.body.data.projectId, f.a.projectId);
+    assert.ok(response.body.meta.correlation_id);
+    assert.deepEqual(response.body.data.models, getRackCatalog().models);
+    assert.equal(response.body.data.examples[1].equipmentReport.status, 'ISSUES_FOUND');
+  }
+  assert.equal((await request(url, { user: 'outsider' })).status, 403);
+  assert.equal((await request(url, { user: 'unknown' })).status, 401);
+  const post = await request(url, { body: { models: [] } });
+  assert.ok([404, 405].includes(post.status));
+  assert.equal((await pool.query('SELECT count(*)::int AS n FROM rack_plans WHERE project_id=$1', [f.a.projectId])).rows[0].n, before);
+})));
+
+test('Rack pinned catalog equipment persists atomically, replays exactly and rejects forged specifications and versions', {skip}, async () => fixture(async f => server(f.people, async request => {
+  const { url, layout } = await prepared(f, request), r = rack();
+  const m = getRackCatalog().models[0];
+  const d = { deviceId: randomUUID(), name: 'Catalog GPU', ...m.specification,
+    catalogRef: { modelId: m.modelId, version: m.version }, rackId: r.rackId, startU: 1 };
+  const body = { ...layoutBody(layout, [r]), equipment: equipmentInput([d]) }, key = randomUUID();
+  const saved = await request(url, { method: 'PUT', body, key, version: 1 });
+  assert.equal(saved.status, 200, JSON.stringify(saved.body)); assert.equal(saved.body.data.version, 2);
+  assert.deepEqual(saved.body.data.equipment.devices[0], d);
+  assert.deepEqual((await pool.query('SELECT equipment FROM rack_plans WHERE plan_id=$1', [layout.planId])).rows[0].equipment.devices[0], d);
+  const replayed = await request(url, { method: 'PUT', body, key, version: 1 });
+  assert.equal(replayed.body.meta.replayed, true); assert.equal(replayed.body.data.version, 2);
+  for (const patch of [{ powerKw: 0 }, { heightU: 1 }, { catalogRef: { ...d.catalogRef, version: 999 } }, { catalogRef: null }]) {
+    const bad = { ...body, equipment: equipmentInput([{ ...d, ...patch }]) };
+    assert.equal((await request(`${url}/check`, { body: bad })).status, 400);
+    const failed = await request(url, { method: 'PUT', body: bad, version: 2 });
+    assert.equal(failed.status, 400); assert.equal(failed.body.error.code, 'RACK_INPUT_INVALID');
+  }
+  assert.deepEqual((await request(url, { user: 'viewer' })).body.data, saved.body.data);
+  assert.equal((await request(url, { method: 'PUT', body, version: 2, user: 'viewer' })).status, 403);
+  assert.equal((await request(`${url}/check`, { body, user: 'outsider' })).status, 403);
+  assert.equal((await request(url, { method: 'PUT', body, version: 1 })).status, 412);
+  const { catalogRef, ...custom } = d;
+  const changed = { ...body, equipment: equipmentInput([{ ...custom, powerKw: 1 }]) };
+  const detached = await request(url, { method: 'PUT', body: changed, version: 2 });
+  assert.equal(detached.status, 200); assert.equal(detached.body.data.version, 3);
+  assert.equal(Object.hasOwn(detached.body.data.equipment.devices[0], 'catalogRef'), false);
+  assert.equal(detached.body.data.equipment.devices[0].deviceId, d.deviceId);
+})));
 
 const demoModel = '10000000-0000-4000-8000-000000000002';
 const rack = (xM=3,yM=3,extra={}) => ({rackId:randomUUID(),modelId:demoModel,name:'Rack',xM,yM,rotationDeg:0,locked:false,...extra});

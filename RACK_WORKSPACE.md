@@ -21,3 +21,5 @@
 已增加 [规划矩形禁放区与前后维护净距](RACK_CONSTRAINTS.md) 和 [设备/U 位与容量假设](RACK_EQUIPMENT.md)：在 Planning constraints 与 Equipment & capacity 设置，同机柜一起保存。设备可上架/迁移/卸架、查看柜内 U 位图和三维用量；选柜后显示容量表。通道连通、正式预算、布局优化和 Rack Assistant 尚未实现。全局 Ask about Rack 仍是既有入口，不能当作 Rack 业务集成。
 
 历史证据分别见 [方案工作区](records/2026-10-28-rack-ui/)、[坐标显示](records/2026-10-28-rack-floorplan/)，本轮见 [机柜编辑](records/2026-10-28-rack-editor/)。本轮未进行浏览器断网响应丢失故障注入。
+
+第十三轮：Catalog 已有 Models / Technologies / Rule examples；Rack 支持 Add from catalog 与固定版本规格。主图支持 Expand map、Fit racks、图层和用量着色。详见 [RACK_CATALOG.md](RACK_CATALOG.md)。

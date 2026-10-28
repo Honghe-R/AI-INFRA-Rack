@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { deviceFromCatalog, detachCatalogDevice, modelKey } from '../catalog/catalog-state.js';
 
 const dimensions = [
   ['weightKg', 'maxWeightKg', 'Weight', 'kg'],
@@ -68,8 +69,12 @@ export function RackEquipment({
   pending,
   inputError,
   checkError,
+  catalogState = null,
 }) {
   const [selectedId, setSelectedId] = useState(null);
+  const [catalogId, setCatalogId] = useState('');
+  const catalog = catalogState?.data;
+  const catalogModel = catalog?.models.find((item) => modelKey(item) === catalogId) ?? catalog?.models[0];
   const d = e.devices.find((item) => item.deviceId === selectedId);
   const rack = placements.find((p) => p.rackId === selectedRackId);
   const model = models.find((m) => m.modelId === rack?.modelId);
@@ -147,6 +152,23 @@ export function RackEquipment({
           Add device
         </button>
       </div>
+      <fieldset className="rack-catalog-picker">
+        <legend>Versioned equipment catalog</legend>
+        {catalogState?.pending ? <p role="status">Reading model specifications…</p> : catalogState?.error ?
+          <div role="alert"><p>Catalog could not be loaded. Custom device entry remains available.</p><button onClick={catalogState.retry}>Retry catalog</button></div> : catalog ? <>
+          <label>Equipment model<select value={catalogModel ? modelKey(catalogModel) : ''} disabled={!editable} onChange={(event) => setCatalogId(event.target.value)}>
+            {catalog.models.map((item) => <option key={modelKey(item)} value={modelKey(item)}>{item.name} · v{item.version}</option>)}
+          </select></label>
+          {catalogModel && <p className="rack-muted">ASSUMED · {catalogModel.specification.heightU} U · {display(catalogModel.specification.weightKg)} kg · {display(catalogModel.specification.powerKw)} kW power · {display(catalogModel.specification.coolingKw)} kW cooling. Unknown values stay unknown.</p>}
+          <button disabled={!editable || !catalogModel || e.devices.length >= 512} onClick={() => {
+            if (!editable || !catalogModel || e.devices.length >= 512) return;
+            const deviceId = crypto.randomUUID();
+            patch({ devices: [...e.devices, deviceFromCatalog(catalogModel, deviceId)] });
+            setSelectedId(deviceId);
+          }}>Add from catalog</button>
+          <p className="rack-muted">Creates an unassigned device in this draft. Choose its rack and starting U, then save the layout.</p>
+        </> : <p className="rack-muted">Catalog unavailable. Devices can still use explicit custom assumptions.</p>}
+      </fieldset>
       <label>
         Selected device
         <select value={d?.deviceId ?? ''} onChange={(event) => selectDevice(event.target.value)}>
@@ -164,6 +186,10 @@ export function RackEquipment({
       {d && (
         <div className="rack-device-form">
           <p className="rack-muted">Device ID: {d.deviceId}</p>
+          {d.catalogRef && <div className="rack-catalog-binding"><p>Pinned model: <code>{d.catalogRef.modelId}@{d.catalogRef.version}</code> · ASSUMED local catalog</p>
+            <p className="rack-muted">Specifications are fixed to this version. Name and U assignment remain editable.</p>
+            <button disabled={!editable} onClick={() => patch({ devices: e.devices.map((item) => item.deviceId === d.deviceId ? detachCatalogDevice(item) : item) })}>Detach to custom assumptions</button>
+          </div>}
           <label>
             Device name
             <input
@@ -182,7 +208,7 @@ export function RackEquipment({
                 max="100"
                 step="1"
                 value={Number.isFinite(d.heightU) ? d.heightU : ''}
-                disabled={!editable}
+                disabled={!editable || Boolean(d.catalogRef)}
                 onChange={(event) => patchDevice({ heightU: numeric(event.target.value) })}
               />
             </label>
@@ -196,7 +222,7 @@ export function RackEquipment({
                   step="any"
                   placeholder="Unknown"
                   value={Number.isFinite(d[key]) ? d[key] : ''}
-                  disabled={!editable}
+                  disabled={!editable || Boolean(d.catalogRef)}
                   onChange={(event) => patchDevice({ [key]: optional(event.target.value) })}
                 />
               </label>

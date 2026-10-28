@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { RackConstraints } from './RackConstraints.jsx';
 import { RackEquipment } from './RackEquipment.jsx';
+import { useRackCatalog } from '../catalog/useRackCatalog.js';
 import { RoomFloorplan } from './RackRoomView.jsx';
 import {
   beginLayoutDraft,
@@ -24,6 +25,7 @@ export function RackEditor({
   onDraftChange,
   onSaved,
 }) {
+  const catalogState = useRackCatalog(client, plan.projectId, canReadFacility);
   const [state, setState] = useState({
     pending: true,
     data: null,
@@ -368,6 +370,7 @@ export function RackEditor({
             onSelect={setSelectedId}
             onMove={editable ? (id, position) => updateRack(id, position) : null}
             report={currentReport}
+            equipmentReport={equipmentReport}
             focusRequest={focusRequest}
           />
           <div className="rack-editor-columns">
@@ -528,6 +531,7 @@ export function RackEditor({
             </section>
           </div>
           <RackEquipment
+            catalogState={catalogState}
             equipment={equipment}
             placements={placements}
             models={models}

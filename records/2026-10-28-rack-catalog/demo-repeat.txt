@@ -1,0 +1,5 @@
+
+> ai-network-infra-simulator@0.1.0 rack:demo:catalog
+> node --env-file-if-exists=.env scripts/rack-catalog-demo.mjs 4c11ab8d-5d57-4ad8-ad55-ac08574fba46 cb017b9b-ca11-483b-a5fd-c8f527195072
+
+Existing demo retained: e446aafb-1846-4a69-af10-636fd50ba87c, v2. No layout overwritten.

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { rackError } from './rack-plan-state.js';
 import { rackCorners, displayClearanceBands } from './edit-layout-state.js';
+import { rackLoadDisplay, rackGroupCamera } from './floorplan-load.js';
 import {
   boundaryPath,
   CANVAS,
@@ -105,12 +106,30 @@ export function RoomFloorplan({
   constraints = null,
   selectedObstacleId = null,
   onSelectObstacle = null,
+  equipmentReport = null,
 }) {
   const fit = fitRoom(view.extentM);
-  const [camera, setCamera] = useState(fit);
+  const [camera, setCamera] = useState(() => rackGroupCamera(placements, models, fit) ?? fit);
   const svgRef = useRef(null);
   const dragging = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
+  const sectionRef = useRef(null);
+  const [expanded, setExpanded] = useState(false), [expandError, setExpandError] = useState(null);
+  const [showObstacles, setShowObstacles] = useState(true), [showMaintenance, setShowMaintenance] = useState(true);
+  const [loadMode, setLoadMode] = useState('layout');
+  useEffect(() => {
+    const changed = () => setExpanded(document.fullscreenElement === sectionRef.current);
+    document.addEventListener('fullscreenchange', changed);
+    return () => document.removeEventListener('fullscreenchange', changed);
+  }, []);
+  async function toggleExpanded() {
+    try {
+      setExpandError(null);
+      if (document.fullscreenElement === sectionRef.current) await document.exitFullscreen();
+      else if (sectionRef.current.requestFullscreen) await sectionRef.current.requestFullscreen();
+      else setExpandError('This browser does not support expanding the map. Zoom and pan remain available.');
+    } catch { setExpandError('The browser could not expand the map. Zoom and pan remain available.'); }
+  }
   useEffect(() => {
     const rack = focusRequest?.obstacleId
       ? constraints?.obstacles.find((o) => o.obstacleId === focusRequest.obstacleId)
@@ -163,13 +182,14 @@ export function RoomFloorplan({
   }
 
   return (
-    <section className="rack-floorplan" aria-label="Bound HALL floorplan">
+    <section ref={sectionRef} className="rack-floorplan" aria-label="Bound HALL floorplan">
       <div className="rack-heading">
         <div>
           <h3>{room.name}</h3>
           <p className="rack-muted">{onMove ? 'Layout editor' : 'Saved layout'} · Projected grid metres</p>
         </div>
         <div className="rack-actions" aria-label="Floorplan controls">
+          <button onClick={toggleExpanded}>{expanded ? 'Exit expanded map' : 'Expand map'}</button>
           <button
             type="button"
             aria-label="Zoom out floorplan"
@@ -188,8 +208,19 @@ export function RoomFloorplan({
           <button type="button" onClick={() => setCamera(fit)}>
             Fit room
           </button>
+          <button type="button" disabled={!placements.length} onClick={() => setCamera(rackGroupCamera(placements, models, fit) ?? fit)}>Fit racks</button>
         </div>
       </div>
+      {expandError && <p role="status">{expandError}</p>}
+      <div className="rack-map-layers" aria-label="Map display layers">
+        <label>Color by<select value={loadMode} onChange={(e) => setLoadMode(e.target.value)}>
+          <option value="layout">Layout</option><option value="u">Known U occupation</option><option value="power">Power demand / limit</option>
+        </select></label>
+        <label><input type="checkbox" checked={showObstacles} onChange={(e) => setShowObstacles(e.target.checked)} />Planning obstacles</label>
+        <label><input type="checkbox" checked={showMaintenance} onChange={(e) => setShowMaintenance(e.target.checked)} />Maintenance bands</label>
+        <span className="rack-muted">Display controls only; all constraints remain checked.</span>
+      </div>
+      {loadMode !== 'layout' && <p className="rack-map-legend">Blue: below 80% · Amber: ≥80% · Red: conflict or exceeded · Gray: unknown / not checked. Colors describe the provided inventory and declared assumptions.</p>}
       <svg
         ref={svgRef}
         className={`rack-room-canvas${isDragging ? ' is-dragging' : ''}`}
@@ -246,7 +277,7 @@ export function RoomFloorplan({
           className="rack-room-boundary"
         />
         <g aria-label="Maintenance bands">
-          {placements.flatMap((rack) => {
+          {(showMaintenance ? placements : []).flatMap((rack) => {
             const model = models.find((m) => m.modelId === rack.modelId);
             if (!model) return [];
             return displayClearanceBands(rack, model, constraints?.clearance).map((band) => (
@@ -261,7 +292,7 @@ export function RoomFloorplan({
           })}
         </g>
         <g aria-label="Planning obstacles">
-          {(constraints?.obstacles ?? []).map((o) => {
+          {(showObstacles ? constraints?.obstacles ?? [] : []).map((o) => {
             if (![o.xM, o.yM, o.widthM, o.depthM].every(Number.isFinite) || o.widthM <= 0 || o.depthM <= 0)
               return null;
             const points = [
@@ -305,13 +336,16 @@ export function RoomFloorplan({
             if (!model || !Number.isFinite(rack.xM) || !Number.isFinite(rack.yM)) return null;
             const corners = rackCorners(rack, model).map((point) => toScreen(point, camera));
             const center = toScreen([rack.xM, rack.yM], camera);
-            const issue = report?.diagnostics?.some((item) => item.rackIds.includes(rack.rackId));
+            const issue = report?.diagnostics?.some((item) => item.rackIds.includes(rack.rackId)) ||
+              equipmentReport?.diagnostics?.some((item) => item.rackId === rack.rackId);
+            const load = rackLoadDisplay(loadMode, rack.rackId, equipmentReport);
             return (
               <g
                 key={rack.rackId}
                 role="button"
                 tabIndex={0}
                 aria-label={`Select rack ${rack.name}`}
+                data-load={load?.tone}
                 className={`rack-drawn-rack${selectedId === rack.rackId ? ' is-selected' : ''}${issue ? ' has-issue' : ''}`}
                 onKeyDown={(event) => {
                   if (['Enter', ' '].includes(event.key)) {
@@ -339,7 +373,7 @@ export function RoomFloorplan({
                   setIsDragging(true);
                 }}
               >
-                <title>{`${rack.name} · ${model.widthM} × ${model.depthM} m · ${rack.rotationDeg}°${rack.locked ? ' · Locked' : ''}`}</title>
+                <title>{`${rack.name} · ${model.widthM} × ${model.depthM} m · ${rack.rotationDeg}°${rack.locked ? ' · Locked' : ''}${load ? ` · ${load.label}` : ''}`}</title>
                 <polygon points={corners.map((point) => point.join(',')).join(' ')} />
                 <line
                   className="rack-front-edge"
@@ -357,6 +391,7 @@ export function RoomFloorplan({
                     {rack.name}
                   </text>
                 )}
+                {load && camera.scale * model.widthM > 45 && <text className="rack-load-label" x={center[0]} y={center[1] + 4} textAnchor="middle">{load.label}</text>}
               </g>
             );
           })}
@@ -397,7 +432,7 @@ export function RoomFloorplan({
       <p className="rack-muted">
         Dashed blue: front maintenance · Dashed amber: rear maintenance · Shaded blocks: planning obstacles
       </p>
-      <p className="rack-muted">Drag to pan · Scroll or + / − to zoom · Arrow keys to pan · 0 to fit</p>
+      <p className="rack-muted">Drag to pan · Scroll or + / − to zoom · Arrow keys to pan · 0 to fit room · Fit racks to inspect the equipment area · Esc to exit expanded view</p>
       <dl className="rack-floor-stats">
         <div>
           <dt>X extent</dt>

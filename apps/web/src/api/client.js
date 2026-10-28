@@ -67,6 +67,8 @@ export function createApiClient({ baseUrl = '', fetchImpl = globalThis.fetch, id
      */
     listScenarios: (projectId) => request(`/api/v1/projects/${encodeURIComponent(projectId)}/scenarios`),
 
+    getRackCatalog: (projectId, { signal } = {}) =>
+      request(`/api/v1/projects/${encodeURIComponent(projectId)}/rack/catalog`, { signal }),
     listRackPlans: (projectId, { scenarioId, revisionId, cursor, limit = 20, signal } = {}) => {
       const query = new URLSearchParams({ limit: String(limit) });
       if (scenarioId) query.set('scenario_id', scenarioId);

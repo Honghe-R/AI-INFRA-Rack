@@ -14,3 +14,5 @@ export { localizeRoomBoundary, MAX_ROOM_VIEW_POINTS, MAX_ROOM_VIEW_RINGS } from 
 export { normalizeEditableLayout, assertLockedRacksUnchanged } from './edit-layout.js';
 export { EMPTY_SPATIAL_CONSTRAINTS, normalizeSpatialConstraints, localRectangle, rackClearanceBands } from './constraints.js';
 export { EMPTY_EQUIPMENT, normalizeEquipment, checkEquipment } from './equipment.js';
+export { getRackCatalog, resolveCatalogReference, assertCatalogDevice } from './catalog.js';
+export { getCatalogExamples } from './catalog-examples.js';

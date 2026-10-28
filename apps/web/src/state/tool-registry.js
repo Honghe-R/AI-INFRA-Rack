@@ -54,7 +54,8 @@ export const TOOLS = Object.freeze([
   tool('verify', 'Verify', 'design', 'facility.read'),
 
   tool('assets', 'Assets', 'supporting', 'asset.read'),
-  tool('catalog', 'Catalog', 'supporting', null),
+  tool('catalog', 'Catalog', 'supporting', RACK_KEYS.READ,
+    [fn('models', 'Models'), fn('technologies', 'Technologies'), fn('examples', 'Rule examples')]),
   tool('workload', 'Workload & Capacity', 'supporting', null),
   tool('simulation', 'Simulation', 'supporting', null),
   tool('cost_schedule', 'Cost & Schedule', 'supporting', null),
