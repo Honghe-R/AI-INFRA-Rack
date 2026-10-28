@@ -67,6 +67,20 @@ export function createApiClient({ baseUrl = '', fetchImpl = globalThis.fetch, id
      */
     listScenarios: (projectId) => request(`/api/v1/projects/${encodeURIComponent(projectId)}/scenarios`),
 
+    listRackPlans: (projectId, { scenarioId, revisionId, cursor, limit = 20, signal } = {}) => {
+      const query = new URLSearchParams({ limit: String(limit) });
+      if (scenarioId) query.set('scenario_id', scenarioId);
+      if (revisionId) query.set('revision_id', revisionId);
+      if (cursor) query.set('cursor', cursor);
+      return request(`/api/v1/projects/${encodeURIComponent(projectId)}/rack/plans?${query}`, { signal });
+    },
+    getRackPlan: (projectId, planId, { signal } = {}) =>
+      request(`/api/v1/projects/${encodeURIComponent(projectId)}/rack/plans/${encodeURIComponent(planId)}`, { signal }),
+    createRackPlan: (projectId, body, { idempotencyKey, signal } = {}) =>
+      request(`/api/v1/projects/${encodeURIComponent(projectId)}/rack/plans`, {
+        method: 'POST', body, headers: { 'Idempotency-Key': idempotencyKey }, signal,
+      }),
+
     /** Project assets, newest first, with optional filters. */
     listAssets: (projectId, filters = {}) => {
       const query = new URLSearchParams();
@@ -211,9 +225,10 @@ export function createApiClient({ baseUrl = '', fetchImpl = globalThis.fetch, id
      * constraints. `capabilityCoverage` is empty until T4 derives it, so a caller
      * must not read the empty list as "validated".
      */
-    getFacilityEnvelope: (projectId, revisionId) =>
+    getFacilityEnvelope: (projectId, revisionId, { signal } = {}) =>
       request(
         `/api/v1/projects/${encodeURIComponent(projectId)}/facility/revisions/${encodeURIComponent(revisionId)}`,
+        { signal },
       ),
 
     /**

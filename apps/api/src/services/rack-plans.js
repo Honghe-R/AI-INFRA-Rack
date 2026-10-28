@@ -64,6 +64,34 @@ function present(row) {
 export function createRackPlanService({ pool }) {
   if (!pool) throw new Error('createRackPlanService requires a pool.');
   return {
+    async list({ projectId, query = {} }) {
+      if (typeof projectId !== 'string' || !UUID.test(projectId)) throw missing();
+      fields(query, 'query', ['scenario_id', 'revision_id', 'cursor', 'limit']);
+      for (const key of ['scenario_id', 'revision_id', 'cursor']) {
+        if (query[key] !== undefined && !UUID.test(query[key])) throw new RackInputError(key, 'must be a UUID');
+      }
+      if (query.limit !== undefined && !/^(?:[1-9]|[1-4][0-9]|50)$/.test(query.limit)) {
+        throw new RackInputError('limit', 'must be an integer from 1 to 50');
+      }
+      const limit = Number(query.limit ?? 20);
+      return withTenant(pool, projectId, async client => {
+        // Cursor lookup remains inside the same tenant and filters. Compare in SQL
+        // to retain PostgreSQL timestamp precision, including tied creation times.
+        const result = await client.query(`${READ}
+          WHERE p.project_id = $1
+            AND ($2::uuid IS NULL OR p.scenario_id = $2)
+            AND ($3::uuid IS NULL OR p.source_revision_id = $3)
+            AND ($4::uuid IS NULL OR (p.created_at, p.plan_id) < (
+              SELECT c.created_at, c.plan_id FROM rack_plans c
+              WHERE c.project_id = $1 AND c.plan_id = $4
+                AND ($2::uuid IS NULL OR c.scenario_id = $2)
+                AND ($3::uuid IS NULL OR c.source_revision_id = $3)))
+          ORDER BY p.created_at DESC, p.plan_id DESC LIMIT $5`,
+        [projectId, query.scenario_id ?? null, query.revision_id ?? null, query.cursor ?? null, limit + 1]);
+        const items = result.rows.slice(0, limit).map(present);
+        return { items, nextCursor: result.rows.length > limit ? items.at(-1).planId : null };
+      }, { readOnly: true });
+    },
     async create({ projectId, actorId, body, creationKey }) {
       if (!actorId || !UUID.test(actorId)) throw errors.unauthorized();
       if (!creationKey) throw new ApiError('IDEMPOTENCY_KEY_REQUIRED', 'Creating a Rack plan requires Idempotency-Key.', { status: 428 });

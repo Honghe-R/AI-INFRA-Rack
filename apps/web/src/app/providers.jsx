@@ -212,7 +212,7 @@ export function WorkspaceProvider({
         (tab) => tab.toolId === toolId && contextKey(tab.workspaceContext) === contextKey(workspaceContext),
       );
       const tabId = existing?.tabId ?? nextTabId(toolId);
-      dispatchViews({ type: 'OPEN', tabId, toolId, workspaceContext, routeState });
+      dispatchViews({ type: 'OPEN', tabId, toolId, workspaceContext, routeState: routeState ?? existing?.routeState });
       return tabId;
     },
     [workspaceContext, views.tabs],
@@ -220,6 +220,10 @@ export function WorkspaceProvider({
 
   const selectFunction = useCallback((functionId) => {
     dispatchViews({ type: 'SET_ROUTE_STATE', routeState: { functionId } });
+  }, []);
+
+  const setRouteState = useCallback((tabId, routeState) => {
+    dispatchViews({ type: 'SET_ROUTE_STATE', tabId, routeState });
   }, []);
 
   const activateTab = useCallback((tabId) => dispatchViews({ type: 'ACTIVATE', tabId }), []);
@@ -329,6 +333,7 @@ export function WorkspaceProvider({
       hasDirtyTabs: hasDirtyTabs(views),
       selectTool,
       selectFunction,
+      setRouteState,
       activateTab,
       requestCloseTab,
       confirmCloseTab,
@@ -355,6 +360,7 @@ export function WorkspaceProvider({
       pendingSwitch,
       selectTool,
       selectFunction,
+      setRouteState,
       activateTab,
       requestCloseTab,
       confirmCloseTab,

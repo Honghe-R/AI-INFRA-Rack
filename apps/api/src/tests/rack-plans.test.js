@@ -106,6 +106,55 @@ async function server(people, fn) {
 
 const path = p => `/api/v1/projects/${p.projectId}/rack/plans`;
 
+test('Rack list paginates tied timestamps, filters scope and reports current source status', { skip }, async () => fixture(async f => server(f.people, async request => {
+  const ids = [];
+  for (let i = 0; i < 5; i++) {
+    const result = await request(path(f.a), { body: { ...f.input(), name: `Plan ${i}` } });
+    assert.equal(result.status, 201);
+    ids.push(result.body.data.planId);
+  }
+  await request(path(f.b), { body: f.input(f.b) });
+  await pool.query("UPDATE rack_plans SET created_at='2026-10-28T00:00:00.123456Z' WHERE project_id=$1", [f.a.projectId]);
+  const query = `?scenario_id=${f.a.scenarioId}&revision_id=${f.a.revisionId}&limit=2`;
+  const first = await request(`${path(f.a)}${query}`, { user: 'viewer' });
+  assert.equal(first.status, 200);
+  assert.ok(first.body.meta.correlation_id);
+  assert.equal(first.body.data.items.length, 2);
+  const second = await request(`${path(f.a)}${query}&cursor=${first.body.data.nextCursor}`);
+  assert.equal(second.body.data.items.length, 2);
+  const third = await request(`${path(f.a)}${query}&cursor=${second.body.data.nextCursor}`);
+  assert.equal(third.body.data.items.length, 1);
+  assert.equal(third.body.data.nextCursor, null);
+  const actual = [first, second, third].flatMap(result => result.body.data.items.map(plan => plan.planId));
+  assert.deepEqual(actual, ids.sort().reverse(), 'keyset pagination retains SQL microsecond precision and a deterministic tie break');
+  const foreign = await request(path(f.b));
+  assert.equal(foreign.body.data.items.length, 1);
+  assert.equal((await request(`${path(f.a)}?cursor=${foreign.body.data.items[0].planId}`)).body.data.items.length, 0);
+  assert.equal((await request(`${path(f.a)}?scenario_id=${f.b.scenarioId}`)).body.data.items.length, 0);
+  assert.equal((await request(`${path(f.a)}?revision_id=${f.b.revisionId}`)).body.data.items.length, 0);
+  assert.equal((await request(`${path(f.a)}?scenario_id=${randomUUID()}`)).body.data.items.length, 0);
+  const newer = await request(path(f.a), { body: { ...f.input(), name: 'Newer plan' } });
+  const continuation = await request(`${path(f.a)}${query}&cursor=${first.body.data.nextCursor}`);
+  assert.deepEqual(continuation.body.data.items.map(plan => plan.planId), second.body.data.items.map(plan => plan.planId));
+  assert.ok(!continuation.body.data.items.some(plan => plan.planId === newer.body.data.planId));
+  await pool.query('UPDATE revision_etags SET etag=$1 WHERE project_id=$2', [randomUUID(), f.a.projectId]);
+  const stale = await request(path(f.a));
+  assert.ok(stale.body.data.items.every(plan => plan.facilityInputStatus.status === 'STALE'));
+  assert.equal(stale.body.data.items[0].validationState, 'NOT_RUN');
+})));
+
+test('Rack list authorizes reads and rejects malformed or unbounded queries', { skip }, async () => fixture(async f => server(f.people, async request => {
+  assert.equal((await request(path(f.a), { user: 'unknown' })).status, 401);
+  assert.equal((await request(path(f.a), { user: 'outsider' })).status, 403);
+  assert.deepEqual((await request(path(f.a), { user: 'viewer' })).body.data, { items: [], nextCursor: null });
+  for (const query of ['limit=0', 'limit=51', 'limit=-1', 'limit=1.5', 'limit=02', 'limit=abc', 'scenario_id=bad', 'revision_id=bad', 'cursor=bad', 'unknown=x']) {
+    const result = await request(`${path(f.a)}?${query}`);
+    assert.equal(result.status, 400, query);
+    assert.equal(result.body.error.code, 'RACK_INPUT_INVALID');
+  }
+  assert.equal((await request(`${path(f.a)}?limit=50`)).status, 200);
+})));
+
 test('Rack create/read persists a server-owned empty draft without changing Facility', { skip }, async () => fixture(async f => server(f.people, async request => {
   const created = await request(path(f.a), { user: 'editor', body: f.input() });
   assert.equal(created.status, 201);

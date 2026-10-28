@@ -349,6 +349,49 @@ Docker 可能保留已下载的镜像缓存，本轮没有清理全局 Docker �
 - 当前平台外观未变；正式 Rack 页仍占位，空方案 API 不能当成完整机柜布局保存。
 - 只修改 Rack 副本；没有 commit、push 或改变 remotes，老师原目录没有改动。
 
+## 2026-10-28：第八轮，平台 Rack 空方案工作区
+
+### 1. 范围与起点
+
+- 用户同意将上一轮空方案后端接到平台：方案列表、选择 HALL 创建空方案、查看并刷新重读。
+- 起始 HEAD 为用户已提交的 `fdc974c`，工作区干净。仅修改 `AI-INFRA-Rack` 副本；没有 commit、push 或修改 remotes。
+- 保持现有独立 Docker 栈和业务数据，没有新增迁移，也没有重跑 setup/seed。
+
+### 2. 实际修改与决策
+
+- [Rack service](apps/api/src/services/rack-plans.js) / [路由](apps/api/src/routes/rack.js)：新增 rack.read 保护的 GET 列表，可按场景/来源 revision 过滤，默认 20、上限 50。
+- 采用 `created_at DESC, plan_id DESC` 的 keyset 分页；时间与 cursor 都在 SQL 内比较，避免 JS 毫秒转换丢掉 PostgreSQL 微秒。cursor 查询也受项目与同过滤范围限制。
+- [RackSurface](apps/web/src/rack/RackSurface.jsx)：替换原 Rack 占位页，展示真实列表、创建表单和保存详情；沿用平台 token 样式，窄窗口上下排列。
+- [API client](apps/web/src/api/client.js) 增加列表/详情/幂等创建与取消信号；Facility 读取也可取消。复用平台当前身份桥，不单独构造认证路径。
+- 入口与页面检查 rack.read，写操作检查 rack.write；Facility 读权限单独检查。后端 guard 仍是授权边界。
+- 工作区增加按 tab 更新 routeState 的入口，重新点击已有工具保留原路由。Rack 表单、所选方案和待确认创建意图随工具标签保留；未保存表单接 dirty 关闭/上下文切换保护。
+- 提交时先记录精确 body 与 UUID key；结果不确定时锁定输入并用同 key 重试，明确拒绝则允许修正。读取会中止并忽略卸载后的旧响应。
+- 详情明确显示 NOT_RUN、空 placements、保存/当前来源 ETag 和变化原因。没有把 Facility 来源未变化当成 Rack 验证通过。
+- 新增 [操作说明](RACK_WORKSPACE.md)，更新 API、基础设计、清单、运行说明和 README；仅勾选空方案范围的实际完成项。
+
+### 3. 验证与证据
+
+| 检查 | 结果 | 证据 |
+| --- | --- | --- |
+| Rack API / 真数据库 | 12 通过、0 失败、0 跳过；新增分页/同时间排序/过滤/权限/参数上限与来源变化 | [rack-api-tests.txt](records/2026-10-28-rack-ui/rack-api-tests.txt) |
+| Web Rack 状态/渲染、客户端、registry、open-views | 37 通过 | [web-tests.txt](records/2026-10-28-rack-ui/web-tests.txt) |
+| Web shell/toolbar/导入边界/权限客户端/上下文/项目入口回归 | 73 通过 | [web-shell-tests.txt](records/2026-10-28-rack-ui/web-shell-tests.txt) |
+| Web 构建 | 成功；沿用既有 esbuild/oxc 与较大 bundle 提示 | [web-build.txt](records/2026-10-28-rack-ui/web-build.txt) |
+| 实际浏览器 | 创建、保留未保存表单、dirty 关闭提示、整页刷新重读相同 ID、viewer 只读均验证 | [步骤](records/2026-10-28-rack-ui/browser-checks.md)、[截图](records/2026-10-28-rack-ui/platform.png)、[详情](records/2026-10-28-rack-ui/detail.png)、[viewer](records/2026-10-28-rack-ui/viewer.png) |
+| 演示方案 SQL / API 一致性 | 数据库只有该 ID 一条；列表/详情/viewer 响应一致 | [只读检查](records/2026-10-28-rack-ui/check-saved-demo.mjs)、[输出](records/2026-10-28-rack-ui/saved-demo-checks.txt) |
+
+测试命令分别为 `node --env-file-if-exists=.env --test apps/api/src/tests/rack-plans.test.js`、证据文件首行记录的两组 `npm run test --workspace @ai-infra/web -- ...`、`npm run build --workspace @ai-infra/web`。
+本轮开发过程中，分步保存 App/provider 的 HMR 曾出现临时旧绑定错误；完整代码写入并重载后页面与回归通过。没有重跑全仓测试，也不宣称原始基线失败全部修复。
+
+### 4. 保留数据、限制与下一步
+
+- 有意保留本机方案 `Rack UI demo — Hall A1`，ID `3abd796d-461a-45f6-a0ce-ced7bce99020`；没有添加到 seed，组员需自行创建。
+- 整页刷新沿用平台行为回到项目列表，重新进入 Rack 能读数据库；没有自动恢复工作区或跨重载保存未提交表单/创建意图。
+- 未做浏览器断网后“服务器提交成功但响应丢失”的故障注入；幂等接口已有真实并发/重放测试，UI 保留重试意图，但仍需以后验证该端到端故障路径。
+- 没有真实房间几何/局部坐标、机柜编辑和存储、设备/容量、优化、Rack Assistant 或正式验证；只完成本轮空方案闭环。
+- 下一小步应先确认真实 HALL 几何到米制局部输入的 contract，再做最小机柜编辑；完整性能和生产认证仍待后续。
+- 没有改老师原目录或执行任何 Git 提交/推送操作。
+
 ## 后续记录格式
 
 每轮追加一个日期标题，至少写清：

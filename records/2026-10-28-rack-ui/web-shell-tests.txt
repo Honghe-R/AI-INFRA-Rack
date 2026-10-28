@@ -1,0 +1,20 @@
+
+> @ai-infra/web@0.1.0 test
+> vitest run src/tests/shell-render.test.jsx src/tests/toolbar-structure.test.jsx src/tests/import-boundaries.test.js src/tests/permission-client.test.js src/tests/workspace-context.test.js src/tests/open-project.test.js
+
+
+ RUN  v2.1.9 C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/web
+
+ ✓ src/tests/permission-client.test.js (13 tests) 5ms
+ ✓ src/tests/workspace-context.test.js (6 tests) 3ms
+ ✓ src/tests/open-project.test.js (11 tests) 5ms
+ ✓ src/tests/toolbar-structure.test.jsx (9 tests) 19ms
+ ✓ src/tests/import-boundaries.test.js (3 tests) 1237ms
+   ✓ no package imports an application 1152ms
+ ✓ src/tests/shell-render.test.jsx (31 tests) 164ms
+
+ Test Files  6 passed (6)
+      Tests  73 passed (73)
+   Start at  09:10:33
+   Duration  2.84s (transform 650ms, setup 0ms, collect 2.66s, tests 1.43s, environment 1ms, prepare 1.76s)
+

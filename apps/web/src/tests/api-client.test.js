@@ -12,6 +12,31 @@ function jsonResponse(status, payload) {
   };
 }
 
+test('Rack methods carry encoded scope, pagination, identity, cancellation and the creation key', async () => {
+  const calls = [];
+  const controller = new AbortController();
+  const client = createApiClient({ identity: () => 'test-editor', fetchImpl: async (url, options) => {
+    calls.push({ url, options }); return jsonResponse(200, { data: { items: [] } });
+  } });
+  await client.listRackPlans('p/one', { scenarioId: 's/one', revisionId: 'r/one', cursor: 'cursor', limit: 2, signal: controller.signal });
+  const query = new URL(calls[0].url, 'http://localhost').searchParams;
+  assert.ok(calls[0].url.startsWith('/api/v1/projects/p%2Fone/rack/plans?'));
+  assert.equal(query.get('scenario_id'), 's/one');
+  assert.equal(query.get('revision_id'), 'r/one');
+  assert.equal(query.get('limit'), '2');
+  assert.equal(query.get('cursor'), 'cursor');
+  assert.equal(calls[0].options.signal, controller.signal);
+  assert.equal(calls[0].options.headers['x-dev-subject'], 'test-editor');
+  await client.getRackPlan('p/one', 'plan/one', { signal: controller.signal });
+  assert.equal(calls[1].url, '/api/v1/projects/p%2Fone/rack/plans/plan%2Fone');
+  const body = { contract_version: 1, name: 'Test' };
+  await client.createRackPlan('p/one', body, { idempotencyKey: 'key-1', signal: controller.signal });
+  assert.equal(calls[2].options.method, 'POST');
+  assert.equal(calls[2].options.headers['Idempotency-Key'], 'key-1');
+  assert.deepEqual(JSON.parse(calls[2].options.body), body);
+  assert.equal(calls[2].options.signal, controller.signal);
+});
+
 test('a success response is unwrapped from the documented envelope', async () => {
   const client = createApiClient({
     fetchImpl: async () => jsonResponse(200, { data: [{ projectId: 'p-1' }], meta: { correlation_id: 'corr-1' } }),

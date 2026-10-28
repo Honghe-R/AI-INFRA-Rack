@@ -2,7 +2,7 @@
 
 日期：2026-10-27。对应 [总清单](RACK_PROJECT_TODO.md) 的阶段 0–2，以及阶段 3 的领域包骨架。
 
-本文区分已经实现的基础契约与后续设计方向。已补充第四轮多柜碰撞与汇总；它不表示 API、持久化或完整规划系统已经可用。
+本文区分已经实现的基础契约与后续设计方向。领域规则、空方案 API/持久化与工作区进展分别记录；这些增量不表示完整规划系统已经可用。
 本轮进展和运行结果见 [PROGRESS.md](PROGRESS.md)。
 
 可视化入口：已新增[独立只读预览](RACK_PREVIEW.md)，在 Node 中调用领域规则、浏览器只展示合成结果；未接入原工作区或实现编辑/保存。
@@ -20,8 +20,8 @@
 - 矩形机房输入副本，以及单个机柜的越界/障碍检查（第三轮补充，见第 10 节）。
 - 多柜清单的声明归属/型号引用检查、柜间占地碰撞及结构化汇总（第四轮补充，见第 11 节）。
 
-2026-10-28 已另在 API 服务层补空方案表、rack.read/write、创建/读取 HTTP API，见 [RACK_API.md](RACK_API.md)；领域包仍不依赖数据库或 app。
-尚未实现：机柜存储/保存、工作区页面、设备分配、完整约束引擎、布局算法、候选应用、Assistant、正式验证和发布。
+2026-10-28 已另在 API 服务层补空方案表、rack.read/write、创建/读取/有上限分页 HTTP API，见 [RACK_API.md](RACK_API.md)；已接通工作区空方案列表、创建与详情，见 [操作说明](RACK_WORKSPACE.md)。领域包仍不依赖数据库或 app。
+尚未实现：机柜存储/保存与编辑、设备分配、完整约束引擎、布局算法、候选应用、Assistant、正式验证和发布。
 
 ## 2. 首版业务范围的设计方向
 
@@ -111,7 +111,7 @@ Rack Plan 的初始 `version = 1` 不等于上游设施的 ETag，也不表示�
 
 ```mermaid
 flowchart LR
-    UI["Rack 页面（待实现）"] --> HTTP["Rack API（已支持空方案创建/读取）"]
+    UI["Rack 空方案列表/创建/查看（已实现）"] --> HTTP["Rack API（空方案列表/创建/读取）"]
     AI["Rack Assistant 工具（待实现）"] --> SVC["空方案服务（已实现）"]
     HTTP --> SVC
     SVC --> DOMAIN["Rack 数据契约/局部几何（本轮）"]
@@ -119,11 +119,11 @@ flowchart LR
     SVC --> DB["空方案持久化/项目隔离（已实现）"]
 ```
 
-浏览器通过 API 访问 Rack 服务，不直接导入后端 package；领域包不反向导入 app。空方案服务在 `apps/api/src/services/rack-plans.js`，路由负责 HTTP 适配并沿用权限 guard；工作区页面仍待实现。
+浏览器通过 API 访问 Rack 服务，不直接导入后端 package；领域包不反向导入 app。空方案服务在 `apps/api/src/services/rack-plans.js`，路由负责 HTTP 适配并沿用权限 guard；工作区的首个空方案切片在 `apps/web/src/rack/`。
 
 ## 7. API 进展与后续草案
 
-已实现 `/api/v1/projects/:projectId/rack/plans` 的 POST 和 `GET /:planId`，准确 contract 见 [RACK_API.md](RACK_API.md)。下表其余操作仍是草案。
+已实现 `/api/v1/projects/:projectId/rack/plans` 的 POST、GET 分页列表和 `GET /:planId`，准确 contract 见 [RACK_API.md](RACK_API.md)。下表其余操作仍是草案。
 
 | 操作方向 | 建议方法/资源 | 关键前提 |
 | --- | --- | --- |
@@ -135,11 +135,11 @@ flowchart LR
 
 HTTP 成功/错误沿用平台响应封装和 correlation ID；已注册 `rack.read`、`rack.write`。`rack.validate.run`、`rack.plan.run` 仍未注册或实现。
 
-空方案请求/响应、幂等创建、真实来源引用和拒绝行为已记录；列表分页、变更并发控制、容量、设备、完整删除策略、任务和完整安全审计仍待设计。
+空方案请求/响应、列表分页、幂等创建、真实来源引用和拒绝行为已记录；变更并发控制、容量、设备、完整删除策略、任务和完整安全审计仍待设计。
 
 ## 8. 下一个小阶段
 
-2026-10-28 用户恢复平台初始化并允许 Docker，原平台已通过独立栈运行，见 [本地运行说明](RACK_LOCAL_SETUP.md)。空方案创建/读取存储闭环已完成；下一小步可补方案列表及工作区创建/查看入口，仍不同时展开完整机柜编辑与算法。
+2026-10-28 用户恢复平台初始化并允许 Docker，原平台已通过独立栈运行，见 [本地运行说明](RACK_LOCAL_SETUP.md)。空方案列表/创建/读取与工作区闭环已完成；下一小步应先明确真实 HALL 几何到局部米制输入的边界与来源契约，再决定最小机柜编辑切片。
 真实设施几何、局部坐标转换和完整输入快照绑定仍待做。
 原平台数据库、迁移和示例初始化已完成，Compose 项目名、数据卷和端口均已隔离；Rack 专用存储目前只有空方案。
 

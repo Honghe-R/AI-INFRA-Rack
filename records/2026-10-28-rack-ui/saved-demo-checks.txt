@@ -1,0 +1,3 @@
+Browser demo exists exactly once in SQL. List, detail and viewer GET agree.
+Plan 3abd796d-461a-45f6-a0ce-ced7bce99020: v1 / DRAFT / NOT_RUN; no rack placements.
+Current Facility status: UNCHANGED. No test mutation or seed executed.

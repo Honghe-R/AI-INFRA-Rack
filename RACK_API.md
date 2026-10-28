@@ -57,6 +57,27 @@ key 在不同项目可独立使用，无过期清理机制；生命周期随方�
 重试会重新检查当前用户权限，并重算来源状态，响应不是对首次 JSON 的逐字重放。
 因此旧请求重试能找到原方案，同时可能显示 STALE，不会偷偷改绑其输入。
 
+## 列表
+
+`GET /api/v1/projects/:projectId/rack/plans`
+
+需要该项目的 `rack.read`。可选查询参数：
+
+| 参数 | 规则 |
+| --- | --- |
+| `scenario_id` | UUID，只读该场景 |
+| `revision_id` | UUID，只读绑定该 Facility revision 的方案 |
+| `limit` | 十进制整数 1–50，默认 20 |
+| `cursor` | 上一页 `nextCursor`，为上一页最后一个方案的 UUID |
+
+返回 `200`、标准 `meta.correlation_id`，以及 `data: { items: [方案响应], nextCursor: UUID或null }`。
+items 使用下方单条 GET 的结构，也重新计算来源状态。未知参数、非法 UUID 或超限 limit 返回 400 `RACK_INPUT_INVALID`。
+始终按项目过滤，场景/revision 过滤取交集；没有匹配记录返回空页，不透露其他项目的记录。
+排序为 `created_at DESC, plan_id DESC`，用数据库原始时间精度与 ID 做 keyset 分页；翻页须保留原过滤参数。
+cursor 只在同项目、同过滤范围内查找，错误范围、不存在或已删除的 cursor 返回空页。
+分页不固定整个列表快照；新插入的方案通过刷新首页查看，翻页不会因这些新记录产生 offset 位移。
+本轮没有数据库迁移或规模性能承诺；大规模排序/索引优化留待实测。
+
 ## 读取
 
 `GET /api/v1/projects/:projectId/rack/plans/:planId`
@@ -89,8 +110,8 @@ key 在不同项目可独立使用，无过期清理机制；生命周期随方�
 | 409 | `IDEMPOTENCY_KEY_REUSED`、`RACK_ROOM_REQUIRED`、`RACK_SOURCE_STATE_UNSUPPORTED`、`RACK_SOURCE_ETAG_MISSING`、`RACK_SOURCE_STALE` |
 | 428 | `IDEMPOTENCY_KEY_REQUIRED` |
 
-成功/错误均保留原平台的 `meta.correlation_id`。本轮没有列表、更新、删除、布局保存或校验 API；
-`GET /.../rack/plans` 也没有实现，不能把空方案保存当作完整编辑闭环。
+成功/错误均保留原平台的 `meta.correlation_id`。目前有空方案列表、创建和单条读取；没有更新、删除、布局保存或校验 API。
+空方案保存不能作为完整机柜编辑闭环。
 
 ## 存储与权限边界
 
@@ -106,5 +127,5 @@ key 在不同项目可独立使用，无过期清理机制；生命周期随方�
 - 只有创建人/时间和请求 correlation 日志，没有完整的业务审计/outbox 链路。
 - 该表限定版本 1、DRAFT、NOT_RUN。扩展修改命令时必须新增迁移和并发控制，不能只改服务返回值。
 
-测试见 [本轮证据](records/2026-10-28-rack-persistence)。
-下一步先补方案列表和工作区中的创建/查看入口，再推进真实几何输入和机柜保存。
+首次存储验证见 [持久化证据](records/2026-10-28-rack-persistence)，列表和页面验证见 [工作区证据](records/2026-10-28-rack-ui)。
+工作区入口已接通，下一步先明确真实几何输入与局部坐标，再推进最小机柜编辑/保存。

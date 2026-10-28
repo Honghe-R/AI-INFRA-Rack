@@ -17,6 +17,9 @@ async function adapt(operation) {
 export function registerRackRoutes(router, { pool }) {
   const service = createRackPlanService({ pool });
   const base = '/api/v1/projects/:projectId/rack/plans';
+  router.get(base, ctx => adapt(async () => ({
+    data: await service.list({ projectId: ctx.params.projectId, query: ctx.query }),
+  })), { permission: RACK_KEYS.READ, projectParam: 'projectId' });
   router.post(base, ctx => adapt(async () => {
     const result = await service.create({
       projectId: ctx.params.projectId, actorId: ctx.user.userId, body: ctx.body,

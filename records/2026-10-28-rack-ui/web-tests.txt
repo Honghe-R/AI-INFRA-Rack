@@ -1,0 +1,17 @@
+
+> @ai-infra/web@0.1.0 test
+> vitest run src/tests/rack-surface.test.jsx src/tests/api-client.test.js src/tests/tool-registry.test.js src/tests/open-views.test.js
+
+
+ RUN  v2.1.9 C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/web
+
+ ✓ src/tests/api-client.test.js (11 tests) 6ms
+ ✓ src/tests/tool-registry.test.js (8 tests) 3ms
+ ✓ src/tests/open-views.test.js (14 tests) 4ms
+ ✓ src/tests/rack-surface.test.jsx (4 tests) 10ms
+
+ Test Files  4 passed (4)
+      Tests  37 passed (37)
+   Start at  09:17:26
+   Duration  874ms (transform 205ms, setup 0ms, collect 645ms, tests 24ms, environment 1ms, prepare 1.08s)
+

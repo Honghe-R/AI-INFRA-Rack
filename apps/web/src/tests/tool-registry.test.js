@@ -71,6 +71,8 @@ test('visibility filters only tools that declare a key', () => {
   const ids = restricted.map((tool) => tool.toolId);
   assert.ok(ids.includes('assets'), 'a granted key keeps its tool');
   assert.ok(!ids.includes('site_facility'), 'a tool whose key is absent is hidden');
+  assert.ok(!ids.includes('rack'), 'Rack entry now requires its own read permission');
+  assert.ok(visibleTools(['rack.read']).some(tool => tool.toolId === 'rack'));
   assert.ok(ids.includes('floorplan'), 'a tool with no declared key is never blocked by this filter');
 
   assert.deepEqual(visibleTools(new Set(['facility.read'])).map((t) => t.toolId).includes('site_facility'), true);

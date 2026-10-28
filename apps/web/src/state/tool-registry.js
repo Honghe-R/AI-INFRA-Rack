@@ -11,6 +11,8 @@
  * findings explain incomplete inputs.
  */
 
+import { RACK_KEYS } from '../generated/permission-keys.js';
+
 export const TOOL_GROUPS = Object.freeze([
   Object.freeze({ groupId: 'design', label: 'Design flow' }),
   Object.freeze({ groupId: 'supporting', label: 'Supporting' }),
@@ -43,7 +45,7 @@ export const TOOLS = Object.freeze([
     ],
   ),
   tool('floorplan', 'Floorplan', 'design', null),
-  tool('rack', 'Rack', 'design', null),
+  tool('rack', 'Rack', 'design', RACK_KEYS.READ, [fn('overview', 'Plans')]),
   tool('network', 'Network', 'design', null),
   tool('route_pathway', 'Route & Pathway', 'design', null),
   tool('cabling', 'Cabling', 'design', null),

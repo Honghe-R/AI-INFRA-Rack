@@ -7,6 +7,7 @@ import { useAssistantSession } from './assistant/useAssistantSession.js';
 import { ProjectListEntry } from './projects/ProjectListEntry.jsx';
 import { openProjectInWorkspace } from './projects/open-project.js';
 import { AssetsSurface } from './assets/AssetsSurface.jsx';
+import { RackSurface } from './rack/RackSurface.jsx';
 import { FacilityImport } from './facility/FacilityImport.jsx';
 import { FacilityVerification } from './facility/FacilityVerification.jsx';
 import { SiteFacilityCanvas } from './map/SiteFacilityCanvas.jsx';
@@ -515,6 +516,12 @@ function AppBody({ projects, projectsPending, projectsError, projectsNotice, sce
                 }
               />
             );
+          }
+          if (tab.toolId === 'rack') {
+            return <RackSurface key={tab.tabId} client={assetClient} context={tab.workspaceContext}
+              routeState={tab.routeState}
+              onRouteChange={patch => workspace.setRouteState(tab.tabId, patch)}
+              onDirtyChange={dirty => workspace.setDirty(tab.tabId, dirty, dirty ? 'An empty Rack plan has not been saved.' : null)} />;
           }
           return <ToolSurfacePlaceholder tab={tab} responsive={resolved} />;
         }}

@@ -81,8 +81,8 @@ node --env-file=.env records/2026-10-28-platform/check-runtime.mjs
 运行证据见 [records/2026-10-28-platform](records/2026-10-28-platform)。
 
 原平台已接通，另有 [空 Rack 方案创建/读取 API](RACK_API.md)。已有环境更新代码后先运行 `npm run migrate`，不必重跑 seed。
-**正式 Rack 页面仍是占位，机柜保存尚未实现**；
-现有 Rack 规则仍通过独立只读预览展示。Assistant 尚无 LLM 服务配置，不能对话。
+正式 Rack 入口已接通空方案列表、创建和查看，操作见 [Rack 工作区说明](RACK_WORKSPACE.md)。
+机柜保存尚未实现；现有空间规则仍通过独立只读预览展示。Assistant 尚无 LLM 服务配置，不能对话。
 当前本地数据库沿用初始化用户（超级用户）连接，适合这份单机开发基线；
 生产部署须拆分迁移/应用账号并重新验证数据库 RLS。两组织的 API 拒绝检查不能代替 RLS 安全审计。
 开发身份切换、HTTP、本机凭证和这套服务不应用于公网部署。
