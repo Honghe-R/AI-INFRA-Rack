@@ -35,7 +35,9 @@ test('Rack sections match the shell navigation and each section switch retains t
 test('overview exposes module readiness and real selected-plan counts without claiming whole-plan validation', () => {
   const guide = renderToStaticMarkup(<RackSectionGuide onNavigate={() => {}} />);
   assert.ok(guide.includes('Partial scope')); assert.ok(guide.includes('Layout options relocate existing racks'));
-  assert.ok(guide.includes('Rack Assistant tools remain to be implemented'));
+  assert.ok(guide.includes('aria-label="Rack Assistant"'));
+  assert.ok(guide.includes('reads saved data'));
+  assert.ok(guide.includes('configured model provider is required'));
   const html = renderToStaticMarkup(<RackPlanOverview layout={{ version: 2, validationState: 'NOT_RUN' }}
     placements={[{}, {}]} equipment={{ devices: [{ rackId: null }, { rackId: 'r' }] }}
     spatialReport={{ status: 'INCOMPLETE' }} equipmentReport={null} isDraft={true} />);

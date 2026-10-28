@@ -55,6 +55,7 @@ export function registerAssistantRoutes(router, { orchestrator, sessionService =
       // concurrent edit is a 409 rather than a silent overwrite. It was being sent and dropped,
       // leaving the model to reconstruct a uuid it could not know.
       draftSummary: clientContext.draft_summary ?? clientContext.draftSummary ?? null,
+      rackContext: clientContext.rack_context ?? clientContext.rackContext ?? null,
       readOnly: clientContext.readOnly === true,
       userId: user.userId,
       publicId: user.publicId ?? null,

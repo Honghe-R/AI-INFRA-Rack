@@ -9,7 +9,11 @@ export function RackSectionGuide({ onNavigate }) {
         <span><strong>{s.label}</strong><span className={`rack-module-status is-${s.status.toLowerCase()}`}>{readiness[s.status]}</span></span>
         <span>{s.description}</span>
       </button>)}</div>
-    <p className="rack-muted">Partial scope means the listed workflow is available with explicit limitations. Layout options relocate existing racks. Candidate history, persisted dependency history and Rack Assistant tools remain to be implemented.</p>
+    <p className="rack-muted">Partial scope means the listed workflow is available with explicit limitations. Layout options relocate existing racks. Candidate history and persisted dependency history remain to be implemented.</p>
+    <aside className="rack-card" aria-label="Rack Assistant">
+      <h3>Rack Assistant</h3><p>Keep the Rack tab active and select a saved plan, then open the workspace Assistant. Try: “查询各机柜剩余 U 位和功率容量”, “解释当前方案的检查结果”, or “比较两种布局策略”.</p>
+      <p className="rack-muted">The Assistant reads saved data and can generate temporary option summaries. Save or discard local edits before planning. Map preview, confirmation and saving stay in Layout options. A configured model provider is required; unavailable providers are reported as errors.</p>
+    </aside>
   </section>;
 }
 

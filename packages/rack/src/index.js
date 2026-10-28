@@ -17,3 +17,4 @@ export { EMPTY_EQUIPMENT, normalizeEquipment, checkEquipment } from './equipment
 export { getRackCatalog, resolveCatalogReference, assertCatalogDevice } from './catalog.js';
 export { getCatalogExamples } from './catalog-examples.js';
 export { generateRackOptions, normalizePlannerOptions, plannerGeometry, layoutMetrics, PLANNER_LIMITS } from './planner.js';
+export { allocateUnassignedEquipment, ALLOCATION_LIMITS } from './allocator.js';

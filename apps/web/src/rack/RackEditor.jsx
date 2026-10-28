@@ -6,6 +6,7 @@ import { RoomFloorplan } from './RackRoomView.jsx';
 import { RackPlanOverview } from './RackSections.jsx';
 import { RackInputs } from './RackInputs.jsx';
 import { RackOptions } from './RackOptions.jsx';
+import { RackAllocation } from './RackAllocation.jsx';
 import {
   beginLayoutDraft,
   layoutCheckBody,
@@ -379,6 +380,8 @@ export function RackEditor({
               onDraftChange(value); setError(null); setNotice('Selected option loaded as an unsaved draft. Review and Save layout to apply.');
               setFocusRequest({ fitRacks: true, nonce: Date.now() });
             }} onNavigate={onNavigate} /></div>
+          <div hidden={section !== 'equipment'}><RackAllocation client={client} layout={layout} draft={draft} canWrite={canWrite}
+            onDraftChange={value => { onDraftChange(value); setError(null); setNotice('Device allocation loaded as an unsaved draft. Review and Save layout to apply.'); }} /></div>
           <div hidden={!['layout', 'constraints'].includes(section)} data-rack-panel="layout">
           <RoomFloorplan
             key={snapshot.snapshotId}

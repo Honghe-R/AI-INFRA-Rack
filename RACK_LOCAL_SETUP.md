@@ -83,7 +83,7 @@ node --env-file=.env records/2026-10-28-platform/check-runtime.mjs
 原平台已接通，另有 [空 Rack 方案创建/读取 API](RACK_API.md)。已有环境更新代码后先运行 `npm run migrate`，不必重跑 seed。
 正式 Rack 入口已接通方案列表、创建、固定机房快照与机柜编辑保存，操作见 [Rack 工作区说明](RACK_WORKSPACE.md)。
 选择方案后可查看绑定机房的只读米制平面图，支持范围与来源过期处理见 [RACK_FLOORPLAN.md](RACK_FLOORPLAN.md)。
-机柜保存尚未实现；现有空间规则仍通过独立只读预览展示。Assistant 尚无 LLM 服务配置，不能对话。
+机柜/约束/设备已可同事务保存，Layout options 支持布局候选；Devices & U slots 支持 [自动上架](RACK_ALLOCATION.md)。[Rack Assistant 工具已接线](RACK_ASSISTANT.md)，按用户要求暂不配置LLM，因此聊天当前不可用。更新本轮代码不需要新迁移或重跑seed。
 当前本地数据库沿用初始化用户（超级用户）连接，适合这份单机开发基线；
 生产部署须拆分迁移/应用账号并重新验证数据库 RLS。两组织的 API 拒绝检查不能代替 RLS 安全审计。
 开发身份切换、HTTP、本机凭证和这套服务不应用于公网部署。

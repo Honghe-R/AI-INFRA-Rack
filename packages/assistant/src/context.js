@@ -74,6 +74,8 @@ export function createContextResolver({
       scopeKind: scope.scopeKind ?? null,
       displayName: scope.displayName ?? surface.key,
       readOnly: scope.readOnly === true || context.readOnly === true,
+      // Tool-specific scope has already been canonicalised by the API resolver.
+      ...(scope.surface === 'rack' ? { rackContext: Object.freeze({ ...scope.rackContext }) } : {}),
     });
   }
 
@@ -115,6 +117,7 @@ export function createExecutionContext({
   requestId,
   sessionId,
   readOnly = false,
+  rackContext = null,
 }) {
   if (!userId) throw new LlmError('ASSISTANT_CONTEXT_INVALID', 'An initiating user is required.', { status: 500 });
   if (!requestId) throw new LlmError('ASSISTANT_CONTEXT_INVALID', 'A request id is required.', { status: 500 });
@@ -128,6 +131,7 @@ export function createExecutionContext({
     baseRevisionId,
     ifMatch,
     readOnly: readOnly === true,
+    ...(rackContext ? { rackContext: Object.freeze({ ...rackContext }) } : {}),
     requestId,
     sessionId,
   });

@@ -161,6 +161,8 @@ function AppBody({ projects, projectsPending, projectsError, projectsNotice, sce
     // The wire context reports the active tab's function; the canvas reports the
     // selection and the pending change set at send time.
     routeFunctionId: activeTab?.routeState?.functionId ?? null,
+    toolId: activeTab?.toolId ?? 'site_facility',
+    toolRouteState: activeTab?.routeState ?? null,
   });
 
   /**

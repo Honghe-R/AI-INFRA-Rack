@@ -13,6 +13,10 @@ import { createRackLayoutService } from '../services/rack-layout.js';
 import { getRackCatalog } from '@ai-infra/rack';
 import { plannerGeometry, normalizeEditableLayout } from '@ai-infra/rack';
 import { pickRackPosition } from '../services/rack-planner-geometry.js';
+import { createRackAssistantSurface } from '../services/rack-assistant.js';
+import { createAssistantScopeResolver, createPermissionAuthorizer } from '../assistant-host.js';
+import { createAssistantHost } from '@ai-infra/assistant';
+import { registerAssistantRoutes } from '../routes/assistant.js';
 
 const skip = process.env.DATABASE_URL ? false : 'DATABASE_URL is not set';
 let pool, repository;
@@ -83,11 +87,12 @@ async function fixture(fn, { state = 'DRAFT' } = {}) {
   }
 }
 
-async function server(people, fn) {
+async function server(people, fn, { assistant = null } = {}) {
   const router = createRouter();
   const evaluator = createEvaluator({ repository });
   const guard = createPermissionGuard({ evaluator, repository });
   registerRackRoutes(router, { pool, guard });
+  if (assistant) registerAssistantRoutes(router, assistant);
   const authenticator = { async authenticate(ctx) {
     const person = people[ctx.headers['x-test-user']];
     if (!person) throw errors.unauthorized();
@@ -945,3 +950,125 @@ test('Rack planner batch geometry agrees with complete checks for every orientat
     }
   }finally{client.release();}
 })));
+
+test('Rack equipment allocation is repeatable and read-only; partial results save atomically through the ordinary command', {skip},async()=>fixture(async f=>server(f.people,async request=>{
+  const {url,layout}=await prepared(f,request);
+  const fixed=rack(3,3,{locked:true}),target=rack(6,2);
+  const installed=testDevice(fixed.rackId),small=testDevice(null,{heightU:4}),oversized=testDevice(null,{heightU:100}),unknown=testDevice(null,{weightKg:null});
+  const equipment=equipmentInput([installed,small,oversized,unknown],{rackLimits:[{rackId:target.rackId,maxWeightKg:100,maxPowerKw:4,maxCoolingKw:4}]});
+  const saved=(await request(url,{method:'PUT',version:1,body:{...layoutBody(layout,[fixed,target]),equipment}})).body.data;
+  assert.equal(saved.version,2);
+  const commands=async()=>(await pool.query('SELECT count(*)::int n FROM rack_layout_commands WHERE plan_id=$1',[saved.planId])).rows[0].n;
+  const count=await commands();
+  const body={contract_version:1,base_version:2,snapshot_id:saved.snapshot.snapshotId};
+  const a=await request(`${url}/equipment-options`,{user:'viewer',body});
+  const b=await request(`${url}/equipment-options`,{user:'viewer',body});
+  assert.equal(a.status,200,JSON.stringify(a));assert.deepEqual(a.body.data,b.body.data);
+  const option=a.body.data.candidates[0];
+  assert.equal(option.assignments.length,1);assert.equal(option.unassigned.length,2);assert.equal(option.canStage,true);
+  assert.equal(option.assignments[0].rackId,target.rackId);assert.equal(option.assignments[0].startU,1);
+  assert.deepEqual(option.body.placements,saved.placements);assert.deepEqual(option.body.equipment.devices[0],installed);
+  assert.equal(option.body.equipment.devices.length,4);assert.equal(option.equipmentReport.status,'INCOMPLETE');
+  assert.equal(await commands(),count);assert.deepEqual((await request(url)).body.data,saved);
+  assert.equal((await request(url,{user:'viewer',method:'PUT',version:2,body:option.body})).status,403);
+  const applied=await request(url,{user:'editor',method:'PUT',version:2,body:option.body});assert.equal(applied.status,200,JSON.stringify(applied));
+  assert.equal(applied.body.data.version,3);assert.deepEqual(applied.body.data.equipment,option.body.equipment);
+  assert.deepEqual(applied.body.data.placements,saved.placements);
+  assert.equal((await request(`${url}/equipment-options`,{body})).status,412);
+})));
+
+test('Rack equipment allocation rejects wrong scope/source/input and does not guess unknown capacities', {skip},async()=>fixture(async f=>server(f.people,async request=>{
+  const {url,layout}=await prepared(f,request);const r=rack(),d=testDevice(null);
+  const saved=(await request(url,{method:'PUT',version:1,body:{...layoutBody(layout,[r]),equipment:equipmentInput([d])}})).body.data;
+  const body={contract_version:1,base_version:2,snapshot_id:saved.snapshot.snapshotId};
+  const noCapacity=await request(`${url}/equipment-options`,{body});assert.equal(noCapacity.status,200);
+  assert.equal(noCapacity.body.data.candidates[0].canStage,false);
+  assert.equal(noCapacity.body.data.candidates[0].unassigned[0].rejectionCounts.UNKNOWN_RACK_CAPACITY,1);
+  assert.equal((await request(`${url}/equipment-options`,{user:'outsider',body})).status,403);
+  for(const patch of [{base_version:'2'},{equipment:{}},{placements:[]},{contract_version:9}])assert.equal((await request(`${url}/equipment-options`,{body:{...body,...patch}})).status,400);
+  assert.equal((await request(`${url}/equipment-options`,{body:{...body,snapshot_id:randomUUID()}})).status,409);
+  await pool.query('UPDATE revision_etags SET etag=$1 WHERE project_id=$2',[randomUUID(),f.a.projectId]);
+  const stale=await request(`${url}/equipment-options`,{body});assert.equal(stale.status,409);assert.equal(stale.body.error.code,'RACK_SOURCE_STALE');
+  assert.equal((await request(url)).body.data.version,2);
+})));
+
+function rackAssistantRig() {
+  const guard = createPermissionGuard({ evaluator: createEvaluator({ repository }), repository });
+  const authorize = createPermissionAuthorizer({ guard });
+  const surface = createRackAssistantSurface({ layouts: createRackLayoutService({ pool }), plans: createRackPlanService({ pool }), authorize });
+  const providerCalls = [];
+  const provider = { name: 'scripted-integration', async complete(request) {
+    providerCalls.push(request);
+    const last = request.messages.at(-1);
+    let message;
+    if (last.role === 'tool') message = { role: 'assistant', content: JSON.stringify({ type: 'message', payload: last.content, uiActions: [] }) };
+    else {
+      const names = { list: 'rack_list_plans', read: 'rack_read_plan', capacity: 'rack_query_capacity', check: 'rack_check_saved_layout', generate: 'rack_generate_layout_options' };
+      const name = names[last.content];
+      message = { role: 'assistant', content: null, tool_calls: [{ id: randomUUID(), type: 'function', function: { name, arguments: '{}' } }] };
+    }
+    return { choices: [{ message }] };
+  } };
+  const host = createAssistantHost({ provider, surfaces: [surface.surface], guides: [surface.guide], capabilities: surface.capabilities,
+    resolveScope: createAssistantScopeResolver({ pool, authorize }), authorize });
+  return { host, providerCalls, surface, authorize };
+}
+
+test('Rack Assistant HTTP binds real plan scope and executes saved reads/checks/planner as a viewer without writing', {skip}, async()=>fixture(async f=>{
+  const rig = rackAssistantRig();
+  await server(f.people, async request => {
+    const { url, layout } = await prepared(f, request);
+    const r = rack(3,3,{name:'Assistant fixture rack'});
+    const savedResponse = await request(url, { method:'PUT', version:1,
+      body:{...layoutBody(layout,[r]),equipment:equipmentInput([testDevice(r.rackId,{weightKg:null})])} });
+    assert.equal(savedResponse.status,200);
+    const saved = savedResponse.body.data;
+    const commands = async () => (await pool.query('SELECT count(*)::int n FROM rack_layout_commands WHERE plan_id=$1',[saved.planId])).rows[0].n;
+    const before = await commands();
+    const wire = (kind,patch={}) => ({ messages:[{role:'user',content:kind}], context_key:`${f.a.projectId}|rack|${saved.planId}`,
+      context:{surface:'rack',projectId:f.a.projectId,scenarioId:f.a.scenarioId,revisionId:f.a.revisionId,
+        rack_context:{planId:saved.planId,clientVersion:2,hasUnsavedDraft:false},...patch} });
+    for (const kind of ['list','read','capacity','check','generate']) {
+      const result = await request('/api/v1/assistant/chat',{user:'viewer',body:wire(kind)});
+      assert.equal(result.status,200,JSON.stringify(result.body));
+      assert.equal(result.body.data.status,'ok');
+      const text = result.body.data.choices[0].message.content;
+      if(kind==='capacity') { assert.match(text,/UNKNOWN/); assert.match(text,/freeU/); }
+      if(kind==='check') { assert.match(text,/INCOMPLETE/); assert.match(text,/NOT_RUN/); }
+      if(kind==='generate') { assert.match(text,/row-scan-v1/); assert.match(text,/inputFingerprint/); assert.doesNotMatch(text,/"body":/); }
+    }
+    assert.deepEqual((await request(url)).body.data,saved);
+    assert.equal(await commands(),before);
+    assert.ok(rig.providerCalls.every(q=>q.tools.every(t=>t.function.name.startsWith('rack_'))));
+    const callsBefore=rig.providerCalls.length;
+    assert.equal((await request('/api/v1/assistant/chat',{user:'outsider',body:wire('read')})).status,403);
+    const foreign=await request(path(f.b),{user:'outsider',body:f.input(f.b)}); assert.equal(foreign.status,201);
+    assert.equal((await request('/api/v1/assistant/chat',{user:'viewer',body:wire('read',{rack_context:{planId:foreign.body.data.planId}})})).status,404);
+    assert.equal((await request('/api/v1/assistant/chat',{user:'viewer',body:wire('read',{rack_context:{planId:'bad'}})})).status,404);
+    assert.equal(rig.providerCalls.length,callsBefore,'forbidden or foreign contexts never call the provider');
+    const dirty=await request('/api/v1/assistant/chat',{user:'viewer',body:wire('generate',{rack_context:{planId:saved.planId,hasUnsavedDraft:true}})});
+    assert.equal(dirty.status,200); assert.match(dirty.body.data.choices[0].message.content,/RACK_ASSISTANT_DIRTY_DRAFT/);
+    await pool.query('UPDATE revision_etags SET etag=$1 WHERE project_id=$2',[randomUUID(),f.a.projectId]);
+    const stale=await request('/api/v1/assistant/chat',{user:'viewer',body:wire('generate')});
+    assert.equal(stale.status,200); assert.match(stale.body.data.choices[0].message.content,/RACK_SOURCE_STALE/);
+    assert.equal(await commands(),before);
+  },{assistant:rig.host});
+}));
+
+test('Rack Assistant canonical versions, missing selection and changed scope are refused before unsafe work', {skip}, async()=>fixture(async f=>{
+  const rig=rackAssistantRig();
+  await server(f.people,async request=>{
+    const {url,layout}=await prepared(f,request);
+    const context={surface:'rack',userId:f.people.viewer.userId,projectId:f.a.projectId,scenarioId:f.a.scenarioId,revisionId:f.a.revisionId,
+      rackContext:{planId:layout.planId,clientVersion:1}};
+    const resolved=await createAssistantScopeResolver({pool,authorize:rig.authorize})({context});
+    assert.equal(resolved.rackContext.version,1); assert.equal(resolved.rackContext.clientVersion,1);
+    const empty=await createAssistantScopeResolver({pool,authorize:rig.authorize})({context:{...context,rackContext:null}});
+    assert.equal(empty.rackContext.planId,null);
+    await assert.rejects(createAssistantScopeResolver({pool,authorize:rig.authorize})({context:{...context,rackContext:{planId:layout.planId,clientVersion:'1'}}}),e=>e.status===400);
+    assert.equal((await request(url,{method:'PUT',version:1,body:layoutBody(layout,[rack()])})).status,200);
+    const execution={workspaceId:f.a.projectId,scenarioId:f.a.scenarioId,revisionId:f.a.revisionId,
+      initiatedBy:{userId:f.people.viewer.userId},requestId:randomUUID(),rackContext:resolved.rackContext};
+    await assert.rejects(rig.surface.capabilities.find(c=>c.name==='rack_read_plan').handler(execution,{}),e=>e.status===412);
+  });
+}));

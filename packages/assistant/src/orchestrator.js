@@ -99,6 +99,7 @@ export function createOrchestrator({
       baseRevisionId: chatContext.baseRevisionId,
       ifMatch: chatContext.ifMatch,
       readOnly: chatContext.readOnly,
+      rackContext: chatContext.rackContext ?? null,
       requestId: turnRequestId,
       sessionId,
     });

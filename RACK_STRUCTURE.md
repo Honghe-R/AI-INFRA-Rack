@@ -47,6 +47,6 @@ Checks 使用 route functionId `validate`，没有调用 Facility 的验证/冻�
 
 ## 后续填充顺序
 
-输入关系和局部草稿影响、Layout options 的有限算法/预览/草稿保存已补；下一步可把 Assistant 接到真实查询和命令。正式依赖历史、预算、连续通道、硬件资产和验证历史逐步完善，不以页面存在代表业务完成。输入关系图不是物理拓扑或机房地图，机房图继续在 Rack layout。
+输入关系、Layout options 和设备页 [自动上架](RACK_ALLOCATION.md) 已接通。工作区 Assistant 已有 [Rack 专用工具接线](RACK_ASSISTANT.md)，暂不配模型，真实对话待验收；聊天没有写入/应用工具。正式依赖历史、预算、连续通道、硬件资产和验证历史仍待完善。输入关系图不是物理拓扑，机房图继续在 Rack layout。
 
 第十四轮验证保留在 `records/2026-10-28-rack-sections/`。第十五轮 103 项前端定向测试及构建通过；实际浏览器验证来源/型号清单、节点选择、跨页草稿对比、放弃恢复，未保存测试草稿。证据见 `records/2026-10-28-rack-inputs/`，详细进展见根 PROGRESS.md。

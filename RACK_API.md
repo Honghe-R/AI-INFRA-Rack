@@ -1,5 +1,7 @@
 # Rack 方案与布局 API v1
 
+第十七轮新增 `POST .../plans/:planId/layout/equipment-options`，请求仅含contract_version/base_version/snapshot_id，需rack.read + facility.read；返回只读设备分配候选及原完整报告，允许保留未分配设备的部分结果，详见 [RACK_ALLOCATION.md](RACK_ALLOCATION.md)。原保存端点/事务不变。另在现有Assistant Host注册 [Rack工具](RACK_ASSISTANT.md)，没有聊天写入端点。
+
 2026-10-29 新增只读 `POST .../plans/:planId/layout/options`，按保存版本/固定快照生成两种有限布局候选，需 rack.read 与 facility.read。完整请求/响应、边界与错误见 [RACK_PLANNER.md](RACK_PLANNER.md)。候选确认转普通共享草稿后仍通过原 PUT layout 保存；没有新迁移或独立 candidate apply 写入路径。
 
 2026-10-28 已扩展为版本化布局保存。本文前半部分为方案创建/列表/详情；布局操作见文末及 [布局 contract](RACK_LAYOUT.md)。

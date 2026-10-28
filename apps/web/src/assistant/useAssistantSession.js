@@ -6,6 +6,11 @@ import { createEntityHoverPreview, resolveEntityReference } from './entity-resol
 import { routeFunctionName } from '../facility/workspace-effects.js';
 import { contextKey as workspaceContextKey } from '../state/workspace-context.js';
 
+export const RACK_ATTACHMENT_POLICY = Object.freeze({
+  accept: [], maxBytes: 0, maxCount: 0, accepted_media_types: [], max_file_size_bytes: 0,
+  max_attachments_per_message: 0, required_permission: 'rack.read', binds_to_entity: false,
+});
+
 /**
  * The shell's connection to the assistant.
  *
@@ -26,16 +31,19 @@ export function useAssistantSession({
   scopeLabel: scopeLabelText = '',
   effects = null,
   routeFunctionId = null,
+  toolId = 'site_facility',
+  toolRouteState = null,
   attachmentPolicy = DEFAULT_ATTACHMENT_POLICY,
   contextToken = null,
 }) {
   const transport = useMemo(() => createAssistantTransport(client), [client]);
-  const key = workspaceContext ? workspaceContextKey(workspaceContext) : null;
+  const effectiveAttachmentPolicy = toolId === 'rack' ? RACK_ATTACHMENT_POLICY : attachmentPolicy;
+  const key = assistantSessionKey(workspaceContext, toolId, toolRouteState);
 
   const effectsRef = useRef(effects);
   effectsRef.current = effects;
-  const latest = useRef({ workspaceContext, routeFunctionId, attachmentPolicy, contextToken });
-  latest.current = { workspaceContext, routeFunctionId, attachmentPolicy, contextToken };
+  const latest = useRef(null);
+  latest.current = { workspaceContext, routeFunctionId, attachmentPolicy: effectiveAttachmentPolicy, contextToken, toolId, toolRouteState };
 
   const [state, setState] = useState(null);
   const [uiActionNotices, setUiActionNotices] = useState([]);
@@ -215,6 +223,8 @@ export function useAssistantSession({
           snapshot: effectsRef.current?.snapshot?.() ?? null,
           attachmentPolicy: latest.current.attachmentPolicy,
           contextToken: latest.current.contextToken,
+          toolId: latest.current.toolId,
+          toolRouteState: latest.current.toolRouteState,
         }),
       model: () => modelRef.current,
       sessionCache: sessionPointerCache(),
@@ -262,7 +272,7 @@ export function useAssistantSession({
     restoring: state?.restoring ?? false,
     usage: state?.usage ?? [],
     error: state?.error ?? null,
-    attachmentPolicy,
+    attachmentPolicy: effectiveAttachmentPolicy,
     provider,
     models: provider?.models ?? [],
     model,
@@ -417,7 +427,26 @@ export function contextFor(workspaceContext, options = {}) {
     snapshot = null,
     attachmentPolicy = DEFAULT_ATTACHMENT_POLICY,
     contextToken = null,
+    toolId = 'site_facility',
+    toolRouteState = null,
   } = options;
+
+  if (toolId === 'rack') {
+    const route = toolRouteState ?? {};
+    return {
+      surface: 'rack', tool_id: 'rack', projectId: workspaceContext.projectId,
+      scenarioId: workspaceContext.scenarioId, revisionId: workspaceContext.revisionId,
+      readOnly: workspaceContext.lifecycleState !== 'DRAFT',
+      rack_context: { planId: route.rackPlanId ?? null,
+        clientVersion: route.rackEditDraft?.baseVersion ?? null,
+        hasUnsavedDraft: Boolean(route.rackDraft || route.rackEditDraft) },
+      route_state: { function: routeFunctionId ?? route.functionId ?? 'overview' },
+      // Facility selection/effects may still be mounted in another tab. None of
+      // that data or those actions belong to a Rack turn.
+      available_actions: [], selection_refs: [],
+      attachment_policy: RACK_ATTACHMENT_POLICY,
+    };
+  }
 
   const route = snapshot?.routeState ?? {};
   const draft = snapshot?.draftSummary ?? null;
@@ -453,4 +482,10 @@ export function contextFor(workspaceContext, options = {}) {
     attachment_policy: attachmentPolicy,
     ...(contextToken ? { context_token: contextToken } : {}),
   };
+}
+
+export function assistantSessionKey(context, toolId = 'site_facility', route = null) {
+  if (!context) return null;
+  const base = workspaceContextKey(context);
+  return toolId === 'rack' ? `${base}|rack|${route?.rackPlanId ?? 'unselected'}` : base;
 }

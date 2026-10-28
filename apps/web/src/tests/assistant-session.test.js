@@ -8,7 +8,7 @@ import {
   withoutConsumedRequest,
   visibleAssistantText,
 } from '../assistant/assistant-session.js';
-import { contextFor, createAssistantTransport } from '../assistant/useAssistantSession.js';
+import { contextFor, createAssistantTransport, assistantSessionKey } from '../assistant/useAssistantSession.js';
 
 const REPLY = {
   requestId: 'req-1',
@@ -19,6 +19,32 @@ const REPLY = {
   uiActions: [],
   usage: { prompt_tokens: 2, completion_tokens: 1, total_tokens: 3, cached_input_tokens: 1 },
 };
+
+test('Rack context binds the selected plan and excludes another tab’s Facility effects and draft', () => {
+  const workspace = { projectId: 'p', scenarioId: 's', revisionId: 'r', lifecycleState: 'DRAFT' };
+  const route = { rackPlanId: 'rack-plan', functionId: 'capacity', rackEditDraft: { baseVersion: 4, placements: [{ rackId: 'local-only' }] } };
+  const context = contextFor(workspace, { toolId: 'rack', toolRouteState: route,
+    snapshot: { draftSummary: { etag: 'facility-token' }, selectionRefs: [{ entity_id: 'foreign-selection' }] } });
+  assert.equal(context.surface, 'rack');
+  assert.deepEqual(context.rack_context, { planId: 'rack-plan', clientVersion: 4, hasUnsavedDraft: true });
+  assert.equal(context.route_state.function, 'capacity');
+  assert.deepEqual(context.available_actions, []); assert.deepEqual(context.selection_refs, []);
+  assert.equal(context.draft_summary, undefined);
+  assert.equal(context.attachment_policy.maxCount, 0);
+  assert.equal(JSON.stringify(context).includes('local-only'), false);
+  assert.equal(JSON.stringify(context).includes('facility-token'), false);
+});
+
+test('Rack sessions isolate each selected plan from Facility while section switches preserve a session', () => {
+  const workspace = { projectId: 'p', scenarioId: 's', revisionId: 'r' };
+  const facility = assistantSessionKey(workspace);
+  const a = assistantSessionKey(workspace, 'rack', { rackPlanId: 'a', functionId: 'layout' });
+  assert.notEqual(a, facility);
+  assert.notEqual(a, assistantSessionKey(workspace, 'rack', { rackPlanId: 'b' }));
+  assert.notEqual(a, assistantSessionKey(workspace, 'rack'));
+  assert.equal(a, assistantSessionKey(workspace, 'rack', { rackPlanId: 'a', functionId: 'candidates' }));
+  assert.equal(assistantSessionKey(null, 'rack'), null);
+});
 
 function fakeTransport({ response = REPLY, usage = { totalTokens: 9, promptTokens: 6, completionTokens: 3, limitTokens: 100 }, sendTurn = null } = {}) {
   const calls = [];

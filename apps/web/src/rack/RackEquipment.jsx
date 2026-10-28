@@ -10,7 +10,7 @@ const numeric = (v) => (v === '' ? NaN : Number(v));
 const optional = (v) => (v === '' ? null : Number(v));
 const display = (v) => (v === null ? 'Unknown' : Number(v.toFixed(4)).toString());
 
-export function RackElevation({ rack, model, devices, selectedId, onSelect }) {
+export function RackElevation({ rack, model, devices, selectedId, onSelect, readOnly = false }) {
   if (!rack || !model) return <p>Select a rack on the floorplan to see its U positions.</p>;
   // Server catalog is bounded separately; avoid an unbounded DOM for a future model.
   if (!Number.isInteger(model.heightU) || model.heightU < 1 || model.heightU > 100)
@@ -39,6 +39,7 @@ export function RackElevation({ rack, model, devices, selectedId, onSelect }) {
                   occupants.map((d) => (
                     <button
                       key={d.deviceId}
+                      disabled={readOnly}
                       aria-pressed={selectedId === d.deviceId}
                       onClick={() => onSelect(d.deviceId)}
                     >

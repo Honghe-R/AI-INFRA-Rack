@@ -5,7 +5,7 @@
 
 新增 [Catalog 与 Rack 集成](RACK_CATALOG.md)：型号/组件目录、规则示例、固定型号版本上架，以及主画布展开、机柜聚焦和用量着色。
 
-Rack 已按 [工作区结构](RACK_STRUCTURE.md) 分成九个页面；Layout options 已接通 [确定性布局算法、比较预览与草稿保存](RACK_PLANNER.md)，Inputs & impact 展示实际输入关系与草稿变化。正式依赖历史和 Rack Assistant 待实现。
+Rack 已按 [工作区结构](RACK_STRUCTURE.md) 分成九个页面；Layout options 接通 [布局算法、比较预览与草稿保存](RACK_PLANNER.md)，Devices & U slots 新增 [未分配设备自动上架](RACK_ALLOCATION.md)。[Rack Assistant 工具已接线](RACK_ASSISTANT.md)，本机暂不配置模型，真实对话待验收。Inputs & impact 展示实际输入关系与草稿变化，正式依赖历史待实现。
 
 Rack 可视化预览：`npm run rack:preview`，打开 http://127.0.0.1:5183/ 。见 [运行说明](RACK_PREVIEW.md)；只读合成样例，无需 Docker。
 
@@ -17,7 +17,7 @@ saved plans can display their [bound HALL floorplan in local projected metres](R
 The [layout editor](RACK_LAYOUT.md) saves fixed room snapshots and placements with Polygon checks,
 and supports [declared planning obstacles and front/rear maintenance distances](RACK_CONSTRAINTS.md).
 It also supports [plan-local equipment assignments, U elevations and declared capacity checks](RACK_EQUIPMENT.md).
-Formal capacity allocation, planner and Rack Assistant integration are pending.
+Formal facility-wide capacity allocation remains pending. Rack relocation and unassigned-device allocation are available; Rack Assistant tools are wired, with real model configuration and end-to-end validation deferred.
 
 Platform workspace for infrastructure planning tools. The first tool tenant is the
 [Site and Facility Editor](doc/tools/site-and-facility/Overview.md).

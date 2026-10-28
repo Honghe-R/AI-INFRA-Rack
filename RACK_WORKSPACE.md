@@ -1,5 +1,7 @@
 # Rack 工作区：方案与机柜编辑
 
+第十七轮：Devices & U slots 新增 [自动上架](RACK_ALLOCATION.md)。选 **Rack allocation demo — unassigned devices** → Generate device allocation → 查看3台建议/2台未分配原因、容量/立面 → 勾选复核 → Use allocation as draft → Save layout；验收后示例保留未应用v2状态。全局 [Rack Assistant工具已接线](RACK_ASSISTANT.md)，用户决定暂不配置模型，因此自然语言对话当前不可用。
+
 当前接通方案列表、创建、固定 HALL Polygon 快照、二维机柜编辑和数据库保存。启动见 [本地运行说明](RACK_LOCAL_SETUP.md)，API 见 [RACK_API.md](RACK_API.md)，完整操作与数据边界见 [RACK_LAYOUT.md](RACK_LAYOUT.md)。
 
 1. 打开 http://localhost:5193/ → Northern DC Campus → Navigation → Rack。

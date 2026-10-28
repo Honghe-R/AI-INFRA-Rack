@@ -521,6 +521,7 @@ export function AssistantComposer({
           <input
             ref={fileInputRef}
             type="file"
+            disabled={uploading || attachmentPolicy.maxCount === 0}
             multiple
             accept={attachmentPolicy.accept.join(',')}
             className="visually-hidden"
@@ -537,7 +538,8 @@ export function AssistantComposer({
           <button
             type="button"
             className="assistant__upload"
-            disabled={uploading}
+            disabled={uploading || attachmentPolicy.maxCount === 0}
+            title={attachmentPolicy.maxCount === 0 ? 'Attachments are not supported by this tool.' : undefined}
             onClick={() => fileInputRef.current?.click()}
           >
             <Icon name="upload" size={14} /> {uploading ? 'Uploading…' : 'Upload'}

@@ -9,6 +9,9 @@ import {
 import { ApiError, errors } from '@ai-infra/core';
 import { createAssistantSurface } from '@ai-infra/facility';
 import { createStorage } from '@ai-infra/storage';
+import { createRackAssistantSurface } from './services/rack-assistant.js';
+import { createRackLayoutService } from './services/rack-layout.js';
+import { createRackPlanService } from './services/rack-plans.js';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -35,6 +38,13 @@ export async function createAssistantHostFor({ config, pool, secrets, guard, log
     uiActions: projection?.uiActions ?? [],
     guide: projection?.guide ?? null,
   });
+  const authorize = createPermissionAuthorizer({ guard });
+  if (pool) {
+    const rack = createRackAssistantSurface({ layouts: createRackLayoutService({ pool }), plans: createRackPlanService({ pool }), authorize });
+    catalog.surfaces.push(rack.surface);
+    catalog.guides.push(rack.guide);
+    catalog.capabilities = [...catalog.capabilities, ...rack.capabilities];
+  }
   const storage = createStorageOrNull(config, logger);
 
   const host = createAssistantHost({
@@ -45,8 +55,8 @@ export async function createAssistantHostFor({ config, pool, secrets, guard, log
     guides: catalog.guides,
     capabilities: catalog.capabilities,
     uiActions: catalog.uiActions,
-    resolveScope: createAssistantScopeResolver({ pool }),
-    authorize: createPermissionAuthorizer({ guard }),
+    resolveScope: createAssistantScopeResolver({ pool, authorize }),
+    authorize,
     // The site_facility surface declares no digest, so the orchestrator performs
     // no context query and `buildDigest` stays null.
     buildDigest: null,
@@ -138,7 +148,7 @@ function lazyProvider(factory, config) {
  * revision that is not `DRAFT` marks the scope read-only. The client's own readOnly
  * flag is a hint the server never widens: it can ask for less, not for more.
  */
-export function createAssistantScopeResolver({ pool }) {
+export function createAssistantScopeResolver({ pool, authorize = null }) {
   return async function resolveScope({ context = {} } = {}) {
     const projectId = context.projectId ?? null;
     if (!projectId) {
@@ -177,6 +187,26 @@ export function createAssistantScopeResolver({ pool }) {
       if (!revision) throw errors.notFound();
     }
 
+    let rackContext = null;
+    if (context.surface === 'rack') {
+      // Entry authorization precedes reading the selected plan; each tool also
+      // rechecks it at execution time (the permission may have been revoked).
+      for (const key of ['rack.read', 'facility.read']) {
+        if (!authorize || !await authorize({ key, userId: context.userId, workspaceId: projectId }))
+          throw new ApiError('ASSISTANT_FORBIDDEN', 'Rack and Facility read access are required.', { status: 403 });
+      }
+      const hint = context.rackContext ?? {};
+      if (typeof hint !== 'object' || Array.isArray(hint)) throw new ApiError('ASSISTANT_CONTEXT_INVALID', 'Malformed Rack context.', { status: 400 });
+      if (hint.clientVersion != null && (!Number.isSafeInteger(hint.clientVersion) || hint.clientVersion < 1))
+        throw new ApiError('ASSISTANT_CONTEXT_INVALID', 'Rack clientVersion must be a positive integer.', { status: 400 });
+      rackContext = { planId: null, version: null, clientVersion: hint.clientVersion ?? null, hasUnsavedDraft: hint.hasUnsavedDraft === true };
+      if (hint.planId != null) {
+        if (typeof hint.planId !== 'string' || !UUID.test(hint.planId)) throw errors.notFound();
+        const layout = await createRackLayoutService({ pool }).get({ projectId, planId: hint.planId });
+        if (!revision || layout.scenarioId !== revision.scenario_id || layout.facilityInput.revisionId !== revision.revision_id) throw errors.notFound('Rack plan not found in this workspace.');
+        rackContext = { ...rackContext, planId: layout.planId, version: layout.version };
+      }
+    }
     return {
       surface: context.surface ?? 'site_facility',
       workspaceId: projectId,
@@ -199,6 +229,7 @@ export function createAssistantScopeResolver({ pool }) {
       // A validated or published revision is immutable, so a scope that names one is
       // read-only whatever the client claimed.
       readOnly: revision ? revision.lifecycle_state !== 'DRAFT' : context.readOnly === true,
+      ...(rackContext ? { rackContext } : {}),
     };
   };
 }

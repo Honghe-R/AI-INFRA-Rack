@@ -7,6 +7,7 @@ import { normalizeEquipment, checkEquipment } from '@ai-infra/rack';
 import { readRackRoomView } from './rack-plans.js';
 import { generateRackOptions, normalizePlannerOptions, layoutMetrics, PLANNER_LIMITS } from '@ai-infra/rack';
 import { pickRackPosition } from './rack-planner-geometry.js';
+import { allocateUnassignedEquipment } from '@ai-infra/rack';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const conflict = (code, message, details = []) => new ApiError(code, message, { status: 409, details });
@@ -229,6 +230,34 @@ export function createRackLayoutService({ pool }) {
         if (error.code === '57014') throw new ApiError('RACK_PLANNING_TIMEOUT', 'A planning query reached its time limit. No data was changed.', { status: 503 });
         throw error;
       }
+    },
+    async equipmentOptions({ projectId, planId, body }) {
+      scope(projectId, planId);
+      bodyFields(body, ['contract_version', 'base_version', 'snapshot_id']);
+      if (!Number.isSafeInteger(body.base_version) || body.base_version < 1) throw new RackInputError('base_version', 'must be a positive integer');
+      return withTenant(pool, projectId, async client => {
+        await client.query("SET LOCAL statement_timeout = '5000ms'");
+        const layout = await read(client, projectId, planId);
+        if (layout.version !== body.base_version) throw new ApiError('RACK_VERSION_CONFLICT', 'Reload before allocating equipment.', { status: 412 });
+        if (!layout.snapshot || body.snapshot_id !== layout.snapshot.snapshotId) throw conflict('RACK_SNAPSHOT_MISMATCH', 'Reload the fixed room input.');
+        if (layout.sourceStatus.status !== 'UNCHANGED') throw conflict('RACK_SOURCE_STALE', 'Review the changed Facility source before allocation.');
+        const entries = normalizeEditableLayout({ placements: layout.placements, models: layout.models, projectId, planId });
+        const placements = entries.map(e => e.placement);
+        const constraints = normalizeSpatialConstraints(layout.constraints);
+        const generated = allocateUnassignedEquipment({ equipment: layout.equipment, placements, models: layout.models });
+        const report = await check(client, layout, entries, constraints);
+        const inputFingerprint = createHash('sha256').update(JSON.stringify(layout)).digest('hex');
+        const { equipment, baseline, ...candidate } = generated;
+        return { contractVersion: 1, projectId, planId, baseVersion: layout.version, snapshotId: layout.snapshot.snapshotId,
+          facilityInput: layout.facilityInput, inputFingerprint, persisted: false, validationState: 'NOT_RUN', scope: generated.scope,
+          baseline: { equipmentReport: baseline }, candidates: [{ ...candidate,
+            optionId: `${generated.algorithmId}:${inputFingerprint}`, placements: layout.placements, unplaced: [], report,
+            canStage: generated.assignments.length > 0 && report.diagnostics.length === 0,
+            body: { contract_version: 1, snapshot_id: layout.snapshot.snapshotId, placements: layout.placements, constraints, equipment } }] };
+      }, { readOnly: true }).catch(error => {
+        if (error.code === '57014') throw new ApiError('RACK_ALLOCATION_TIMEOUT', 'An allocation check reached its query time limit. No data was changed.', { status: 503 });
+        throw error;
+      });
     },
     async get({ projectId, planId }) {
       scope(projectId, planId);

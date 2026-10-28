@@ -683,7 +683,43 @@ Docker 可能保留已下载的镜像缓存，本轮没有清理全局 Docker �
 - 当前是现有机柜的贪心重排；未实现设备自动装箱、新柜需求规划、连续通道、正式机房预算、持久化候选历史/独立审批凭证、生产并发限流/异步取消或全局最优。算法和时限不是工程认证或生产 SLA。
 - 下一步可接 Rack Assistant 的真实查询/解释/生成候选工具，或补设备自动分配；本轮不混入这些功能。全部更改留本地，由用户决定提交。
 
-## 后续记录格式
+## 2026-10-29：第十七轮，Rack Assistant工具接线与未分配设备自动上架
+
+### 范围与实际修改
+
+- 用户要求继续补需要的内容，本轮先完成Assistant只读工具接线；发现本机无模型配置后，用户明确“先不用配模型，先搞其他的”，因此继续补设备自动分配，没有配置模型或改`.env`。起始HEAD为用户当前的`25cbc9d`，全部更改留本地，未commit/push、改remotes或触碰老师目录/平台。
+- [Rack Assistant适配器](apps/api/src/services/rack-assistant.js) 注册rack@1/guide及五个rack_工具：方案列表/读取、真实容量、原完整检查、原布局候选摘要。Host/HTTP/context/execution链路携带服务端校验的所选方案和Rack整数版本；入口与每次调用均需rack.read + facility.read。客户端dirty/版本仅作提示，不接受模型自报范围。
+- [前端会话](apps/web/src/assistant/useAssistantSession.js) 根据活动工具和所选方案隔离会话；Rack不混入Facility选择/ETag/UI action/附件。Overview补真实范围和提问示例。没有聊天写入或自动把摘要放入地图；模型未配置时保留真实不可用错误。说明见 [RACK_ASSISTANT.md](RACK_ASSISTANT.md)。
+- [纯领域分配器](packages/rack/src/allocator.js) 大U优先/稳定UUID/首次适配连续U，只处理未分配设备，保留已装设备、全部身份/型号/来源/限值和柜位置，排除锁定柜。三种资源及柜已有需求全部已知才尝试分配；未知、碎片、不足、无目标都有原因，可保留部分成功。上限128未分配/64目标柜/100U。
+- 原 [布局服务](apps/api/src/services/rack-layout.js) 新增只读equipmentOptions：只读tenant事务、保存版本/来源/快照校验、领域分配、原PostGIS与设备完整复核，返回指纹/报告/原保存body，无迁移/新候选表。路由需两项read权限，普通保存仍需write并走原版本/幂等/来源锁和原子事务。
+- [设备自动分配页](apps/web/src/rack/RackAllocation.jsx) 放在Devices & U slots，展示分配表、剩余原因、空闲U变化/三种容量、只读立面、明确复核，转同一共享草稿后保存。零新增或错误阻止选用，部分设备保留未分配不丢失身份；整体NOT_RUN不变。说明见 [RACK_ALLOCATION.md](RACK_ALLOCATION.md)。同步README、基础/结构/操作/API/设备文档和有证据的待办项。
+
+### 验证与证据
+
+证据目录：[records/2026-10-29-rack-assistant](records/2026-10-29-rack-assistant/)，具体命令见 [commands.md](records/2026-10-29-rack-assistant/commands.md)。
+
+| 检查 | 最终结果 | 证据 |
+| --- | --- | --- |
+| Rack领域 | 122通过、0失败/跳过；新增连续U/资源/未知/零/锁/部分/规模/输入不变 | domain-tests.txt |
+| Assistant适配与Host投影 | 15通过、0失败/跳过；注册、授权、范围、分页、调用预算、摘要和真实orchestrator接线 | adapter-tests.txt |
+| Assistant领域回归 | 84通过、0失败/跳过；沿用provider/registry/prompt/orchestrator机制 | assistant-tests.txt |
+| 真实数据库/HTTP | 54通过、0失败/跳过；Rack与原Assistant API，跨项目/版本/来源、viewer只读生成、分配重复与原子保存 | api-tests.txt |
+| Web定向 | 167通过，14文件；新分配客户端/复核/部分草稿、会话隔离及原Rack/Assistant相关回归 | web-tests.txt |
+| Web构建 | 成功，保留已有esbuild/oxc和大于500kB bundle提示 | web-build.txt |
+| 浏览器 | 真实生成/容量/立面/确认/共享草稿/放弃；无模型真实错误 | browser-checks.md、allocation-preview.jpg |
+| 独立示例 | 新示例正常HTTP创建并保存v2；五个旧示例完整布局前后相等 | create-allocation-demo.mjs、demo-create.txt、allocation-demo.json |
+
+初次适配测试stub未满足既有provider工厂的配置契约，补齐stub；无endpoint工厂500与启动后HTTP503区分记录，没有更改无模型产品行为。浏览器开发watch重启时一度502，刷新恢复。未跳过或放宽业务断言；没有运行全仓或宣称整个平台全通过。
+
+### 本机状态、限制与下一步
+
+- 新示例 **Rack allocation demo — unassigned devices**，ID `44b72453-8cf6-47ff-ab61-0d4c28c99c21`，v2，3柜/6设备/5未分配。建议新增3台，另外100U与重量未知两台保留未分配；C柜U1–14、70/100kg、6/6kW功率与冷却。所有规格为合成假设。
+- 浏览器转草稿后完整检查完成、Save可用，但未保存演示；已Discard恢复初始v2、1台原安装/5未分配，无dirty。实际持久化在临时隔离fixture验证。候选比较保留在本地浏览器，方便用户复核。
+- 用户明确不配模型；未声称真实模型自然语言对话或外部provider端到端通过。后续需要模型时再接入，不阻塞普通规划。聊天仍无修改/应用、实体定位或候选自动传地图。
+- 自动分配不是全局装箱最优，也不重排已装设备；仍缺正式机房总预算/跨柜依赖、连续通道、工程级物理兼容、持久化验证/候选历史、大规模性能与生产限流。下一步优先补机房级预算输入/总需求对比和可复现性能实验，再整理汇报架构与演示，不以模块入口代替实现。
+- 未执行任何commit/push，老师原目录与线上平台未改。
+
+## 后续记录格式（第十七轮后沿用）
 
 每轮追加一个日期标题，至少写清：
 

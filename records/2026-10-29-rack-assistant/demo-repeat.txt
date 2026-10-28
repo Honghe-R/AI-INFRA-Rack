@@ -1,0 +1,32 @@
+{
+  "name": "Rack allocation demo — unassigned devices",
+  "planId": "44b72453-8cf6-47ff-ab61-0d4c28c99c21",
+  "version": 2,
+  "racks": 3,
+  "devices": 6,
+  "metrics": {
+    "attemptedDevices": 5,
+    "assignedDevices": 3,
+    "remainingUnassigned": 2,
+    "eligibleRacks": 2,
+    "excludedLockedRacks": 1
+  },
+  "canStage": true,
+  "remainingReasons": [
+    {
+      "deviceId": "1aa891fb-d2f8-42c4-b433-2c0ccd411343",
+      "code": "NO_ELIGIBLE_POSITION",
+      "rejectionCounts": {
+        "NO_CONTIGUOUS_U": 2
+      }
+    },
+    {
+      "deviceId": "b960d5a2-5454-4a7e-8483-31410cee5b08",
+      "code": "UNKNOWN_DEVICE_RESOURCE",
+      "unknownDimensions": [
+        "weightKg"
+      ]
+    }
+  ],
+  "unchangedOldDemos": 5
+}
