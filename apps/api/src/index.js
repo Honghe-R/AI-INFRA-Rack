@@ -83,7 +83,7 @@ if (pool) {
   registerAdminRoutes(router, { repository, evaluator });
   registerProjectRoutes(router, { pool });
   registerFacilityRoutes(router, { pool });
-  registerRackRoutes(router, { pool });
+  registerRackRoutes(router, { pool, guard });
 
   // Validation: the service serves the reads and the local runs, and the worker
   // drains queued FULL batches.

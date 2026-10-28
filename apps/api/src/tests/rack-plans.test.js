@@ -62,7 +62,7 @@ async function fixture(fn, { state = 'DRAFT' } = {}) {
   } finally {
     const userIds = Object.values(people).map(person => person.userId);
     for (const p of projects) {
-      for (const table of ['rack_plans', 'facility_containers', 'design_scopes', 'facility_envelopes', 'entity_registry']) {
+      for (const table of ['rack_plans', 'geometry_records', 'facility_containers', 'design_scopes', 'facility_envelopes', 'entity_registry']) {
         await pool.query(`DELETE FROM ${table} WHERE project_id = $1`, [p.projectId]);
       }
       await pool.query("DELETE FROM role_assignments WHERE scope_kind = 'project' AND scope_id = $1", [p.projectId]);
@@ -81,9 +81,9 @@ async function fixture(fn, { state = 'DRAFT' } = {}) {
 
 async function server(people, fn) {
   const router = createRouter();
-  registerRackRoutes(router, { pool });
   const evaluator = createEvaluator({ repository });
   const guard = createPermissionGuard({ evaluator, repository });
+  registerRackRoutes(router, { pool, guard });
   const authenticator = { async authenticate(ctx) {
     const person = people[ctx.headers['x-test-user']];
     if (!person) throw errors.unauthorized();
@@ -105,6 +105,110 @@ async function server(people, fn) {
 }
 
 const path = p => `/api/v1/projects/${p.projectId}/rack/plans`;
+
+const roomOuter = [[500000,4400000],[500010,4400000],[500010,4400004],[500004,4400004],[500004,4400010],[500000,4400010],[500000,4400000]];
+const roomHole = [[500001,4400001],[500002,4400001],[500002,4400002],[500001,4400002],[500001,4400001]];
+async function addBoundary(p, { coordinates = [roomOuter, roomHole], crs = 'EPSG:32618', role = 'FLOOR_BOUNDARY' } = {}) {
+  const id = randomUUID();
+  await pool.query(`INSERT INTO geometry_records
+    (geometry_id,project_id,scenario_id,revision_id,entity_id,entity_type,role,ordinal,geometry_type,
+     geojson_4326,projected_geometry,projected_crs,provenance)
+    VALUES ($1,$2,$3,$4,$5,'HALL',$6,0,'POLYGON',
+      ST_Transform(ST_SetSRID(ST_GeomFromGeoJSON($7),32618),4326),
+      ST_SetSRID(ST_GeomFromGeoJSON($7),32618),$8,'{"source_ref":"rack-room-test"}')`,
+  [id,p.projectId,p.scenarioId,p.revisionId,p.hallId,role,JSON.stringify({type:'Polygon',coordinates}),crs]);
+  return id;
+}
+
+test('Rack room view reads a bound projected polygon with concavity and holes without changing the plan', {skip}, async () => fixture(async f => server(f.people, async request => {
+  const created = await request(path(f.a),{body:f.input()});
+  const url = `${created.location}/room-view`;
+  assert.equal((await request(url)).body.data.reason,'BOUNDARY_MISSING');
+  const geometryId = await addBoundary(f.a);
+  const response = await request(url,{user:'viewer'});
+  assert.equal(response.status,200);
+  assert.ok(response.body.meta.correlation_id);
+  const data = response.body.data;
+  assert.equal(data.status,'AVAILABLE');
+  assert.equal(data.planId,created.body.data.planId);
+  assert.deepEqual(data.facilityInput,created.body.data.facilityInput);
+  assert.equal(data.sourceGeometry.geometryId,geometryId);
+  assert.equal(data.sourceGeometry.transformReviewState,'NOT_RECORDED');
+  assert.equal(data.sourceGeometry.provenanceReference,'rack-room-test');
+  assert.equal(data.view.boundaryLocalM.coordinates[0].length,7);
+  assert.equal(data.view.boundaryLocalM.coordinates.length,2);
+  const area = (await pool.query('SELECT ST_Area(projected_geometry) AS area FROM geometry_records WHERE geometry_id=$1',[geometryId])).rows[0].area;
+  assert.equal(data.view.areaM2,area);
+  assert.equal(area,63);
+  assert.equal(data.view.obstacleCoverage,'UNKNOWN');
+  assert.deepEqual((await request(created.location)).body.data,created.body.data,'read does not bind a snapshot or advance Rack state');
+  assert.equal((await request(`${path(f.b)}/${created.body.data.planId}/room-view`)).status,404);
+  assert.equal((await request(url,{user:'outsider'})).status,403);
+  assert.equal((await request(url,{user:'unknown'})).status,401);
+  assert.equal((await request(`${path(f.a)}/not-a-uuid/room-view`)).status,404);
+})));
+
+test('Rack room view blocks changed, frozen and unavailable sources without returning replacement geometry', {skip}, async () => fixture(async f => server(f.people, async request => {
+  const created = await request(path(f.a),{body:f.input()});
+  await addBoundary(f.a);
+  const url = `${created.location}/room-view`;
+  assert.equal((await request(url)).body.data.status,'AVAILABLE');
+  await pool.query('UPDATE revision_etags SET etag=$1 WHERE project_id=$2',[randomUUID(),f.a.projectId]);
+  const stale = (await request(url)).body.data;
+  assert.equal(stale.status,'BLOCKED');
+  assert.equal(stale.view,null);
+  assert.equal(stale.sourceGeometry,null);
+  assert.equal(stale.facilityInput.revisionEtag,f.a.etag);
+  assert.equal(stale.facilityInputStatus.status,'STALE');
+  await pool.query('UPDATE revision_etags SET etag=$1 WHERE project_id=$2',[f.a.etag,f.a.projectId]);
+  await pool.query("UPDATE revisions SET lifecycle_state='VALIDATED', content_checksum='test' WHERE project_id=$1",[f.a.projectId]);
+  const frozen = (await request(url)).body.data;
+  assert.equal(frozen.status,'BLOCKED');
+  assert.equal(frozen.view,null);
+  assert.deepEqual(frozen.facilityInputStatus.reasons,['SOURCE_NOT_DRAFT']);
+  await pool.query('DELETE FROM revision_etags WHERE project_id=$1',[f.a.projectId]);
+  const missing = (await request(url)).body.data;
+  assert.equal(missing.status,'BLOCKED');
+  assert.equal(missing.facilityInputStatus.status,'UNAVAILABLE');
+})));
+
+test('Rack room view refuses ambiguous, invalid, unsupported-CRS and oversized boundaries', {skip}, async () => fixture(async f => server(f.people, async request => {
+  const created = await request(path(f.a),{body:f.input()});
+  const url = `${created.location}/room-view`;
+  await addBoundary(f.a);
+  await addBoundary(f.a,{role:'ROOM_BOUNDARY'});
+  assert.equal((await request(url)).body.data.reason,'BOUNDARY_AMBIGUOUS');
+  await pool.query('DELETE FROM geometry_records WHERE project_id=$1',[f.a.projectId]);
+  await addBoundary(f.a,{crs:'EPSG:4326'});
+  assert.equal((await request(url)).body.data.reason,'CRS_UNSUPPORTED');
+  await pool.query('DELETE FROM geometry_records WHERE project_id=$1',[f.a.projectId]);
+  await addBoundary(f.a,{coordinates:[[[500000,4400000],[500010,4400010],[500000,4400010],[500010,4400000],[500000,4400000]]]});
+  assert.equal((await request(url)).body.data.reason,'INVALID_BOUNDARY');
+  await pool.query('DELETE FROM geometry_records WHERE project_id=$1',[f.a.projectId]);
+  const ring = Array.from({length:4100},(_,i)=>[500000+10*Math.cos(i*2*Math.PI/4100),4400000+10*Math.sin(i*2*Math.PI/4100)]);
+  ring.push(ring[0]);
+  await addBoundary(f.a,{coordinates:[ring]});
+  const large = (await request(url)).body.data;
+  assert.equal(large.reason,'GEOMETRY_TOO_COMPLEX');
+  assert.equal(large.view,null);
+})));
+
+test('Rack room view separately requires Facility read access for a custom Rack-only role', {skip}, async () => fixture(async f => server(f.people, async request => {
+  const created = await request(path(f.a),{body:f.input()});
+  const roleId = randomUUID(), roleKey = `rack-only-${roleId}`;
+  try {
+    await pool.query("INSERT INTO roles (role_id,role_key,name,description,scope_hint) VALUES ($1,$2,'Rack only','Test only','project')",[roleId,roleKey]);
+    await pool.query("INSERT INTO role_permissions(role_id,permission_id) SELECT $1,permission_id FROM permissions WHERE key='rack.read'",[roleId]);
+    await repository.assignRole({userId:f.people.viewer.userId,roleKey,scopeKind:'project',scopeId:f.a.projectId});
+    assert.equal((await request(created.location,{user:'viewer'})).status,200);
+    const denied = await request(`${created.location}/room-view`,{user:'viewer'});
+    assert.equal(denied.status,403);
+    assert.equal(denied.body.error.details[0].function_key,'facility.read');
+  } finally {
+    await repository.revokeAssignment({userId:f.people.viewer.userId,scopeKind:'project',scopeId:f.a.projectId});
+    await pool.query('DELETE FROM roles WHERE role_id=$1',[roleId]);
+  }
+})));
 
 test('Rack list paginates tied timestamps, filters scope and reports current source status', { skip }, async () => fixture(async f => server(f.people, async request => {
   const ids = [];

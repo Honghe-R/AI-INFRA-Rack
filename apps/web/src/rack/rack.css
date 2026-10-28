@@ -34,5 +34,22 @@
 .rack-boundary { border-top: 1px solid var(--line); padding-top: var(--space-4); color: var(--text-muted); font-size: var(--text-sm); }
 .rack-warning, .rack-plan-item .rack-warning { color: var(--warning); }
 .rack-error { color: var(--error); overflow-wrap: anywhere; }
+.rack-floorplan h3 { margin: var(--space-3) 0 0; font-size: var(--text-lg); }
+.rack-room-canvas { display: block; width: 100%; height: auto; aspect-ratio: 800 / 440; border: 1px solid var(--line); border-radius: var(--radius-md); cursor: grab; touch-action: none; user-select: none; overflow: hidden; }
+.rack-room-canvas.is-dragging { cursor: grabbing; }
+.rack-room-background, .rack-room-label rect, .rack-room-scale rect { fill: var(--surface-sunken); }
+.rack-room-grid line { stroke: var(--line); stroke-width: 1; }
+.rack-room-boundary { fill: var(--accent-soft); fill-opacity: .8; stroke: var(--accent); stroke-width: 2; }
+.rack-room-origin { fill: var(--text-muted); }
+.rack-room-canvas text { fill: var(--text); font-family: var(--font-sans); font-size: 15px; }
+.rack-room-north text:first-child { font-size: 28px; }
+.rack-room-scale path { stroke: var(--text); stroke-width: 2; fill: none; }
+.rack-floor-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
+.rack-floor-stats dt { color: var(--text-muted); font-size: var(--text-sm); }
+.rack-floor-stats dd { margin: var(--space-1) 0; font-variant-numeric: tabular-nums; }
+.rack-room-source, .rack-plan-metadata { border-top: 1px solid var(--line); padding: var(--space-3) 0; overflow-wrap: anywhere; }
+.rack-floorplan summary, .rack-plan-metadata summary { cursor: pointer; }
+.rack-room-source { color: var(--text-muted); font-size: var(--text-sm); }
+.rack-floor-unavailable { background: var(--surface-sunken); border: 1px solid var(--line); border-radius: var(--radius-md); padding: var(--space-4); margin: var(--space-4) 0; }
 @media (max-width: 1000px) { .rack-columns { grid-template-columns: 1fr; } }
 @media (max-width: 600px) { .rack-surface { padding: var(--space-4); } .rack-form-fields { grid-template-columns: 1fr; } .rack-facts { grid-template-columns: 1fr; gap: var(--space-1); } .rack-facts dd { margin-bottom: var(--space-3); } }

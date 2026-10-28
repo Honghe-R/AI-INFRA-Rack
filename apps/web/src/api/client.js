@@ -76,6 +76,8 @@ export function createApiClient({ baseUrl = '', fetchImpl = globalThis.fetch, id
     },
     getRackPlan: (projectId, planId, { signal } = {}) =>
       request(`/api/v1/projects/${encodeURIComponent(projectId)}/rack/plans/${encodeURIComponent(planId)}`, { signal }),
+    getRackRoomView: (projectId, planId, { signal } = {}) =>
+      request(`/api/v1/projects/${encodeURIComponent(projectId)}/rack/plans/${encodeURIComponent(planId)}/room-view`, { signal }),
     createRackPlan: (projectId, body, { idempotencyKey, signal } = {}) =>
       request(`/api/v1/projects/${encodeURIComponent(projectId)}/rack/plans`, {
         method: 'POST', body, headers: { 'Idempotency-Key': idempotencyKey }, signal,

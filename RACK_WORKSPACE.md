@@ -1,6 +1,6 @@
 # Rack 工作区：空方案列表、创建与查看
 
-本轮仅接通空方案。启动方式见 [本地运行说明](RACK_LOCAL_SETUP.md)，后端契约见 [RACK_API.md](RACK_API.md)。
+当前接通空方案及其绑定 HALL 的只读平面图。启动方式见 [本地运行说明](RACK_LOCAL_SETUP.md)，后端契约见 [RACK_API.md](RACK_API.md)。
 
 ## 操作
 
@@ -9,6 +9,7 @@
 3. 点击 New empty plan，填写名称，从当前 Facility revision 选择一个 HALL。
 4. 点击 Save empty plan；成功后列表与详情从 API 读取已保存数据。
 5. 刷新整个页面，重新进入项目 → Rack，选择原方案，核对 ID、版本和来源。
+6. 来源未过期且边界受支持时，详情区显示机房平面图；拖动/滚轮/键盘查看，Fit room 复位。参见 [坐标与边界说明](RACK_FLOORPLAN.md)。
 
 已保留本机演示方案 `Rack UI demo — Hall A1`，ID 为 `3abd796d-461a-45f6-a0ce-ced7bce99020`。
 这是本机数据库内的记录，不随 Git 传给组员。其他人的本地环境按上述步骤创建自己的方案。
@@ -25,7 +26,8 @@
 - 创建前保留 body 和 UUID 幂等 key；网络/5xx 等结果不确定时锁定输入，用 Retry same creation 重试同一意图。切换工具后重开也保留该意图。
 - 后端明确拒绝时保留名称/机房供修正；来源过期时先 Refresh Facility source。加载和错误分开显示，可重试。
 - 页面卸载会中止读取并忽略旧响应；请求可能已在服务端提交，保留的幂等意图用于重读结果。整页重载前仍应先解决不确定请求。
-- 机柜编辑/存储、真实机房几何转换、容量验证、优化和 Rack Assistant 均未接通。全局 Ask about Rack 是既有平台入口，不代表已集成 Rack 工具。
+- 只读平面图使用权威 UTM 投影到局部米制的平移，保留 Polygon 轮廓和孔洞。设施来源过期时不返回边界，避免将当前几何误作历史输入。
+- 机柜编辑/存储、机房快照、Polygon 校验、容量验证、优化和 Rack Assistant 均未接通。全局 Ask about Rack 是既有平台入口，不代表已集成 Rack 工具。
 
 ## 验证
 

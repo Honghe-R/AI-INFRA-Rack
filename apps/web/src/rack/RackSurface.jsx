@@ -3,6 +3,7 @@ import { RACK_KEYS, FACILITY_KEYS } from '../generated/permission-keys.js';
 import { usePermission } from '../permissions/usePermission.jsx';
 import { planIntent, rackError, roomSource, samePlanScope, uncertainCreation } from './rack-plan-state.js';
 import './rack.css';
+import { RackRoomView } from './RackRoomView.jsx';
 
 export function RackSurface(props) {
   const scope = { projectId: props.context.projectId };
@@ -189,7 +190,14 @@ function RackWorkspace({ client, context, routeState = {}, onRouteChange, onDirt
       <section className="rack-card rack-detail" aria-label="Rack plan details">
         {detail.pending ? <p role="status">Reading saved plan…</p> : detail.error ? <div role="alert">
           <p className="rack-error">{rackError(detail.error)}</p><button onClick={() => setRefresh(value => value + 1)}>Retry detail</button></div>
-          : detail.data ? <RackPlanDetail plan={detail.data} roomName={roomName(detail.data.facilityInput.containerId)} />
+          : detail.data ? <>
+            <div className="rack-heading"><h2>{detail.data.name}</h2><span className="rack-badge">{detail.data.state} · v{detail.data.version}</span></div>
+            <RackRoomView key={detail.data.planId} client={client} plan={detail.data} canReadFacility={canReadFacility}
+              facilityPending={facilityPending} facilityUnavailable={facilityUnavailable} refresh={refresh} />
+            <details className="rack-plan-metadata"><summary>Saved plan details</summary>
+              <RackPlanDetail plan={detail.data} roomName={roomName(detail.data.facilityInput.containerId)} />
+            </details>
+          </>
             : <div className="rack-empty"><h2>Select a saved plan</h2><p>View its stored identity, Facility reference, and source freshness here.</p></div>}
       </section>
     </div>
@@ -222,6 +230,6 @@ export function RackPlanDetail({ plan, roomName }) {
       <dt>Facility lifecycle</dt><dd>{freshness?.lifecycleState ?? 'Unknown'}</dd>
       {freshness?.reasons?.length > 0 && <><dt>Source reasons</dt><dd>{freshness.reasons.join(', ')}</dd></>}
     </dl>
-    <p className="rack-boundary">This stage saves an empty plan and its Facility reference. Room geometry, rack editing, capacity checks, and Rack Assistant integration are pending.</p>
+    <p className="rack-boundary">This stage saves an empty plan and can display its unchanged Facility boundary. Rack editing, persisted room snapshots, capacity checks, and Rack Assistant integration are pending.</p>
   </>;
 }

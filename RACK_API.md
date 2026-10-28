@@ -128,4 +128,11 @@ cursor 只在同项目、同过滤范围内查找，错误范围、不存在或�
 - 该表限定版本 1、DRAFT、NOT_RUN。扩展修改命令时必须新增迁移和并发控制，不能只改服务返回值。
 
 首次存储验证见 [持久化证据](records/2026-10-28-rack-persistence)，列表和页面验证见 [工作区证据](records/2026-10-28-rack-ui)。
-工作区入口已接通，下一步先明确真实几何输入与局部坐标，再推进最小机柜编辑/保存。
+工作区入口与只读机房平面图已接通，下一步先明确输入快照和 Polygon 规则，再推进最小机柜编辑/保存。
+
+## 只读机房平面图
+
+`GET /api/v1/projects/:projectId/rack/plans/:planId/room-view` 需要同时具有 `rack.read` 与 `facility.read`。
+按保存来源的项目/场景/revision/HALL 读取唯一投影边界，在同条 SQL 内复核来源 ETag 和生命周期。
+返回可显示的米制 Polygon 或明确的阻止/不支持状态；不创建快照，不更新方案或设施数据。
+完整字段、状态码、支持范围和转换约定见 [RACK_FLOORPLAN.md](RACK_FLOORPLAN.md)。

@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { ApiError, errors } from '@ai-infra/core';
 import { withTenant } from '@ai-infra/db';
-import { RackInputError, assessFacilityInput, createRackPlan } from '@ai-infra/rack';
+import { RackInputError, assessFacilityInput, createRackPlan, localizeRoomBoundary, MAX_ROOM_VIEW_POINTS } from '@ai-infra/rack';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const missing = () => errors.notFound('The requested resource was not found.');
@@ -64,6 +64,56 @@ function present(row) {
 export function createRackPlanService({ pool }) {
   if (!pool) throw new Error('createRackPlanService requires a pool.');
   return {
+    async roomView({ projectId, planId }) {
+      if (typeof projectId !== 'string' || !UUID.test(projectId) || typeof planId !== 'string' || !UUID.test(planId)) throw missing();
+      return withTenant(pool, projectId, async client => {
+        // One statement pins plan, source token and geometry to the same MVCC
+        // snapshot. Bound candidates/vertices before serializing coordinates.
+        const result = await client.query(`SELECT p.*, r.lifecycle_state AS source_state,
+          e.etag AS current_etag, c.name AS room_name,
+          (SELECT jsonb_agg(boundary) FROM (
+            SELECT g.geometry_id, g.role, g.projected_crs,
+              ST_SRID(g.projected_geometry) AS srid, ST_NDims(g.projected_geometry) AS dimensions,
+              CASE WHEN ST_NPoints(g.projected_geometry) <= $3 THEN ST_IsValid(g.projected_geometry) ELSE false END AS valid,
+              ST_NPoints(g.projected_geometry) AS point_count,
+              CASE WHEN ST_NPoints(g.projected_geometry) <= $3
+                THEN ST_AsGeoJSON(g.projected_geometry, 15, 0)::jsonb ELSE NULL END AS geometry,
+              g.provenance->>'source_ref' AS source_ref,
+              COALESCE(t.review_state::text, 'NOT_RECORDED') AS transform_review_state
+            FROM geometry_records g LEFT JOIN spatial_transforms t
+              ON t.project_id=g.project_id AND t.transform_id=g.parent_transform_id
+            WHERE g.project_id=p.project_id AND g.scenario_id=p.scenario_id
+              AND g.revision_id=p.source_revision_id AND g.entity_id=p.source_container_id
+              AND g.entity_type='HALL' AND g.role IN ('FLOOR_BOUNDARY','ROOM_BOUNDARY')
+            ORDER BY g.geometry_id LIMIT 2
+          ) boundary) AS boundaries
+          FROM rack_plans p
+          JOIN revisions r ON r.project_id=p.project_id AND r.revision_id=p.source_revision_id
+          JOIN facility_containers c ON c.project_id=p.project_id AND c.revision_id=p.source_revision_id
+            AND c.container_id=p.source_container_id AND c.scenario_id=p.scenario_id AND c.kind='HALL'
+          LEFT JOIN revision_etags e ON e.project_id=p.project_id AND e.revision_id=p.source_revision_id
+          WHERE p.project_id=$1 AND p.plan_id=$2`, [projectId, planId, MAX_ROOM_VIEW_POINTS]);
+        const row = result.rows[0];
+        if (!row) throw missing();
+        const plan = present(row);
+        const base = { contractVersion: 1, planId: plan.planId, planVersion: plan.version,
+          facilityInput: plan.facilityInput, facilityInputStatus: plan.facilityInputStatus,
+          room: { containerId: plan.facilityInput.containerId, name: row.room_name }, view: null, sourceGeometry: null };
+        if (plan.facilityInputStatus.status !== 'UNCHANGED') {
+          return { ...base, status: 'BLOCKED', reason: 'FACILITY_SOURCE_CHANGED' };
+        }
+        const boundaries = row.boundaries ?? [];
+        if (boundaries.length === 0) return { ...base, status: 'UNAVAILABLE', reason: 'BOUNDARY_MISSING' };
+        if (boundaries.length > 1) return { ...base, status: 'UNSUPPORTED', reason: 'BOUNDARY_AMBIGUOUS' };
+        const g = boundaries[0];
+        const sourceGeometry = { geometryId: g.geometry_id, role: g.role, crs: g.projected_crs, srid: g.srid,
+          provenanceReference: g.source_ref, transformReviewState: g.transform_review_state };
+        const localized = g.point_count > MAX_ROOM_VIEW_POINTS
+          ? { status: 'UNSUPPORTED', reason: 'GEOMETRY_TOO_COMPLEX', view: null }
+          : localizeRoomBoundary({ geometry: g.geometry, crs: g.projected_crs, srid: g.srid, valid: g.valid, dimensions: g.dimensions });
+        return { ...base, sourceGeometry, ...localized };
+      }, { readOnly: true });
+    },
     async list({ projectId, query = {} }) {
       if (typeof projectId !== 'string' || !UUID.test(projectId)) throw missing();
       fields(query, 'query', ['scenario_id', 'revision_id', 'cursor', 'limit']);

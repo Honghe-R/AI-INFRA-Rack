@@ -1,6 +1,6 @@
 import { ApiError } from '@ai-infra/core';
 import { RackInputError } from '@ai-infra/rack';
-import { RACK_KEYS } from '@ai-infra/rbac';
+import { RACK_KEYS, FACILITY_KEYS } from '@ai-infra/rbac';
 import { createRackPlanService } from '../services/rack-plans.js';
 
 async function adapt(operation) {
@@ -14,9 +14,14 @@ async function adapt(operation) {
   }
 }
 
-export function registerRackRoutes(router, { pool }) {
+export function registerRackRoutes(router, { pool, guard }) {
   const service = createRackPlanService({ pool });
   const base = '/api/v1/projects/:projectId/rack/plans';
+  router.get(`${base}/:planId/room-view`, ctx => adapt(async () => {
+    if (!guard) throw new ApiError('SERVICE_UNAVAILABLE', 'Facility authorization is not configured.', { status: 503 });
+    await guard.check(FACILITY_KEYS.READ, ctx, { projectParam: 'projectId' });
+    return { data: await service.roomView({ projectId: ctx.params.projectId, planId: ctx.params.planId }) };
+  }), { permission: RACK_KEYS.READ, projectParam: 'projectId' });
   router.get(base, ctx => adapt(async () => ({
     data: await service.list({ projectId: ctx.params.projectId, query: ctx.query }),
   })), { permission: RACK_KEYS.READ, projectParam: 'projectId' });

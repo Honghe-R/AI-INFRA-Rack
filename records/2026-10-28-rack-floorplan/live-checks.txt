@@ -1,0 +1,5 @@
+Live Vite + API: admin/viewer room view 200; another organisation 403.
+Source EPSG:32618; 1 ring(s); every vertex equals stored projected point minus the declared origin.
+Projected extents 106.30 x 91.64 m; polygon area 9229.79 m2 agrees with PostGIS within 1e-6 m2.
+Provenance dev-seed-facility; georeferencing review NOT_RECORDED; obstacles UNKNOWN.
+Saved plan row unchanged. No seed, snapshot, geometry update or placement mutation.

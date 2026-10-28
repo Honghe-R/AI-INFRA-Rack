@@ -392,6 +392,47 @@ Docker 可能保留已下载的镜像缓存，本轮没有清理全局 Docker �
 - 下一小步应先确认真实 HALL 几何到米制局部输入的 contract，再做最小机柜编辑；完整性能和生产认证仍待后续。
 - 没有改老师原目录或执行任何 Git 提交/推送操作。
 
+## 2026-10-28：第九轮，绑定机房的只读米制平面图
+
+### 1. 范围与起点
+
+- 用户同意先接真实 HALL 几何和只读平面图，不展开机柜编辑/保存。
+- 起始 HEAD 为用户已提交的 `743b57e`，工作区干净。继续仅修改 `AI-INFRA-Rack`；没有 commit、push、修改 remotes 或老师原目录。
+- 使用已有 Docker 开发栈、007 表和演示方案；没有新增迁移或重跑初始化/seed。
+
+### 2. 实际修改与设计
+
+- [领域显示转换](packages/rack/src/room-view.js)：只接受显式匹配的 WGS84 UTM 米制 SRID/CRS，平移为局部坐标。外环 min easting/min northing 作为原点，网格东/北轴，不旋转、简化或用包围框替代 Polygon。
+- 凹形与内环保留；Polygon 净面积扣除孔洞。限制 4096 点、64 环、每轴 10 km，其他 CRS、3D、非法/退化/超限数据明确拒绝。
+- [Rack service](apps/api/src/services/rack-plans.js) 新增只读 roomView，同条 SQL 的 MVCC 快照核对保存来源 ETag/生命周期并读取唯一 HALL 边界；多候选不自动选择，来源过期不返回当前边界代替历史几何。
+- [路由](apps/api/src/routes/rack.js) 新增 `GET plans/:planId/room-view`，原 guard 检查 rack.read 后再次检查 facility.read；自定义 Rack-only 角色不能通过该路径获得 Facility 几何。
+- [RackRoomView](apps/web/src/rack/RackRoomView.jsx) 在方案详情前部显示 SVG 平面图、网格、米制比例尺、网格北向、范围与面积。支持按钮/滚轮缩放、拖动/键盘平移和 Fit room；原方案元数据收在 Saved plan details。
+- 前端沿用身份客户端、取消/忽略旧请求，核对响应的方案版本与保存来源；不写数据库、不推进 Rack 状态。来源审核和合成样例属性明确可见。
+- 新增 [平面图 contract](RACK_FLOORPLAN.md)，更新 API、工作区、基础设计、运行说明、清单和 README。
+
+### 3. 验证与证据
+
+| 检查 | 结果 | 证据 |
+| --- | --- | --- |
+| Rack 领域包 | 80 通过（原 74 + 新 6），0 失败/跳过 | [domain-tests.txt](records/2026-10-28-rack-floorplan/domain-tests.txt) |
+| 真数据库/API | 16 通过（原 12 + 新 4），0 失败/跳过；含凹形/孔洞、变化来源、非法/多边界/超限、独立 Facility 权限 | [api-tests.txt](records/2026-10-28-rack-floorplan/api-tests.txt) |
+| Web 相关回归 | 53 通过；均匀缩放、Y 轴、锚点缩放/平移、内环路径、单位/来源、API 编码取消、shell 与导入边界 | [web-tests.txt](records/2026-10-28-rack-floorplan/web-tests.txt) |
+| Web 构建 | 成功，保留既有 esbuild/oxc 与大 bundle 提示 | [web-build.txt](records/2026-10-28-rack-floorplan/web-build.txt) |
+| 实际运行 API 与数据库对照 | 顶点逐个符合投影坐标减原点；面积与 PostGIS 差 < 1e-6 m²；admin/viewer 200、其他组织 403；原方案行未改 | [脚本](records/2026-10-28-rack-floorplan/check-live-room.mjs)、[输出](records/2026-10-28-rack-floorplan/live-checks.txt) |
+| 浏览器 | 原方案图面、按钮/滚轮缩放、指针/键盘平移、复位、刷新重读和整页重开通过 | [步骤](records/2026-10-28-rack-floorplan/browser-checks.md)、[图面](records/2026-10-28-rack-floorplan/floorplan.png)、[来源](records/2026-10-28-rack-floorplan/source.png) |
+
+命令：`npm run test --workspace @ai-infra/rack`；`node --env-file-if-exists=.env --test apps/api/src/tests/rack-plans.test.js`；Web 证据首行列出的定向 vitest；`npm run build --workspace @ai-infra/web`；`node --env-file=.env records/2026-10-28-rack-floorplan/check-live-room.mjs`。
+初次新增来源状态测试误写了数据库不存在的 FROZEN 枚举，按平台 VALIDATED 状态修正后通过；React SVG title 多节点提示也已修正，最终测试无该提示。
+没有重跑全仓测试，不宣称原始基线问题全部修复；未在浏览器做凹形/孔洞夹具展示或故障注入。
+
+### 4. 当前边界与下一步
+
+- 演示图源自现有 Facility 合成样例，不是实测工程图。UTM 是网格米，未校核地面距离/投影误差，现有配准审核 NOT_RECORDED；图面只读不等于工程有效。
+- 机房 Polygon 没有持久化为方案输入快照；设施变更后阻止显示，显式重绑定/恢复历史几何仍待做。已打开图面通过刷新/重开复核来源，不是实时更新。
+- 障碍物完整性 UNKNOWN，Rack 验证 NOT_RUN。现有矩形空间规则不适用于任意实际 Polygon，本轮没有将外包框当作可用区域或调用这些规则验证实际机房。
+- 下一小步先设计固定输入/重绑定与 Polygon 包含/碰撞 contract，再推进最小机柜放置和持久化。设备容量、优化与 Rack Assistant 仍未实现。
+- 没有改动演示方案、设施边界或 ETag；测试仅创建并清理自己的临时夹具。用户的演示方案和 Git HEAD 保留。
+
 ## 后续记录格式
 
 每轮追加一个日期标题，至少写清：

@@ -35,6 +35,10 @@ test('Rack methods carry encoded scope, pagination, identity, cancellation and t
   assert.equal(calls[2].options.headers['Idempotency-Key'], 'key-1');
   assert.deepEqual(JSON.parse(calls[2].options.body), body);
   assert.equal(calls[2].options.signal, controller.signal);
+  await client.getRackRoomView('p/one', 'plan/one', { signal: controller.signal });
+  assert.equal(calls[3].url, '/api/v1/projects/p%2Fone/rack/plans/plan%2Fone/room-view');
+  assert.equal(calls[3].options.signal, controller.signal);
+  assert.equal(calls[3].options.headers['x-dev-subject'], 'test-editor');
 });
 
 test('a success response is unwrapped from the documented envelope', async () => {
