@@ -164,7 +164,7 @@ const server = createServer(
   }),
 );
 
-server.listen(config.port, () => {
+server.listen(config.port, process.env.HOST, () => {
   logger.info('server.listening', { port: config.port, env: config.env });
 });
 

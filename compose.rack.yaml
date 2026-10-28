@@ -1,0 +1,36 @@
+# Isolated development dependencies for this student copy. Never shares teacher volumes.
+name: ai-infra-rack-dev
+
+services:
+  db:
+    image: postgis/postgis:16-3.4@sha256:44126d872ac91993766c341e369c539e8196614321765d36a6f1bab0419a5fa5
+    ports:
+      - '127.0.0.1:${AI_INFRA_DB_PORT:-55532}:5432'
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?Run npm run rack:setup}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Run npm run rack:setup}
+      POSTGRES_DB: ${POSTGRES_DB:-rack_facility}
+    volumes:
+      - rack-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
+  object-store:
+    image: rustfs/rustfs:1.0.4@sha256:ed9210d6411d77ffceb70d94b964a3cb7d225983368bc25bebe01e995293dcc2
+    ports:
+      - '127.0.0.1:${AI_INFRA_OBJECT_STORE_PORT:-59100}:9000'
+      - '127.0.0.1:${AI_INFRA_OBJECT_STORE_CONSOLE_PORT:-59101}:9001'
+    environment:
+      RUSTFS_ACCESS_KEY: ${STORAGE_ACCESS_KEY_ID:?Run npm run rack:setup}
+      RUSTFS_SECRET_KEY: ${STORAGE_SECRET_ACCESS_KEY:?Run npm run rack:setup}
+      RUSTFS_VOLUMES: /data
+      RUSTFS_CONSOLE_ENABLE: 'true'
+    volumes:
+      - rack-object-data:/data
+
+volumes:
+  rack-db-data:
+  rack-object-data:

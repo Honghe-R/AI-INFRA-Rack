@@ -12,11 +12,11 @@
 | 已实现 | Rack 型号/实例、局部占地、空内存方案、设施来源比较、矩形机房、单柜越界/障碍、多柜碰撞与汇总；74 项单元测试 |
 | 已记录 | 基础契约、坐标、方案初始状态/版本、来源比较、三项空间规则、清单覆盖声明与未检查范围、遗留问题 |
 | 部分推进 | 总清单阶段 0–2；阶段 3 仅领域包；阶段 5 提前完成三项离线空间规则，存储/服务仍未完成 |
-| 尚未验证 | 原平台连接真实数据库/对象存储后的完整运行 |
-| 尚未开始 | Rack 数据表、权限、API、页面、设备分配、净距/通道/容量等其他规则、布局算法、候选、Assistant |
+| 运行基线 | 原平台已接通独立 PostgreSQL/PostGIS 与 S3 对象存储，两个示例项目可读；见 2026-10-28 记录 |
+| 尚未开始 | Rack 数据表、权限、API、正式工作区编辑页面、设备分配、净距/通道/容量等其他规则、布局算法、候选、Assistant |
 | Git | 所有修改留在工作区，未提交、未推送；远程地址保持原样 |
 
-当前安排：用户要求暂不使用 Docker，后续优先推进离线领域功能；数据库、迁移、seed 和启动平台延后。
+当前安排：2026-10-28 用户恢复数据库/平台初始化并允许 Docker；已完成隔离的本地开发运行基线，后续继续按小步推进 Rack 功能。
 
 当前可通过独立的[只读可视化预览](RACK_PREVIEW.md)查看合成样例；正式工作区 Rack 编辑器与方案保存尚未实现。三项局部空间检查不代表完整方案验证通过。
 
@@ -258,6 +258,52 @@ Docker 可能保留已下载的镜像缓存，本轮没有清理全局 Docker �
 - Rack 74 项测试通过；HTTP 检查确认六场景报告/几何与领域函数一致、写请求返回 405、非白名单仓库文件返回 404，见 [http-checks.txt](records/2026-10-27-preview/http-checks.txt) 和 [rack-tests.txt](records/2026-10-27-preview/rack-tests.txt)。
 - 实际浏览器验证场景切换和碰撞双方定位，见 [browser-checks.txt](records/2026-10-27-preview/browser-checks.txt) 与[截图](records/2026-10-27-preview/preview-overlap.png)。
 - 仅新增只读预览服务，未执行迁移、seed、提交或推送，未修改老师原目录；全仓测试本轮未重跑。
+
+## 2026-10-28：第六轮，接通原平台开发环境
+
+### 1. 范围与环境
+
+- 用户要求接通数据库，随后明确允许使用 Docker。仅初始化 Rack 副本的开发环境，不扩展完整 Rack 功能。
+- 本轮起始 HEAD 为用户已提交的 `a8c3cc1`，工作区干净；本轮没有执行 commit、push 或修改 remotes。
+- Docker Desktop Linux 引擎可用。此前无容器；新栈名为 `ai-infra-rack-dev`，数据卷、数据库名和端口独立于原目录。
+- 先检查过免 Docker 路径并下载 PostgreSQL/PostGIS 官方压缩包，但没有解压、安装、初始化或注册本机数据库服务；改用 Docker 后删除本轮这两个不再需要的下载文件。
+
+### 2. 实际修改
+
+- 新增 [compose.rack.yaml](compose.rack.yaml)：仅本机端口，PostGIS 与 RustFS 固定镜像摘要、独立卷。原 `compose.yaml` 未修改。
+- 原 MinIO 镜像拉取返回 401；RustFS 1.0.4 通过既有 S3 驱动工作，不修改存储业务接口。
+- 新增 [.env.rack.example](.env.rack.example)、[初始化助手](scripts/rack-setup.mjs) 和 `npm run rack:setup`；生成随机本地凭证，拒绝覆盖已有 `.env` 或用环境变量将初始化指向其他栈。
+- `dev-stack.mjs` 支持选择 Compose 文件，输出不再打印硬编码的示例凭证。
+- `dev.mjs` 直接调用 npm 的 Node 入口以兼容 Windows，按所拥有的进程树停止子进程；按配置同时启动本地合成瓦片。
+- API 支持可选 `HOST`，本副本配置为 `127.0.0.1`；默认无该配置时保留原监听行为。
+- 修复数据库启动中接受连接后提前断开会令探针不结束的问题；新增两个真实 TCP 回归测试。
+- 增加 [运行说明](RACK_LOCAL_SETUP.md)，更新 AGENTS、README、总清单；没有改动前端页面样式或组件。
+
+### 3. 已完成与验证
+
+| 检查 | 结果 | 证据 |
+| --- | --- | --- |
+| 容器、建桶、六个迁移、两个组织/项目与设施样例 | 成功；初次导入每项目 5 个资产 | [setup.txt](records/2026-10-28-platform/setup.txt) |
+| 对当前尚未编辑的样例重复初始化 | 迁移跳过 6 个，资产仍为 v1 unchanged，没有新增项目 | [setup-repeat.txt](records/2026-10-28-platform/setup-repeat.txt) |
+| 两项目 project/scenario/facility/assets API | HTTP 200；分别 9/10 个容器、13/22 个几何、各 5 个资产 | [runtime-checks.txt](records/2026-10-28-platform/runtime-checks.txt) |
+| 基本访问检查 | API 无凭证 401；另一组织身份读取设施 403 | 同上；不等于数据库 RLS 审计 |
+| RustFS 与原 S3 驱动 | PUT/HEAD/GET、签名下载成功；临时对象已删除 | 同上 |
+| 本地合成瓦片 | HTTP 200 image/png；不是地理底图 | 同上 |
+| 实际浏览器 | 打开 Northern DC Campus，看到建筑、机房及公用接口几何 | [browser-checks.txt](records/2026-10-28-platform/browser-checks.txt)、[截图](records/2026-10-28-platform/platform.png) |
+| Rack 测试 / 数据库探针回归 | 74/74、2/2 通过 | [rack-tests.txt](records/2026-10-28-platform/rack-tests.txt)、[probe-tests.txt](records/2026-10-28-platform/probe-tests.txt) |
+| 应用停止与重启 | 发送中断后 8797/5193/8088 无残留监听，随后重启并重新检查运行 | [lifecycle.txt](records/2026-10-28-platform/lifecycle.txt) |
+
+首次启动遇到数据库探针提前断开问题，修复后完成初始化；检查脚本曾误将资产列表当作分页对象，已按原数组 contract 修正并通过。
+未重跑全仓测试/构建，首轮 16 个失败仅作为历史结果，不声称本轮全部消除或全仓通过。
+
+### 4. 当前入口、协作及边界
+
+- 原平台：http://localhost:5193/，先点击 Northern DC Campus；当前服务保持运行。
+- 组员获得代码后按运行说明初始化自己的本地环境。页面布局未改；端口、服务配置和初始化命令有变化。
+- `.env`、前端本地组织配置和 Docker 数据卷不会被 Git 传给组员；示例脚本可重建基础数据，用户后续编辑的数据不会自动同步。
+- 本地数据库沿用初始化超级用户，不能据此声称 RLS 已验证；生产账号隔离仍待做。
+- Assistant 没有配置 LLM，仍返回不可用；正式 Rack 编辑页面、Rack 存储/API/保存仍未实现。
+- 后续选择一个 Rack 小闭环继续；本轮没有推进其余全部阶段，没有修改老师原目录。
 
 ## 后续记录格式
 

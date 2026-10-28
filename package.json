@@ -25,6 +25,7 @@
     "dev:reset": "node --env-file-if-exists=.env scripts/dev-stack.mjs reset",
     "dev:status": "node --env-file-if-exists=.env scripts/dev-stack.mjs status",
     "rack:preview": "node scripts/rack-preview.mjs",
+    "rack:setup": "node scripts/rack-setup.mjs",
     "ui:shot": "node scripts/ui-shot.mjs"
   },
   "engines": {

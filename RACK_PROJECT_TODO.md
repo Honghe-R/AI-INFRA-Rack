@@ -90,9 +90,9 @@
 
 - [x] 记录起始 Git commit、Node/npm 版本、系统环境和依赖配置。
 - [x] 阅读根目录 README、平台架构、工作区和 Facility 的相关实现。
-- [ ] 按 README 配置本地 `.env`，不提交密钥，不在日志或截图中暴露凭证。
-- [ ] 启动 PostgreSQL/PostGIS 和对象存储，执行迁移与开发数据初始化。
-- [ ] 启动前后端，能打开现有项目和 Site & Facility 示例。
+- [x] 按 README 配置本地 `.env`，不提交密钥，不在日志或截图中暴露凭证。（2026-10-28，见 [本地运行说明](RACK_LOCAL_SETUP.md)）
+- [x] 启动 PostgreSQL/PostGIS 和对象存储，执行迁移与开发数据初始化。（独立 Rack Compose 栈，6 个迁移与两套样例）
+- [x] 启动前后端，能打开现有项目和 Site & Facility 示例。（http://localhost:5193/，证据见 [进展](PROGRESS.md)）
 - [ ] 检查示例机房是否有可用边界和预算；没有时准备独立、可复现的测试输入。
 - [x] 运行现有构建和测试，分别记录通过、失败、跳过及环境原因。
 - [x] 将已有问题与新增缺陷分开记录；阻塞 Rack 开发的问题先定位处理。

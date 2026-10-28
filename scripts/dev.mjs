@@ -28,14 +28,14 @@
  * Both processes stay on the host, so hot reload works normally. `dev:api` and `dev:web`
  * remain available for anyone who wants a console each.
  */
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { setTimeout as delay } from 'node:timers/promises';
 import { databaseReady, objectStoreReady } from './lib/probes.mjs';
 import { describePort, isInside, listenersOn, waitForPortFree } from './lib/ports.mjs';
 
-const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+const npmCli = process.env.npm_execpath;
 const paint = (code, text) => (process.stdout.isTTY === true ? `\x1b[${code}m${text}\x1b[0m` : text);
 
 const REPO_ROOT = fileURLToPath(new URL('..', import.meta.url));
@@ -72,6 +72,15 @@ const SERVICES = [
   },
 ];
 
+if (process.env.AI_INFRA_LOCAL_TILES === 'true') {
+  const port = process.env.TILE_PORT ?? '8080';
+  SERVICES.push({
+    name: 'tiles', label: 'tiles', colorCode: '32', script: 'dev:tiles',
+    directory: 'scripts', port, url: `http://127.0.0.1:${port}`,
+    portVariable: 'TILE_PORT', alternativePort: '8089',
+  });
+}
+
 const USAGE = `Usage: npm run dev [-- --kill | --reuse]
 
   (no option)  start both, failing if a port is already in use
@@ -102,12 +111,15 @@ function parseArguments(argv) {
 
 /** Spawns one child in its own process group, so its whole tree stops together. */
 function start(service) {
-  const child = spawn(npm, ['run', service.script], {
+  if (!npmCli) throw new Error('Start this helper using npm run dev.');
+  // Calling npm's JS entry avoids Windows refusing to spawn a .cmd without a shell.
+  const child = spawn(process.execPath, [npmCli, 'run', service.script], {
     stdio: ['ignore', 'pipe', 'pipe'],
     env: process.env,
     // Its own group: `npm run dev:web` starts Vite beneath it, and signalling only the npm
     // wrapper can leave the real server holding the port.
     detached: true,
+    windowsHide: true,
   });
 
   const prefix = paint(service.colorCode, `[${service.name}]`);
@@ -132,7 +144,15 @@ function start(service) {
 
 function signalGroups(signal) {
   for (const { child } of children) {
+    if (child.exitCode !== null || child.signalCode !== null) continue;
     try {
+      if (process.platform === 'win32') {
+        // Windows has no negative-PID process groups. Only stop our own tracked tree.
+        spawnSync('taskkill', ['/PID', String(child.pid), '/T', '/F'], {
+          stdio: 'ignore', windowsHide: true,
+        });
+        continue;
+      }
       // Negative pid targets the group, not just the npm wrapper.
       process.kill(-child.pid, signal);
     } catch {
@@ -327,7 +347,7 @@ const starting = SERVICES.filter((service) => !reused.has(service.name));
 
 if (starting.length === 0) {
   process.stdout.write(
-    `Both services already answer on ${API_PORT} and ${WEB_PORT}, so there is nothing to start.\n` +
+    `All requested services already answer on their configured ports; there is nothing to start.\n` +
       'This console does not own them, so Ctrl-C here would not stop them.\n' +
       'To restart them under this console: npm run dev -- --kill\n',
   );
@@ -356,7 +376,7 @@ process.stdout.write(
     const note = notes.length > 0 ? `   (${notes.join('; ')})` : '';
     return `${paint(service.colorCode, service.label.padEnd(7))}${service.url}${note}`;
   }).join('\n')}\n` +
-    `${reused.size > 0 ? 'Ctrl-C stops only what this console started.' : 'Ctrl-C stops both.'}\n\n`,
+    'Ctrl-C stops only the application processes started by this console.\n\n',
 );
 
 for (const service of starting) start(service);

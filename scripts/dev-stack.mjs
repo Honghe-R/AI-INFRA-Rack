@@ -20,12 +20,14 @@
  */
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { resolve } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 import { createStorage } from '@ai-infra/storage';
 import { loadConfig } from '@ai-infra/core';
 import { databaseReady, objectStoreReady } from './lib/probes.mjs';
 
-const COMPOSE_FILE = fileURLToPath(new URL('../compose.yaml', import.meta.url));
+const REPO_ROOT = fileURLToPath(new URL('..', import.meta.url));
+const COMPOSE_FILE = resolve(REPO_ROOT, process.env.AI_INFRA_COMPOSE_FILE ?? 'compose.yaml');
 const DB_PORT = process.env.AI_INFRA_DB_PORT ?? '55432';
 const OBJECT_STORE_PORT = process.env.AI_INFRA_OBJECT_STORE_PORT ?? '59000';
 const OBJECT_STORE_HOST = `127.0.0.1:${OBJECT_STORE_PORT}`;
@@ -81,16 +83,8 @@ async function up() {
   console.log(`  bucket ${config.storageBucket} ${created ? 'created' : 'already present'}`);
 
   console.log(`
-Stack ready. Export these in every dev terminal:
-
-  export DATABASE_URL=postgres://postgres:postgres@127.0.0.1:${DB_PORT}/facility
-  export STORAGE_ENDPOINT=http://${OBJECT_STORE_HOST}
-  export STORAGE_BUCKET=${config.storageBucket}
-  export STORAGE_ACCESS_KEY_ID=ai-infra
-  export STORAGE_SECRET_ACCESS_KEY=ai-infra-secret
-  export AUTH_DEV_SECRET=dev-secret-for-local-only
-
-Then: npm run migrate && npm run dev:seed && npm run dev:api && npm run dev:web
+Stack ready. The npm scripts read the repository .env; keep credentials there.
+Next: npm run migrate, npm run dev:seed, npm run dev:seed:facility, then npm run dev.
 Object-store console: http://127.0.0.1:${process.env.AI_INFRA_OBJECT_STORE_CONSOLE_PORT ?? '59001'}`);
 }
 

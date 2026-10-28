@@ -1,0 +1,9 @@
+2026-10-28, real in-app browser, http://localhost:5193/
+- Project list loaded Northern DC Campus from the seeded database.
+- Opened that project and entered Site & Facility Overview, DRAFT revision.
+- Facility geometry loaded: site, parcel, yard, Data Hall A1/A2, electrical rooms,
+  buildings, and cooling/network/power interfaces were present in the accessibility tree.
+- Screenshot saved as platform.png at the browser's actual narrow sidebar viewport.
+- Page layout/components/CSS were not changed during environment setup.
+- Assistant provider/session requests return 503 because no LLM endpoint is configured.
+  This is an acknowledged unconfigured capability, not a successful Assistant test.

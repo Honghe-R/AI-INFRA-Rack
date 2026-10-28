@@ -1,0 +1,143 @@
+
+> ai-network-infra-simulator@0.1.0 rack:setup
+> node scripts/rack-setup.mjs
+
+
+Running dev:up…
+
+> ai-network-infra-simulator@0.1.0 dev:up
+> node --env-file-if-exists=.env scripts/dev-stack.mjs up
+
+Starting the local stack (PostgreSQL + PostGIS, S3-compatible object store)…
+ Container ai-infra-rack-dev-object-store-1 Running 
+ Container ai-infra-rack-dev-db-1 Running 
+  waiting for PostgreSQL on 127.0.0.1:55532 ready
+  waiting for object store on 127.0.0.1:59100 ready
+  bucket rack-dev-assets created
+
+Stack ready. The npm scripts read the repository .env; keep credentials there.
+Next: npm run migrate, npm run dev:seed, npm run dev:seed:facility, then npm run dev.
+Object-store console: http://127.0.0.1:59101
+
+Running migrate…
+
+> ai-network-infra-simulator@0.1.0 migrate
+> npm --workspace @ai-infra/db run migrate
+
+
+> @ai-infra/db@0.1.0 migrate
+> node --env-file-if-exists=../../.env bin/migrate.js
+
+{"skipped":6,"timestamp":"2026-10-28T00:19:24.964Z","level":"info","service":"ai-infra-migrate","service_version":"0.1.0","message":"migration.up_to_date"}
+
+Running dev:seed…
+
+> ai-network-infra-simulator@0.1.0 dev:seed
+> node --env-file-if-exists=.env scripts/dev-seed.mjs
+
+session subject dev-user
+wrote           C:\Users\RHH\Desktop\AI-INFRA-Rack\apps\web\.env.development.local
+
+organisation    7d4c8040-e8a0-4892-a6e6-fda83cb25274 — Development organisation
+project         4c11ab8d-5d57-4ad8-ad55-ac08574fba46 — Northern DC Campus
+scenario        4ee0094b-9f4e-4e45-8c3e-244fe83348d2
+revision        c5b4b888-e66e-4ffa-bb0e-2dd738ed5f4d
+draft etag      1f1b35f2-b80b-4831-8c29-065b2ea848bf
+
+organisation    e3be6d4b-a1aa-5b44-bef0-dd8ff28a5e2d — Cascade Cloud
+project         4fc4a323-cf65-4ea1-8f26-0503f9b33b29 — Cascade Ridge Campus
+scenario        a86967fd-3924-4e6e-876a-2462d9b92544
+revision        8ccc8ea0-e481-4207-9426-b761546bd4bf
+draft etag      3553150b-3835-4b02-b6e8-a57774ffa964
+
+Identities the account control offers:
+  dev-user             project-admin        project       Development organisation
+  dev-editor           project-editor       project       Development organisation
+  dev-viewer           project-viewer       project       Development organisation
+  dev-org-admin        organisation-admin   organisation  Development organisation
+  dev-second-admin     project-admin        project       Cascade Cloud
+  dev-second-editor    project-editor       project       Cascade Cloud
+  dev-second-viewer    project-viewer       project       Cascade Cloud
+  dev-second-org-admin organisation-admin   organisation  Cascade Cloud
+
+Next: npm run dev:seed:facility, then npm run dev:api and npm run dev:web
+
+Running dev:seed:facility…
+
+> ai-network-infra-simulator@0.1.0 dev:seed:facility
+> node --env-file-if-exists=.env scripts/dev-seed-facility.mjs
+
+
+user            fd35c48c-2bb5-4893-bc31-dfad15172c70 (dev-user)
+organisation    7d4c8040-e8a0-4892-a6e6-fda83cb25274 — Development organisation
+project         4c11ab8d-5d57-4ad8-ad55-ac08574fba46 (Northern DC Campus)
+layout          northern-dc · EPSG:32618 · 2 buildings · 2 phases
+scenario        4ee0094b-9f4e-4e45-8c3e-244fe83348d2 (Baseline)
+revision        c5b4b888-e66e-4ffa-bb0e-2dd738ed5f4d (Draft 1, DRAFT)
+draft etag      1f1b35f2-b80b-4831-8c29-065b2ea848bf (v0)
+envelope        8d995b39-9f58-5ca9-9435-8e618852e222
+site scope      04f78b07-c439-5690-9fa3-524710610fac
+
+Facility graph (rows in this project):
+  facility_envelopes           1
+  entity_registry              29
+  design_scopes                1
+  facility_containers          9
+  geometry_records             13
+  facility_phases              2
+  failure_domains              2
+  utility_sources              4
+  utility_interfaces           3
+  storage_reserves             1
+  resilience_requirements      1
+  environmental_profiles       1
+  spatial_constraints          2
+  assumptions                  2
+  documents                    1
+  projected area (boundaries + footprints) 388031 m2
+  verified: every geometry record is valid and in EPSG:32618; no container is without geometry
+Project assets:
+  Northern DC Campus Site Plan           v1 unchanged    GIS [ORIGINAL, FEATURES, GEOREFERENCE]
+  Northern DC Campus Boundary Survey     v1 unchanged    GIS [ORIGINAL, FEATURES, GEOREFERENCE]
+  Northern DC Campus Utility Entry Points v1 unchanged    DATASET [ORIGINAL, FEATURES]
+  Northern DC Campus Power Riser Layout  v1 unchanged    CAD [ORIGINAL, FEATURES, GEOREFERENCE]
+  Phase 2 Expansion Feasibility Study    v1 unchanged    DOCUMENT [ORIGINAL, FEATURES]
+
+user            9262de91-c211-489f-a5f9-fcb640d99e2f (dev-second-admin)
+organisation    e3be6d4b-a1aa-5b44-bef0-dd8ff28a5e2d — Cascade Cloud
+project         4fc4a323-cf65-4ea1-8f26-0503f9b33b29 (Cascade Ridge Campus)
+layout          cascade-ridge · EPSG:32611 · 3 buildings · 3 phases
+scenario        a86967fd-3924-4e6e-876a-2462d9b92544 (Baseline)
+revision        8ccc8ea0-e481-4207-9426-b761546bd4bf (Draft 1, DRAFT)
+draft etag      3553150b-3835-4b02-b6e8-a57774ffa964 (v0)
+envelope        8d995b39-9f58-5ca9-9435-8e618852e222
+site scope      04f78b07-c439-5690-9fa3-524710610fac
+
+Facility graph (rows in this project):
+  facility_envelopes           1
+  entity_registry              37
+  design_scopes                1
+  facility_containers          10
+  geometry_records             22
+  facility_phases              3
+  failure_domains              3
+  utility_sources              5
+  utility_interfaces           5
+  storage_reserves             2
+  resilience_requirements      1
+  environmental_profiles       1
+  spatial_constraints          3
+  assumptions                  2
+  documents                    1
+  projected area (boundaries + footprints) 1374415 m2
+  verified: every geometry record is valid and in EPSG:32611; no container is without geometry
+Project assets:
+  Cascade Ridge Campus Site Plan         v1 unchanged    GIS [ORIGINAL, FEATURES, GEOREFERENCE]
+  Cascade Ridge Campus Boundary Survey   v1 unchanged    GIS [ORIGINAL, FEATURES, GEOREFERENCE]
+  Cascade Ridge Campus Utility Entry Points v1 unchanged    DATASET [ORIGINAL, FEATURES]
+  Cascade Ridge Campus Power Riser Layout v1 unchanged    CAD [ORIGINAL, FEATURES, GEOREFERENCE]
+  Phase 3 Expansion Feasibility Study    v1 unchanged    DOCUMENT [ORIGINAL, FEATURES]
+
+Next: npm run dev:api, then npm run dev:web
+
+Setup complete. Run npm run dev, then open http://localhost:5193/.

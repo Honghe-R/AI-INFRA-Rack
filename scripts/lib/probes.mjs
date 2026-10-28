@@ -23,12 +23,18 @@ export async function databaseReady(port = DEFAULT_DB_PORT()) {
   const { connect } = await import('node:net');
   return new Promise((resolve) => {
     const socket = connect({ host: '127.0.0.1', port: Number(port) });
+    let settled = false;
     const done = (value) => {
+      if (settled) return;
+      settled = true;
       socket.destroy();
       resolve(value);
     };
     socket.setTimeout(2000, () => done(false));
     socket.on('error', () => done(false));
+    // A starting database can accept TCP then close before answering SSLRequest.
+    socket.on('end', () => done(false));
+    socket.on('close', () => done(false));
     socket.on('data', () => done(true));
     socket.on('connect', () => {
       const sslRequest = Buffer.alloc(8);

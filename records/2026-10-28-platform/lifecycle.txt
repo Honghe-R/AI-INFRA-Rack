@@ -1,0 +1,7 @@
+2026-10-28, Windows PowerShell, Rack working copy only.
+- npm run dev started API 127.0.0.1:8797, Vite localhost:5193 and tiles 127.0.0.1:8088.
+- Sent interrupt to that exec session. Session terminated; Get-NetTCPConnection then
+  found no listeners on 8797/5193/8088. Docker dependencies remained running.
+- Started npm run dev again and reran check-runtime.mjs successfully.
+- Containers publish only 127.0.0.1:55532, 127.0.0.1:59100 and 127.0.0.1:59101.
+- Existing preview at 5183 is a separate command, not managed by npm run dev.

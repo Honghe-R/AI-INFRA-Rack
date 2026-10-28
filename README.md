@@ -1,5 +1,8 @@
 # AI Network Infrastructure Planner
 
+本 Rack 副本的完整平台：首次执行 `npm ci`、`npm run rack:setup`，再执行 `npm run dev`，打开 http://localhost:5193/ 。
+组员请优先按 [本副本运行说明](RACK_LOCAL_SETUP.md)操作；下方原平台 Getting started 保留作上游参考。
+
 Rack 可视化预览：`npm run rack:preview`，打开 http://127.0.0.1:5183/ 。见 [运行说明](RACK_PREVIEW.md)；只读合成样例，无需 Docker。
 
 Rack course extension: see [progress](PROGRESS.md), [foundation decisions](RACK_FOUNDATION.md),

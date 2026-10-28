@@ -9,6 +9,9 @@ dist/
 # Local Postgres data, if a container is bind-mounted here.
 .pgdata/
 
+# Portable Rack development services, downloads, credentials and generated objects.
+.local-runtime/
+
 # Screenshots produced by `npm run ui:shot` for visual review.
 ui-shots/
 doc/architecture/demo-deployment.md

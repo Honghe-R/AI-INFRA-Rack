@@ -6,9 +6,10 @@
   handles all Git commits and publication.
 - Proceed in small, reviewable steps. Current scope is the foundation; do not
   implement the full checklist without a new user request.
-- The user has deferred Docker/environment setup. Continue with offline domain
-  work; do not resume Docker downloads, service startup, migrations or seeding
-  unless the user revisits that scope.
+- The user authorized database/platform setup on 2026-10-28 and explicitly allows
+  Docker when appropriate. Use the isolated `compose.rack.yaml` stack and local
+  `.env`; never reuse the original teacher stack or its volumes. Keep Rack feature
+  implementation incremental; environment setup does not authorize the full checklist.
 - Read `PROGRESS.md` and `RACK_FOUNDATION.md` before continuing Rack work.
 - Append concrete changes, decisions, validation results and outstanding work
   to `PROGRESS.md`. Update checklist items only when supported by evidence.
