@@ -78,6 +78,16 @@ export function createApiClient({ baseUrl = '', fetchImpl = globalThis.fetch, id
       request(`/api/v1/projects/${encodeURIComponent(projectId)}/rack/plans/${encodeURIComponent(planId)}`, { signal }),
     getRackRoomView: (projectId, planId, { signal } = {}) =>
       request(`/api/v1/projects/${encodeURIComponent(projectId)}/rack/plans/${encodeURIComponent(planId)}/room-view`, { signal }),
+    getRackLayout: (projectId, planId, { signal } = {}) =>
+      request(`/api/v1/projects/${encodeURIComponent(projectId)}/rack/plans/${encodeURIComponent(planId)}/layout`, { signal }),
+    checkRackLayout: (projectId, planId, body, { signal } = {}) =>
+      request(`/api/v1/projects/${encodeURIComponent(projectId)}/rack/plans/${encodeURIComponent(planId)}/layout/check`, {method:'POST',body,signal}),
+    saveRackLayout: (projectId, planId, body, { version, idempotencyKey, signal } = {}) =>
+      request(`/api/v1/projects/${encodeURIComponent(projectId)}/rack/plans/${encodeURIComponent(planId)}/layout`,
+        {method:'PUT',body,signal,headers:{'If-Match':`"${version}"`,'Idempotency-Key':idempotencyKey}}),
+    captureRackRoom: (projectId, planId, { version, idempotencyKey, signal } = {}) =>
+      request(`/api/v1/projects/${encodeURIComponent(projectId)}/rack/plans/${encodeURIComponent(planId)}/room-snapshot`,
+        {method:'POST',body:{contract_version:1},signal,headers:{'If-Match':`"${version}"`,'Idempotency-Key':idempotencyKey}}),
     createRackPlan: (projectId, body, { idempotencyKey, signal } = {}) =>
       request(`/api/v1/projects/${encodeURIComponent(projectId)}/rack/plans`, {
         method: 'POST', body, headers: { 'Idempotency-Key': idempotencyKey }, signal,

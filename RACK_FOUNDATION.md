@@ -21,7 +21,7 @@
 - 多柜清单的声明归属/型号引用检查、柜间占地碰撞及结构化汇总（第四轮补充，见第 11 节）。
 
 2026-10-28 已另在 API 服务层补空方案表、rack.read/write、创建/读取/有上限分页 HTTP API，见 [RACK_API.md](RACK_API.md)；已接通工作区空方案列表、创建与详情，见 [操作说明](RACK_WORKSPACE.md)。领域包仍不依赖数据库或 app。
-尚未实现：机柜存储/保存与编辑、设备分配、完整约束引擎、布局算法、候选应用、Assistant、正式验证和发布。
+第十轮新增固定 Polygon 快照、机柜存储/保存与手工编辑、PostGIS 局部空间检查、独立版本及保存幂等；见 [RACK_LAYOUT.md](RACK_LAYOUT.md)。尚未实现设备分配、完整约束引擎、布局算法、候选应用、Rack Assistant、正式验证和发布。
 第九轮已接入只读 HALL 平面图，支持受限 UTM 投影 Polygon 平移为局部米制，见 [几何/坐标 contract](RACK_FLOORPLAN.md)。它不是矩形规则引擎的输入快照。
 
 ## 2. 首版业务范围的设计方向
@@ -87,10 +87,10 @@
 - `rackFootprint` 返回 `cornersM`、`frontEdgeM` 和 `boundsM`；四个角点不重复闭合，不是 GeoJSON。
 - 使用精确四分之一转系数，避免 90 度三角函数带来的微小误差。
 - 拒绝溢出或因浮点精度导致占地退化的输入；普通浮点结果仍需要未来空间规则定义容差。
-- 已实现 WGS84 UTM 投影到局部坐标的只读平移，原点为外环 min easting/min northing，X/Y 为网格东/北；屏幕反转 Y。保留 Polygon 及孔洞，不降级为包围框。任意 CRS 转换、墙轴旋转与持久化几何输入快照仍未实现。
-- 已增加矩形机房包含、矩形障碍与柜间占地重叠检查；前后净距、通道、非矩形空间与容量检查尚未实现。返回几何不代表方案合法。
+- 已实现 WGS84 UTM 投影到局部坐标的只读平移，原点为外环 min easting/min northing，X/Y 为网格东/北；屏幕反转 Y。保留 Polygon 及孔洞，不降级为包围框。固定 Polygon 输入快照已落地；任意 CRS 转换与墙轴旋转仍未实现。
+- 已增加矩形机房包含、矩形障碍与柜间占地重叠检查；实际 Polygon 的包含/孔洞/柜间碰撞由新增 PostGIS 服务处理；前后净距、通道与容量尚未实现。返回几何不代表方案工程有效。
 
-## 5. 版本策略的设计方向（尚未落地）
+## 5. 版本策略（原始设计，现已部分落地）
 
 优先采用独立 Rack Plan 版本，显式绑定设施输入快照，避免 Facility 验证通过时直接冻结 Rack 设计。
 这是本轮的初始设计选择，必须在持久化阶段验证工作区和 Assistant 的兼容性后再定稿。
@@ -340,3 +340,16 @@ node packages/rack/examples/layout-demo.mjs
 对 n 台机柜、m 个障碍和 k 个型号，按代码结构时间复杂度为 O(k + n·m + n²)，柜间比较为 n(n−1)/2 次。
 报告可能保留 O(n·m + n²) 条诊断，因此输入设上限且不静默截断清单。
 256 台上限测试验证了 32640 对均被遍历，不是吞吐量、响应时间或真实容量的性能承诺；正式实验仍待后续。
+
+## 12. 第十轮：固定 Polygon 输入与可保存机柜编辑
+
+当前工作区使用独立于旧矩形 roomSnapshot 的持久化 Polygon 文档。新增 `008_rack_layout.sql`、[布局服务](apps/api/src/services/rack-layout.js)、[编辑组件](apps/web/src/rack/RackEditor.jsx)；完整数据、规则、权限和错误语义见 [RACK_LAYOUT.md](RACK_LAYOUT.md)。
+
+- 创建时自动捕获受支持边界；旧方案显式捕获；API 不替换已捕获输入。来源变化后保留旧图、阻止新写入，重绑定仍未实现。
+- 整份机柜集合同一事务保存，独立 Rack 版本 + If-Match 防覆盖，UUID 幂等命令恢复不确定结果；Facility 数据与状态不因布局保存改变。
+- `normalizeEditableLayout` 以服务器目录派生真实占地，PostGIS 对局部无 EPSG 的 SRID 0 平面几何检查完整 Polygon、内环与柜间内部重叠；不用旧矩形引擎替代真实轮廓。
+- 后端以 rack.read/write 与 facility.read 分别授权，项目复合外键及新表 FORCE RLS 有真实普通角色验证。
+- 已保存锁定柜先独立保存解锁再改变位置/方向/型号或删除。编辑草稿与保存重试意图保留在工作区 tab；整页重载未保存内容仍可能丢失。
+- 本轮报告只检查三种空间关系，不存正式 Validation Run；障碍 UNKNOWN、方案 NOT_RUN。旧章节的离线报告结构、复杂度与覆盖声明保留作历史/领域包说明，不能与新的 Polygon 报告混用。
+
+后续先补障碍/禁放区与维护净距，再补设备、容量、布局算法、候选、Rack Assistant 和正式实验/课程材料。

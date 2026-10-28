@@ -9,6 +9,7 @@ import { createApp } from '../app.js';
 import { createRouter } from '../router.js';
 import { registerRackRoutes } from '../routes/rack.js';
 import { createRackPlanService } from '../services/rack-plans.js';
+import { createRackLayoutService } from '../services/rack-layout.js';
 
 const skip = process.env.DATABASE_URL ? false : 'DATABASE_URL is not set';
 let pool, repository;
@@ -93,10 +94,10 @@ async function server(people, fn) {
   const app = createServer(createApp({ router, pool, guard, authenticator, logger }));
   await new Promise(resolve => app.listen(0, '127.0.0.1', resolve));
   const base = `http://127.0.0.1:${app.address().port}`;
-  const request = async (path, { user = 'admin', body, key = randomUUID() } = {}) => {
+  const request = async (path, { user = 'admin', body, key = randomUUID(), method, version } = {}) => {
     const response = await fetch(`${base}${path}`, {
-      method: body === undefined ? 'GET' : 'POST',
-      headers: { 'x-test-user': user, ...(body === undefined ? {} : { 'content-type': 'application/json' }), ...(key === null ? {} : { 'idempotency-key': key }) },
+      method: method ?? (body === undefined ? 'GET' : 'POST'),
+      headers: { 'connection': 'close', 'x-test-user': user, ...(body === undefined ? {} : { 'content-type': 'application/json' }), ...(key === null ? {} : { 'idempotency-key': key }), ...(version === undefined ? {} : {'if-match':`"${version}"`}) },
       ...(body === undefined ? {} : { body: JSON.stringify(body) }),
     });
     return { status: response.status, body: await response.json(), location: response.headers.get('location') };
@@ -204,6 +205,10 @@ test('Rack room view separately requires Facility read access for a custom Rack-
     const denied = await request(`${created.location}/room-view`,{user:'viewer'});
     assert.equal(denied.status,403);
     assert.equal(denied.body.error.details[0].function_key,'facility.read');
+    for(const suffix of ['/layout','/layout/check']) {
+      const result=await request(`${created.location}${suffix}`,{user:'viewer',...(suffix.endsWith('/check')?{body:{contract_version:1}}:{})});
+      assert.equal(result.status,403);assert.equal(result.body.error.details[0].function_key,'facility.read');
+    }
   } finally {
     await repository.revokeAssignment({userId:f.people.viewer.userId,scopeKind:'project',scopeId:f.a.projectId});
     await pool.query('DELETE FROM roles WHERE role_id=$1',[roleId]);
@@ -448,3 +453,191 @@ test('a concurrent Facility token update completes before Rack accepts the expec
     await otherPool.end();
   }
 }));
+
+const demoModel = '10000000-0000-4000-8000-000000000002';
+const rack = (xM=3,yM=3,extra={}) => ({rackId:randomUUID(),modelId:demoModel,name:'Rack',xM,yM,rotationDeg:0,locked:false,...extra});
+const layoutBody = (layout,placements) => ({contract_version:1,snapshot_id:layout.snapshot.snapshotId,placements});
+async function prepared(f,request,coordinates) {
+  await addBoundary(f.a,coordinates?{coordinates}:{});
+  const created=await request(path(f.a),{body:f.input()});
+  assert.equal(created.status,201,JSON.stringify(created.body));
+  const url=`${created.location}/layout`;
+  const response=await request(url);
+  assert.equal(response.status,200,JSON.stringify(response.body));
+  return {url,planUrl:created.location,layout:response.body.data};
+}
+
+test('Rack layout captures geometry at creation and atomically persists/reloads versioned placements', {skip}, async()=>fixture(async f=>server(f.people,async request=>{
+  const {url,planUrl,layout}=await prepared(f,request);
+  assert.equal(layout.version,1);assert.ok(layout.snapshot.snapshotId);assert.equal(layout.models.length,2);
+  assert.equal(layout.models[0].maxPowerKw,null);
+  const placements=[rack(3,3),rack(6,2,{rotationDeg:90})];
+  const body=layoutBody(layout,placements),key=randomUUID();
+  const responses=await Promise.all([request(url,{body,key,method:'PUT',version:1}),request(url,{body,key,method:'PUT',version:1})]);
+  assert.deepEqual(responses.map(r=>r.status),[200,200],JSON.stringify(responses));
+  assert.equal(responses.filter(r=>r.body.meta.replayed).length,1);
+  const saved=(await request(url,{user:'viewer'})).body.data;
+  assert.equal(saved.version,2);assert.equal(saved.placements.length,2);assert.equal(saved.validationState,'NOT_RUN');
+  assert.deepEqual(saved.snapshot,layout.snapshot);
+  assert.deepEqual(saved.placements.toSorted((a,b)=>a.rackId.localeCompare(b.rackId)),placements.toSorted((a,b)=>a.rackId.localeCompare(b.rackId)));
+  const detail=(await request(planUrl)).body.data;assert.equal(detail.version,2);assert.equal(detail.placements.length,2);
+  assert.equal((await request(path(f.a))).body.data.items[0].version,2);
+  assert.equal((await request(url,{body,key,method:'PUT',version:1})).body.meta.applied_version,2);
+  const reused=await request(url,{body:{...body,placements:[]},key,method:'PUT',version:1});
+  assert.equal(reused.status,409);assert.equal(reused.body.error.code,'IDEMPOTENCY_KEY_REUSED');
+  const conflict=await request(url,{body,method:'PUT',version:1});assert.equal(conflict.status,412);
+  const bad=await request(url,{body:layoutBody(saved,[rack(50,50)]),method:'PUT',version:2});
+  assert.equal(bad.status,422,JSON.stringify(bad));assert.equal(bad.body.error.code,'RACK_LAYOUT_CONFLICT');
+  assert.deepEqual((await request(url)).body.data,saved,'failed save is atomic');
+  const later=await request(url,{body:layoutBody(saved,placements.map(p=>({...p,name:'Revised'}))),version:2,method:'PUT'});
+  assert.equal(later.status,200);assert.equal(later.body.data.version,3);
+  const replayAfterAdvance=await request(url,{body,key,method:'PUT',version:1});
+  assert.equal(replayAfterAdvance.body.data.version,3);assert.equal(replayAfterAdvance.body.meta.applied_version,2);
+})));
+
+test('Rack real Polygon predicates distinguish walls, holes, rotations and rack edge contact', {skip}, async()=>fixture(async f=>server(f.people,async request=>{
+  const {url,layout}=await prepared(f,request);
+  async function codes(placements) {
+    const response=await request(`${url}/check`,{body:layoutBody(layout,placements),user:'viewer'});
+    assert.equal(response.status,200,JSON.stringify(response.body));
+    return response.body.data.report.diagnostics.map(d=>d.code);
+  }
+  assert.deepEqual(await codes([rack(.4,3)]),[],'outer wall contact allowed');
+  assert.ok((await codes([rack(.399,3)])).includes('RACK_OUTSIDE_ROOM'));
+  assert.deepEqual(await codes([rack(3,3)]),[]);
+  assert.ok((await codes([rack(1.5,1.5)])).includes('RACK_HOLE_CONFLICT'));
+  assert.ok((await codes([rack(2.4,1.5)])).includes('RACK_HOLE_CONFLICT'),'hole contact disallowed');
+  assert.deepEqual(await codes([rack(3,3),rack(3.8,3)]),[],'rack edge contact allowed');
+  assert.ok((await codes([rack(3,3),rack(3.799,3)])).includes('RACK_PAIR_OVERLAP'));
+  assert.deepEqual(await codes([rack(.5,3)]),[]);
+  assert.ok((await codes([rack(.5,3,{rotationDeg:90})])).includes('RACK_OUTSIDE_ROOM'));
+  assert.ok((await codes([rack(6,6)])).includes('RACK_OUTSIDE_ROOM'),'bbox is not the L-shaped room');
+})));
+
+test('Rack rejects concave crossings with all corners inside and holes fully enclosed by a footprint', {skip}, async()=>fixture(async f=>server(f.people,async request=>{
+  const local=[[[0,0],[10,0],[10,10],[5.1,10],[5.1,5.1],[4.9,5.1],[4.9,10],[0,10],[0,0]],
+    [[2.95,2.95],[3.05,2.95],[3.05,3.05],[2.95,3.05],[2.95,2.95]]];
+  const projected=local.map(r=>r.map(([x,y])=>[500000+x,4400000+y]));
+  const {url,layout}=await prepared(f,request,projected);
+  const response=await request(`${url}/check`,{body:layoutBody(layout,[rack(5,5),rack(3,3)])});
+  assert.equal(response.status,200,JSON.stringify(response));
+  const codes=response.body.data.report.diagnostics.map(d=>d.code);
+  assert.equal(codes.filter(code=>code==='RACK_OUTSIDE_ROOM').length,2);
+  assert.ok(codes.includes('RACK_HOLE_CONFLICT'));
+})));
+
+test('Rack legacy capture is explicit, idempotent and does not replace a fixed snapshot', {skip}, async()=>fixture(async f=>server(f.people,async request=>{
+  const created=await request(path(f.a),{body:f.input()});const url=`${created.location}/layout`,capture=`${created.location}/room-snapshot`;
+  assert.equal((await request(url)).body.data.snapshot,null);
+  const absent=await request(capture,{body:{contract_version:1},version:1});assert.equal(absent.status,409);
+  await addBoundary(f.a);
+  const key=randomUUID();const opts={body:{contract_version:1},version:1,key};
+  const first=await request(capture,opts);assert.equal(first.status,200,JSON.stringify(first));assert.equal(first.body.data.version,2);
+  const replay=await request(capture,opts);assert.equal(replay.body.meta.replayed,true);
+  const twice=await request(capture,{body:{contract_version:1},version:2});assert.equal(twice.body.data.version,2);
+  assert.deepEqual(twice.body.data.snapshot,first.body.data.snapshot);
+  assert.equal((await pool.query('SELECT count(*)::int n FROM rack_room_snapshots WHERE project_id=$1',[f.a.projectId])).rows[0].n,1);
+})));
+
+test('Rack snapshot survives stale Facility source while fresh commands are blocked', {skip}, async()=>fixture(async f=>server(f.people,async request=>{
+  const {url,layout}=await prepared(f,request);const body=layoutBody(layout,[rack()]);const key=randomUUID();
+  const saved=await request(url,{body,version:1,key,method:'PUT'});assert.equal(saved.status,200);
+  await pool.query('UPDATE revision_etags SET etag=$1 WHERE project_id=$2',[randomUUID(),f.a.projectId]);
+  await pool.query('DELETE FROM geometry_records WHERE project_id=$1',[f.a.projectId]);
+  const stale=(await request(url)).body.data;assert.equal(stale.sourceStatus.status,'STALE');
+  assert.deepEqual(stale.snapshot,layout.snapshot);assert.equal(stale.placements.length,1);
+  const blocked=await request(url,{body,version:2,method:'PUT'});assert.equal(blocked.status,409);assert.equal(blocked.body.error.code,'RACK_SOURCE_STALE');
+  const retry=await request(url,{body,version:1,key,method:'PUT'});assert.equal(retry.status,200);assert.equal(retry.body.meta.replayed,true);
+  assert.equal((await request(`${url}/check`,{body})).status,200,'fixed geometry can be inspected when stale');
+})));
+
+test('Rack locked positions require a separately saved unlock before move/delete', {skip}, async()=>fixture(async f=>server(f.people,async request=>{
+  const {url,layout}=await prepared(f,request);const original=rack(3,3,{locked:true});
+  const save=(placements,version)=>request(url,{body:layoutBody(layout,placements),method:'PUT',version});
+  assert.equal((await save([original],1)).status,200);
+  for(const placements of [[],[{...original,xM:3.1}],[{...original,locked:false,rotationDeg:90}]]) {
+    const rejected=await save(placements,2);assert.equal(rejected.status,400,JSON.stringify(rejected));
+    assert.equal(rejected.body.error.code,'RACK_INPUT_INVALID');
+  }
+  assert.equal((await request(url)).body.data.version,2);
+  assert.equal((await save([{...original,locked:false}],2)).status,200);
+  assert.equal((await save([{...original,locked:false,xM:3.1,rotationDeg:90}],3)).status,200);
+  assert.equal((await save([],4)).status,200);assert.equal((await request(url)).body.data.placements.length,0);
+})));
+
+test('Rack layout guards scope, versions, snapshot identity and strict requests', {skip}, async()=>fixture(async f=>server(f.people,async request=>{
+  const {url,layout}=await prepared(f,request);const body=layoutBody(layout,[rack()]);
+  assert.equal((await request(url,{user:'outsider'})).status,403);
+  assert.equal((await request(url.replace(f.a.projectId,f.b.projectId))).status,404);
+  assert.equal((await request(url,{method:'PUT',body,user:'viewer',version:1})).status,403);
+  assert.equal((await request(url,{method:'PUT',body})).status,428);
+  assert.equal((await request(url,{method:'PUT',body,version:1,key:null})).status,428);
+  assert.equal((await request(url,{method:'PUT',body,version:0})).status,400);
+  assert.equal((await request(url,{method:'PUT',body:{...body,snapshot_id:randomUUID()},version:1})).status,409);
+  for(const changed of [{...body,unknown:1},{...body,placements:[{...rack(),projectId:f.b.projectId}]},
+    {...body,placements:[rack(10001,2)]},{...body,placements:[rack(3,3,{modelId:randomUUID()})]}]) {
+    assert.equal((await request(`${url}/check`,{body:changed})).status,400);
+  }
+  assert.equal((await request(url)).body.data.version,1);
+})));
+
+test('Rack competing writers cannot silently overwrite the same base version', {skip}, async()=>fixture(async f=>server(f.people,async request=>{
+  const {url,layout}=await prepared(f,request);
+  const results=await Promise.all([request(url,{method:'PUT',body:layoutBody(layout,[rack(3,3)]),version:1}),
+    request(url,{method:'PUT',body:layoutBody(layout,[rack(6,2)]),version:1,user:'editor'})]);
+  assert.deepEqual(results.map(r=>r.status).sort(),[200,412]);
+  assert.equal((await request(url)).body.data.version,2);
+  assert.equal((await request(url)).body.data.placements.length,1);
+})));
+
+test('Rack new persistence tables enforce project RLS for read, insert and update', {skip}, async()=>fixture(async f=>server(f.people,async request=>{
+  const {url,layout}=await prepared(f,request);
+  assert.equal((await request(url,{method:'PUT',body:layoutBody(layout,[rack()]),version:1})).status,200);
+  await addBoundary(f.b);
+  const other=await request(path(f.b),{body:f.input(f.b)});
+  const otherLayout=(await request(`${other.location}/layout`)).body.data;
+  assert.equal((await request(`${other.location}/layout`,{method:'PUT',body:layoutBody(otherLayout,[rack()]),version:1})).status,200);
+  const client=await pool.connect();const role=`rack_layout_probe_${randomUUID().replaceAll('-','')}`;
+  const tables=['rack_room_snapshots','rack_placements','rack_layout_commands'];
+  try {
+    await client.query('BEGIN');
+    await client.query(`CREATE ROLE ${role} NOLOGIN NOSUPERUSER NOBYPASSRLS`);
+    await client.query(`GRANT USAGE ON SCHEMA public TO ${role}`);
+    await client.query(`GRANT SELECT,INSERT,UPDATE ON ${tables.join(',')} TO ${role}`);
+    await client.query(`SET LOCAL ROLE ${role}`);
+    await client.query("SELECT set_config('app.project_id','',true)");
+    for(const table of tables) assert.equal((await client.query(`SELECT * FROM ${table}`)).rowCount,0);
+    await client.query("SELECT set_config('app.project_id',$1,true)",[f.a.projectId]);
+    for(const table of tables) {
+      const rows=await client.query(`SELECT project_id FROM ${table}`);
+      assert.equal(rows.rowCount,1);assert.equal(rows.rows[0].project_id,f.a.projectId);
+      assert.equal((await client.query(`UPDATE ${table} SET project_id=project_id WHERE project_id=$1`,[f.b.projectId])).rowCount,0);
+      await client.query('SAVEPOINT violation');
+      await assert.rejects(client.query(`INSERT INTO ${table}
+        SELECT (jsonb_populate_record(NULL::${table},to_jsonb(t)||jsonb_build_object('project_id',$1::text))).*
+        FROM ${table} t WHERE project_id=$2`,[f.b.projectId,f.a.projectId]),error=>error.code==='42501');
+      await client.query('ROLLBACK TO SAVEPOINT violation');
+      await client.query('SAVEPOINT violation');
+      await assert.rejects(client.query(`UPDATE ${table} SET project_id=$1 WHERE project_id=$2`,[f.b.projectId,f.a.projectId]),error=>error.code==='42501');
+      await client.query('ROLLBACK TO SAVEPOINT violation');
+    }
+  } finally {await client.query('ROLLBACK');client.release();}
+})));
+
+test('Rack save waits for a concurrent source update and rejects its obsolete input', {skip}, async()=>fixture(async f=>server(f.people,async request=>{
+  const {layout}=await prepared(f,request);const name=`rack-save-source-${randomUUID()}`;
+  const other=createPool({connectionString:process.env.DATABASE_URL,max:1,applicationName:name});
+  const blocker=await pool.connect();let pending;
+  try {
+    await blocker.query('BEGIN');await blocker.query('UPDATE revision_etags SET etag=$1 WHERE project_id=$2',[randomUUID(),f.a.projectId]);
+    pending=createRackLayoutService({pool:other}).mutate({projectId:f.a.projectId,planId:layout.planId,actorId:f.people.editor.userId,
+      body:layoutBody(layout,[rack()]),key:randomUUID(),ifMatch:'"1"',operation:'save'}).then(result=>({result}),error=>({error}));
+    let waiting=false;const deadline=Date.now()+3000;
+    while(!waiting && Date.now()<deadline) {
+      waiting=(await pool.query('SELECT wait_event_type FROM pg_stat_activity WHERE application_name=$1',[name])).rows.some(row=>row.wait_event_type==='Lock');
+      if(!waiting)await new Promise(resolve=>setTimeout(resolve,20));
+    }
+    assert.ok(waiting);await blocker.query('COMMIT');assert.equal((await pending).error?.code,'RACK_SOURCE_STALE');
+    assert.equal((await pool.query('SELECT version FROM rack_plans WHERE plan_id=$1',[layout.planId])).rows[0].version,1);
+  }finally{await blocker.query('ROLLBACK');blocker.release();await pending;await other.end();}
+})));

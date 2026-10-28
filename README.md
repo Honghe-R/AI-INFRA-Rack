@@ -7,10 +7,11 @@ Rack 可视化预览：`npm run rack:preview`，打开 http://127.0.0.1:5183/ �
 
 Rack course extension: see [progress](PROGRESS.md), [foundation decisions](RACK_FOUNDATION.md),
 and the [ordered implementation checklist](RACK_PROJECT_TODO.md). The Rack extension
-has a domain foundation, [empty-plan persistence API](RACK_API.md), and a
-[workspace for listing, creating and viewing empty plans](RACK_WORKSPACE.md);
+has a domain foundation, [versioned layout API](RACK_API.md), and a
+[workspace for plans and manual rack editing](RACK_WORKSPACE.md);
 saved plans can display their [bound HALL floorplan in local projected metres](RACK_FLOORPLAN.md).
-its editor, rack placement persistence, planner and Assistant integration are pending.
+The [layout editor](RACK_LAYOUT.md) saves fixed room snapshots and placements with Polygon checks.
+Equipment, capacity, planner and Rack Assistant integration are pending.
 
 Platform workspace for infrastructure planning tools. The first tool tenant is the
 [Site and Facility Editor](doc/tools/site-and-facility/Overview.md).

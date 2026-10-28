@@ -3,7 +3,7 @@ import { RACK_KEYS, FACILITY_KEYS } from '../generated/permission-keys.js';
 import { usePermission } from '../permissions/usePermission.jsx';
 import { planIntent, rackError, roomSource, samePlanScope, uncertainCreation } from './rack-plan-state.js';
 import './rack.css';
-import { RackRoomView } from './RackRoomView.jsx';
+import { RackEditor } from './RackEditor.jsx';
 
 export function RackSurface(props) {
   const scope = { projectId: props.context.projectId };
@@ -24,6 +24,7 @@ function RackWorkspace({ client, context, routeState = {}, onRouteChange, onDirt
   writePending, writeUnavailable, facilityPending, facilityUnavailable }) {
   const { projectId, scenarioId, revisionId } = context;
   const draft = routeState.rackDraft ?? null;
+  const editDraft = routeState.rackEditDraft ?? null;
   const selectedId = routeState.rackPlanId ?? null;
   const [list, setList] = useState({ pending: true, data: null, error: null });
   const [detail, setDetail] = useState({ pending: false, data: null, error: null });
@@ -43,13 +44,13 @@ function RackWorkspace({ client, context, routeState = {}, onRouteChange, onDirt
     lifetime.current = controller;
     return () => controller.abort();
   }, []);
-  useEffect(() => { onDirtyChange(Boolean(draft)); }, [draft, onDirtyChange]);
+  useEffect(() => { onDirtyChange(Boolean(draft || editDraft)); }, [draft, editDraft, onDirtyChange]);
   useEffect(() => {
-    if (!draft) return undefined;
+    if (!draft && !editDraft) return undefined;
     const warn = event => { event.preventDefault(); event.returnValue = ''; };
     window.addEventListener('beforeunload', warn);
     return () => window.removeEventListener('beforeunload', warn);
-  }, [draft]);
+  }, [draft, editDraft]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -130,7 +131,7 @@ function RackWorkspace({ client, context, routeState = {}, onRouteChange, onDirt
         <p>{context.projectName ?? 'Current project'} · Current scenario and Facility revision</p></div>
       <div className="rack-actions">
         <button type="button" onClick={reload}>Refresh plans</button>
-        {canWrite && !draft && <button type="button" className="rack-primary" onClick={() => {
+        {canWrite && !draft && <button type="button" className="rack-primary" disabled={Boolean(editDraft)} onClick={() => {
           setCreateError(null); setNotice(null); onRouteChange({ rackDraft: { name: '', hallId: '' } });
         }}>New empty plan</button>}
       </div>
@@ -141,7 +142,7 @@ function RackWorkspace({ client, context, routeState = {}, onRouteChange, onDirt
     <p className="rack-scope">Scenario <code>{scenarioId}</code> · Facility revision <code>{revisionId}</code></p>
     {notice && <p role="status" className="rack-notice">{notice}</p>}
     {draft && <form className="rack-card rack-create" onSubmit={submit} aria-label="Create empty Rack plan">
-      <h2>Create an empty plan</h2><p>Bind a saved plan to one HALL. No room geometry or rack placements are copied yet.</p>
+      <h2>Create an empty plan</h2><p>Bind a saved plan to one HALL. Supported room geometry is captured as a fixed input; racks can be added after creation.</p>
       <div className="rack-form-fields">
         <label>Plan name<input value={draft.name} maxLength={160} required disabled={busy || Boolean(draft.attempt)}
           onChange={event => updateDraft({ name: event.target.value })} placeholder="e.g. Hall A — initial plan" /></label>
@@ -177,7 +178,7 @@ function RackWorkspace({ client, context, routeState = {}, onRouteChange, onDirt
           : !list.data?.items?.length ? <p className="rack-empty">No saved plans in this scope. Create an empty plan to start.</p>
             : <ul className="rack-plan-list">{list.data.items.map(plan => <li key={plan.planId}>
               <button className={selectedId === plan.planId ? 'rack-plan-item is-selected' : 'rack-plan-item'}
-                aria-pressed={selectedId === plan.planId} onClick={() => onRouteChange({ rackPlanId: plan.planId })}>
+                aria-pressed={selectedId === plan.planId} disabled={Boolean(draft || editDraft)} onClick={() => onRouteChange({ rackPlanId: plan.planId })}>
                 <strong>{plan.name}</strong><span>{roomName(plan.facilityInput.containerId)}</span>
                 <span>DRAFT · v{plan.version} · <SourceStatus status={plan.facilityInputStatus?.status} /></span>
               </button></li>)}</ul>}
@@ -192,8 +193,10 @@ function RackWorkspace({ client, context, routeState = {}, onRouteChange, onDirt
           <p className="rack-error">{rackError(detail.error)}</p><button onClick={() => setRefresh(value => value + 1)}>Retry detail</button></div>
           : detail.data ? <>
             <div className="rack-heading"><h2>{detail.data.name}</h2><span className="rack-badge">{detail.data.state} · v{detail.data.version}</span></div>
-            <RackRoomView key={detail.data.planId} client={client} plan={detail.data} canReadFacility={canReadFacility}
-              facilityPending={facilityPending} facilityUnavailable={facilityUnavailable} refresh={refresh} />
+            {!draft && <RackEditor key={detail.data.planId} client={client} plan={detail.data} context={context}
+              canWrite={canWrite} canReadFacility={canReadFacility} refresh={refresh} draft={editDraft}
+              onDraftChange={value => onRouteChange({ rackEditDraft: value })}
+              onSaved={version => { setNotice(`Saved layout loaded · v${version}`); reload(); }} />}
             <details className="rack-plan-metadata"><summary>Saved plan details</summary>
               <RackPlanDetail plan={detail.data} roomName={roomName(detail.data.facilityInput.containerId)} />
             </details>
@@ -223,13 +226,13 @@ export function RackPlanDetail({ plan, roomName }) {
       <dt>Created</dt><dd>{plan.createdAt}</dd>
       <dt>Created by</dt><dd><code>{plan.createdBy}</code></dd>
       <dt>Rack validation</dt><dd>{plan.validationState} · Validation has not been run.</dd>
-      <dt>Rack placements</dt><dd>{plan.placements.length} · Empty plan</dd>
+      <dt>Rack placements</dt><dd>{plan.placements.length} saved</dd>
       <dt>Facility revision</dt><dd><code>{input.revisionId}</code></dd>
       <dt>Saved source ETag</dt><dd><code>{input.revisionEtag}</code></dd>
       <dt>Current source ETag</dt><dd><code>{freshness?.currentRevisionEtag ?? 'Unavailable'}</code></dd>
       <dt>Facility lifecycle</dt><dd>{freshness?.lifecycleState ?? 'Unknown'}</dd>
       {freshness?.reasons?.length > 0 && <><dt>Source reasons</dt><dd>{freshness.reasons.join(', ')}</dd></>}
     </dl>
-    <p className="rack-boundary">This stage saves an empty plan and can display its unchanged Facility boundary. Rack editing, persisted room snapshots, capacity checks, and Rack Assistant integration are pending.</p>
+    <p className="rack-boundary">Fixed room input and rack placements are saved separately from Facility. Polygon checks do not cover obstacles, aisles, equipment or capacity. Rack Assistant integration is pending.</p>
   </>;
 }

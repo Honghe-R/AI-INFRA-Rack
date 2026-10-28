@@ -1,0 +1,166 @@
+TAP version 13
+# Subtest: Rack room view reads a bound projected polygon with concavity and holes without changing the plan
+ok 1 - Rack room view reads a bound projected polygon with concavity and holes without changing the plan
+  ---
+  duration_ms: 346.3313
+  type: 'test'
+  ...
+# Subtest: Rack room view blocks changed, frozen and unavailable sources without returning replacement geometry
+ok 2 - Rack room view blocks changed, frozen and unavailable sources without returning replacement geometry
+  ---
+  duration_ms: 287.1486
+  type: 'test'
+  ...
+# Subtest: Rack room view refuses ambiguous, invalid, unsupported-CRS and oversized boundaries
+ok 3 - Rack room view refuses ambiguous, invalid, unsupported-CRS and oversized boundaries
+  ---
+  duration_ms: 251.2358
+  type: 'test'
+  ...
+# Subtest: Rack room view separately requires Facility read access for a custom Rack-only role
+ok 4 - Rack room view separately requires Facility read access for a custom Rack-only role
+  ---
+  duration_ms: 392.0241
+  type: 'test'
+  ...
+# Subtest: Rack list paginates tied timestamps, filters scope and reports current source status
+ok 5 - Rack list paginates tied timestamps, filters scope and reports current source status
+  ---
+  duration_ms: 298.2858
+  type: 'test'
+  ...
+# Subtest: Rack list authorizes reads and rejects malformed or unbounded queries
+ok 6 - Rack list authorizes reads and rejects malformed or unbounded queries
+  ---
+  duration_ms: 142.3275
+  type: 'test'
+  ...
+# Subtest: Rack create/read persists a server-owned empty draft without changing Facility
+ok 7 - Rack create/read persists a server-owned empty draft without changing Facility
+  ---
+  duration_ms: 149.4128
+  type: 'test'
+  ...
+# Subtest: Rack simultaneous creation retries converge; key reuse with different input conflicts
+ok 8 - Rack simultaneous creation retries converge; key reuse with different input conflicts
+  ---
+  duration_ms: 202.317
+  type: 'test'
+  ...
+# Subtest: Rack enforces authentication, role permissions and plan project scope
+ok 9 - Rack enforces authentication, role permissions and plan project scope
+  ---
+  duration_ms: 207.5623
+  type: 'test'
+  ...
+# Subtest: Rack rejects invalid input, forged server fields and missing retry keys without inserting
+ok 10 - Rack rejects invalid input, forged server fields and missing retry keys without inserting
+  ---
+  duration_ms: 193.1822
+  type: 'test'
+  ...
+# Subtest: Rack verifies the real room, revision, scenario and current token before creation
+ok 11 - Rack verifies the real room, revision, scenario and current token before creation
+  ---
+  duration_ms: 184.144
+  type: 'test'
+  ...
+# Subtest: Rack cannot create from frozen Facility input in this first slice
+ok 12 - Rack cannot create from frozen Facility input in this first slice
+  ---
+  duration_ms: 137.8931
+  type: 'test'
+  ...
+# Subtest: Rack read and replay expose changed upstream input without rebinding the plan
+ok 13 - Rack read and replay expose changed upstream input without rebinding the plan
+  ---
+  duration_ms: 211.8362
+  type: 'test'
+  ...
+# Subtest: Rack database composite foreign keys reject a cross-project room even for an owner connection
+ok 14 - Rack database composite foreign keys reject a cross-project room even for an owner connection
+  ---
+  duration_ms: 148.5007
+  type: 'test'
+  ...
+# Subtest: Rack RLS isolates reads and writes under a real non-owner non-superuser role
+ok 15 - Rack RLS isolates reads and writes under a real non-owner non-superuser role
+  ---
+  duration_ms: 213.1114
+  type: 'test'
+  ...
+# Subtest: a concurrent Facility token update completes before Rack accepts the expected source version
+ok 16 - a concurrent Facility token update completes before Rack accepts the expected source version
+  ---
+  duration_ms: 144.4228
+  type: 'test'
+  ...
+# Subtest: Rack layout captures geometry at creation and atomically persists/reloads versioned placements
+ok 17 - Rack layout captures geometry at creation and atomically persists/reloads versioned placements
+  ---
+  duration_ms: 731.077
+  type: 'test'
+  ...
+# Subtest: Rack real Polygon predicates distinguish walls, holes, rotations and rack edge contact
+ok 18 - Rack real Polygon predicates distinguish walls, holes, rotations and rack edge contact
+  ---
+  duration_ms: 1296.6569
+  type: 'test'
+  ...
+# Subtest: Rack rejects concave crossings with all corners inside and holes fully enclosed by a footprint
+ok 19 - Rack rejects concave crossings with all corners inside and holes fully enclosed by a footprint
+  ---
+  duration_ms: 235.2389
+  type: 'test'
+  ...
+# Subtest: Rack legacy capture is explicit, idempotent and does not replace a fixed snapshot
+ok 20 - Rack legacy capture is explicit, idempotent and does not replace a fixed snapshot
+  ---
+  duration_ms: 188.7247
+  type: 'test'
+  ...
+# Subtest: Rack snapshot survives stale Facility source while fresh commands are blocked
+ok 21 - Rack snapshot survives stale Facility source while fresh commands are blocked
+  ---
+  duration_ms: 381.6121
+  type: 'test'
+  ...
+# Subtest: Rack locked positions require a separately saved unlock before move/delete
+ok 22 - Rack locked positions require a separately saved unlock before move/delete
+  ---
+  duration_ms: 630.8658
+  type: 'test'
+  ...
+# Subtest: Rack layout guards scope, versions, snapshot identity and strict requests
+ok 23 - Rack layout guards scope, versions, snapshot identity and strict requests
+  ---
+  duration_ms: 198.8912
+  type: 'test'
+  ...
+# Subtest: Rack competing writers cannot silently overwrite the same base version
+ok 24 - Rack competing writers cannot silently overwrite the same base version
+  ---
+  duration_ms: 287.9206
+  type: 'test'
+  ...
+# Subtest: Rack new persistence tables enforce project RLS for read, insert and update
+ok 25 - Rack new persistence tables enforce project RLS for read, insert and update
+  ---
+  duration_ms: 455.6088
+  type: 'test'
+  ...
+# Subtest: Rack save waits for a concurrent source update and rejects its obsolete input
+ok 26 - Rack save waits for a concurrent source update and rejects its obsolete input
+  ---
+  duration_ms: 179.5395
+  type: 'test'
+  ...
+1..26
+# tests 26
+# suites 0
+# pass 26
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 8251.9616

@@ -1,10 +1,10 @@
-# Rack 只读机房平面图
+# Rack 机房平面图与坐标
 
-日期：2026-10-28。此增量把已保存方案绑定的 HALL 投影边界显示在 Rack 工作区中；没有新增存储、机柜编辑或布局校验。
+日期：2026-10-28。本文说明几何转换和旧只读 room-view API；当前工作区已使用固定快照和可编辑机柜，见 [布局说明](RACK_LAYOUT.md)。
 
 ## 入口与操作
 
-打开 <http://localhost:5193/> → Northern DC Campus → Navigation → Rack，选择 `Rack UI demo — Hall A1`。
+打开 <http://localhost:5193/> → Northern DC Campus → Navigation → Rack，选择 `Rack editor demo — Hall A1`。旧方案无快照时先 Capture room input。
 其他本地库可以先创建自己的空方案，再选择它。
 
 - 拖动图面或使用方向键平移。
@@ -45,7 +45,7 @@ UTM 单位为投影网格米。本轮未校核投影变形、地面距离/测量
 仍经 `withTenant` 且每个引用显式约束项目；使用现有身份/guard，不改变预设权限。
 
 只有设施状态仍为 DRAFT、当前 ETag 与方案保存引用相同才返回边界；否则 `BLOCKED / FACILITY_SOURCE_CHANGED`，view 和 sourceGeometry 为 null。
-旧方案没有历史几何快照，因此不会把新边界套到旧方案上。显式来源重绑定/快照存储留给之后设计。
+以上是旧 room-view 接口的行为。当前布局接口读取固定快照；来源变化时仍返回旧图和已存机柜，但阻止新写入。旧方案需显式捕获，显式重绑定仍未实现。
 来源后续变化不会实时推送到已打开的图；Refresh plans、重新打开或重新加载才复核。将来写命令仍须在提交时重新核对版本。
 后端不传输超 4096 点几何的坐标；前端只画经过该 contract 生成的局部坐标。图面加载失败可重试，卸载会取消并忽略旧响应。
 
@@ -76,5 +76,5 @@ UTM 单位为投影网格米。本轮未校核投影变形、地面距离/测量
 见 [本轮证据](records/2026-10-28-rack-floorplan/)。领域包 80 项、真实数据库/API 16 项、相关 Web 53 项通过，构建成功。
 只读运行检查逐点核对投影坐标减原点，并与 PostGIS 面积对照；未改方案行或种子数据。
 
-下一步先决定机房输入快照/显式重绑定及 Polygon 空间检查的契约，再实现最小机柜放置与持久化。
+后续一轮已完成固定快照、PostGIS Polygon 检查和机柜放置保存，见 [本轮证据](records/2026-10-28-rack-editor/)。障碍、净距和容量仍待实现。
 不能直接用旧矩形规则引擎验证当前有旋转/凹形/孔洞的实际 Polygon。

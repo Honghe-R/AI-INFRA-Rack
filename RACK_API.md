@@ -1,6 +1,6 @@
-# Rack 空方案 API v1
+# Rack 方案与布局 API v1
 
-2026-10-28 实现的最小持久化闭环。只创建和读取空方案，不能保存机柜布局。
+2026-10-28 已扩展为版本化布局保存。本文前半部分为方案创建/列表/详情；布局操作见文末及 [布局 contract](RACK_LAYOUT.md)。
 原平台启动方式见 [RACK_LOCAL_SETUP.md](RACK_LOCAL_SETUP.md)。已有环境更新代码后执行 `npm run migrate`，
 再启动/重启 `npm run dev`；不必重新运行 seed。
 
@@ -47,7 +47,7 @@
 | `name` | 规范化名称 |
 | `version`、`state`、`validationState` | `1`、`DRAFT`、`NOT_RUN`，与 Facility 生命周期独立 |
 | `facilityInput` | projectId/scenarioId/revisionId/containerId/revisionEtag，保存创建时的来源引用 |
-| `placements` | 空数组；本轮没有机柜表或布局文档存储 |
+| `placements` | 创建时为空数组；后续 GET/创建重放返回实际保存的 placements |
 | `createdAt`、`createdBy` | 数据库时间、认证用户 ID |
 | `facilityInputStatus` | 服务端读取的来源状态，见下节 |
 
@@ -110,8 +110,7 @@ cursor 只在同项目、同过滤范围内查找，错误范围、不存在或�
 | 409 | `IDEMPOTENCY_KEY_REUSED`、`RACK_ROOM_REQUIRED`、`RACK_SOURCE_STATE_UNSUPPORTED`、`RACK_SOURCE_ETAG_MISSING`、`RACK_SOURCE_STALE` |
 | 428 | `IDEMPOTENCY_KEY_REQUIRED` |
 
-成功/错误均保留原平台的 `meta.correlation_id`。目前有空方案列表、创建和单条读取；没有更新、删除、布局保存或校验 API。
-空方案保存不能作为完整机柜编辑闭环。
+成功/错误均保留原平台的 `meta.correlation_id`。方案命名/方案删除尚无更新接口；布局保存、快照和局部空间检查见文末。
 
 ## 存储与权限边界
 
@@ -124,11 +123,11 @@ cursor 只在同项目、同过滤范围内查找，错误范围、不存在或�
   即使本地初始化超级用户绕过 RLS，也始终在查询中显式限定 project_id。
 - 创建在同一事务锁住幂等 key、读取/锁住来源、比较版本并插入；不修改上游设施表或 ETag。
 - 内部服务要求调用方先授权；本轮只有经过原路由 guard 的 HTTP 入口，未开放 Assistant 工具入口。
-- 只有创建人/时间和请求 correlation 日志，没有完整的业务审计/outbox 链路。
-- 该表限定版本 1、DRAFT、NOT_RUN。扩展修改命令时必须新增迁移和并发控制，不能只改服务返回值。
+- 另记录最近修改人/时间、成功布局命令的 hash/版本/执行人，以及请求 correlation 日志；没有完整历史版本恢复或 outbox 审计链路。
+- 008 迁移将版本约束扩展为 >=1，并新增快照、型号、机柜和幂等命令表；状态仍限定 DRAFT、NOT_RUN。
 
 首次存储验证见 [持久化证据](records/2026-10-28-rack-persistence)，列表和页面验证见 [工作区证据](records/2026-10-28-rack-ui)。
-工作区入口与只读机房平面图已接通，下一步先明确输入快照和 Polygon 规则，再推进最小机柜编辑/保存。
+本轮机柜编辑保存及独立版本控制已接通，详见 [布局说明](RACK_LAYOUT.md)。
 
 ## 只读机房平面图
 
@@ -136,3 +135,9 @@ cursor 只在同项目、同过滤范围内查找，错误范围、不存在或�
 按保存来源的项目/场景/revision/HALL 读取唯一投影边界，在同条 SQL 内复核来源 ETag 和生命周期。
 返回可显示的米制 Polygon 或明确的阻止/不支持状态；不创建快照，不更新方案或设施数据。
 完整字段、状态码、支持范围和转换约定见 [RACK_FLOORPLAN.md](RACK_FLOORPLAN.md)。
+
+## 固定输入与机柜布局
+
+第十轮新增 `GET /layout`、`POST /room-snapshot`、`POST /layout/check`、`PUT /layout`，均在单方案路径下；详见 [请求/响应、并发与规则 contract](RACK_LAYOUT.md)。
+读取/检查同时需要 rack.read 和 facility.read，捕获/保存同时需要 rack.write 和 facility.read。写请求要求 UUID Idempotency-Key 与带引号正整数 If-Match。保存时重算固定 Polygon 检查，422 拒绝几何冲突，412 拒绝旧版本；错误不留下部分机柜。
+创建时自动捕获支持的唯一边界；旧方案显式捕获。固定快照来源变化后仍可查看，新的写入阻止；旧 `/room-view` 仍只读取未过期的当前来源。方案 validationState 保持 NOT_RUN。

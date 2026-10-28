@@ -53,3 +53,22 @@
 .rack-floor-unavailable { background: var(--surface-sunken); border: 1px solid var(--line); border-radius: var(--radius-md); padding: var(--space-4); margin: var(--space-4) 0; }
 @media (max-width: 1000px) { .rack-columns { grid-template-columns: 1fr; } }
 @media (max-width: 600px) { .rack-surface { padding: var(--space-4); } .rack-form-fields { grid-template-columns: 1fr; } .rack-facts { grid-template-columns: 1fr; gap: var(--space-1); } .rack-facts dd { margin-bottom: var(--space-3); } }
+.rack-editor-actions { margin: var(--space-4) 0; }
+.rack-editor-columns { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-3); margin-top: var(--space-4); }
+.rack-editor-columns .rack-card { padding: var(--space-3); }
+.rack-editor-columns h3, .rack-check-panel h3 { margin: 0 0 var(--space-3); }
+.rack-editor-columns label { display: flex; flex-direction: column; gap: var(--space-2); margin-bottom: var(--space-3); }
+.rack-editor-columns input, .rack-editor-columns select { width: 100%; min-width: 0; box-sizing: border-box; }
+.rack-editor-columns .rack-lock-field { flex-direction: row; align-items: center; }
+.rack-editor-columns .rack-lock-field input { width: auto; }
+.rack-editor-columns .rack-plan-list { max-height: 250px; overflow: auto; }
+.rack-check-panel { border-top: 1px solid var(--line); margin-top: var(--space-4); padding-top: var(--space-4); }
+.rack-check-panel ul { padding-left: var(--space-4); }
+.rack-surface .rack-diagnostic { text-align: left; color: var(--error); margin-bottom: var(--space-2); }
+.rack-drawn-rack { cursor: pointer; }
+.rack-drawn-rack polygon { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.5; }
+.rack-drawn-rack.is-selected polygon { stroke: var(--text); stroke-width: 3; }
+.rack-drawn-rack.has-issue polygon { fill: var(--surface); stroke: var(--error); stroke-width: 3; }
+.rack-front-edge { stroke: var(--text); stroke-width: 4; pointer-events: none; }
+.rack-drawn-rack text { font-size: 12px; pointer-events: none; }
+@media (max-width: 750px) { .rack-editor-columns { grid-template-columns: 1fr; } }

@@ -433,6 +433,57 @@ Docker 可能保留已下载的镜像缓存，本轮没有清理全局 Docker �
 - 下一小步先设计固定输入/重绑定与 Polygon 包含/碰撞 contract，再推进最小机柜放置和持久化。设备容量、优化与 Rack Assistant 仍未实现。
 - 没有改动演示方案、设施边界或 ETag；测试仅创建并清理自己的临时夹具。用户的演示方案和 Git HEAD 保留。
 
+## 2026-10-28：第十轮，固定输入、Polygon 检查与机柜编辑保存
+
+### 1. 范围与起点
+
+- 用户同意一次推进较完整增量：固定机房输入 → Polygon 检查 → 型号/放置持久化 → 添加/移动/旋转/锁定/删除 → 保存重读与并发/权限验证。
+- 起始 HEAD `db57805`（Platform Rack Workspace Initial Visualization），工作区干净。仅在 `AI-INFRA-Rack` 副本工作，没有 commit、push、改 remotes 或写老师原目录。
+- 继续使用已运行的隔离开发栈；新增并应用 008 迁移，之前 7 个跳过，没有重跑 setup/seed、重置卷或替换现有演示数据。
+
+### 2. 实际修改与关键决策
+
+- [迁移 008](data-scripts/008_rack_layout.sql)：机柜型号、每方案固定 Polygon 快照、机柜实例、成功写命令记录；方案版本从固定 1 扩展为 >=1，新增最近修改人/时间。新私有表启用并强制项目 RLS，复合外键防跨项目引用。
+- 型号目录提供两种 ASSUMED 演示尺寸，容量均未知。没有型号写 API，不将假设规格当厂商认证；修改规格以后需新 ID。
+- [领域规范化](packages/rack/src/edit-layout.js)：最多 256 柜、严格字段、服务端目录派生占地、去重 ID、坐标/方向校验。已存锁定柜必须先单独保存解锁，再改变位置/方向/型号或删除。
+- [方案服务](apps/api/src/services/rack-plans.js)：新方案在同事务自动捕获受支持的唯一边界；旧方案保留显式捕获。原列表/详情返回真实版本和已存 placements，不再固定为空方案。
+- [布局服务](apps/api/src/services/rack-layout.js) 与 [路由](apps/api/src/routes/rack.js)：layout GET、snapshot POST、check POST、layout PUT。读取图面/check 需 rack.read + facility.read，捕获/保存需 rack.write + facility.read，复用原身份/guard。
+- Polygon 规则使用 PostGIS 的 ST_Covers、内环 ST_Intersects、柜间内部 ST_Relate；局部坐标显式设 SRID 0，不被 GeoJSON 默认的 WGS84 标签误解释。不用包围框或仅角点判定完整占地。
+- 外墙接触允许、孔洞接触拒绝、柜边接触允许、正重叠拒绝；无额外 epsilon。只检查 Polygon 包含/孔洞/柜间重叠，障碍 UNKNOWN、方案 NOT_RUN。维护空间、通道、设备、容量与工程精度未检查。
+- 写操作锁方案行，要求 If-Match 和 UUID key；成功事务整体替换 placements、推进版本、记录 hash。失败回滚；同请求重试先恢复成功命令，返回当前布局及原 applied_version；不同意图复用 key 拒绝。
+- 写时锁住 Facility ETag/revision 并复查；来源改变保留固定快照，但新写阻止。没有自动替换旧图、修改 Facility 或实现重绑定。
+- [编辑器](apps/web/src/rack/RackEditor.jsx) 接 [工作区](apps/web/src/rack/RackSurface.jsx)、[图面](apps/web/src/rack/RackRoomView.jsx)：选择型号、添加、指针拖动/数值编辑、四方向、锁定、删除、清单/诊断定位与高亮、前边粗线、保存/放弃/重读。
+- 草稿与精确保存意图存在 tab routeState；切工具保留、dirty 关闭/上下文保护及 beforeunload。异步检查 debounce/取消并按 body 绑定结果，结果不确定时保留 key/body 禁止修改，支持同 key 恢复，即使刷新后基础版本/来源改变也保留重试入口。
+- 新增根目录 [RACK_LAYOUT.md](RACK_LAYOUT.md)，更新 API、操作、坐标、基础设计、运行、README 和清单；没有宣称设备/容量或整个阶段完成。
+
+### 3. 验证与证据
+
+| 检查 | 最终结果 | 证据 |
+| --- | --- | --- |
+| Rack 领域包 | 83 通过、0 失败/跳过；含严格编辑输入、型号归属、锁定规则 | [domain-tests.txt](records/2026-10-28-rack-editor/domain-tests.txt) |
+| 真数据库/API | 26 通过、0 失败/跳过；包含/孔洞/凹口桥接、贴边/重叠/旋转、原子失败、保存读取、同 key 并发重放、不同 writer 412、后续版本重放、来源并发更新、锁定、独立 Facility 权限、新表 RLS 读写 | [api-tests.txt](records/2026-10-28-rack-editor/api-tests.txt) |
+| Web 定向回归 | 57 通过；编辑草稿/显示几何/异常输入、客户端版本头/身份/取消、原图面/详情/shell/导入边界 | [web-tests.txt](records/2026-10-28-rack-editor/web-tests.txt) |
+| Web build | 成功；保留既有工具提示和 >500 kB bundle 提示 | [web-build.txt](records/2026-10-28-rack-editor/web-build.txt) |
+| 迁移 | 本机 008 成功、旧 7 跳过；随机临时空库全 8 首次应用，重复全跳过无漂移，清理仅该临时库 | [本机迁移](records/2026-10-28-rack-editor/migrate.txt)、[脚本](records/2026-10-28-rack-editor/check-migration.mjs)、[输出](records/2026-10-28-rack-editor/migration-checks.txt) |
+| 实际浏览器 | 添加、冲突禁存、位置/旋转修正、锁定/解锁限制、拖动、工具切换保留、dirty 关闭、临时柜删除、整页重进 v4 | [步骤](records/2026-10-28-rack-editor/browser-checks.md)、[图面](records/2026-10-28-rack-editor/layout.png) |
+| 实际运行 SQL/API 对照 | v4、2 柜、固定快照/坐标一致；admin/viewer 200、另一组织 403；旧 v1 demo 仍无快照/机柜 | [脚本](records/2026-10-28-rack-editor/check-live-layout.mjs)、[输出](records/2026-10-28-rack-editor/live-checks.txt) |
+
+命令：`npm run test --workspace @ai-infra/rack`；`node --env-file-if-exists=.env --test apps/api/src/tests/rack-plans.test.js`；Web/build 命令见对应证据首行；`node --env-file=.env records/2026-10-28-rack-editor/check-migration.mjs` 与 `check-live-layout.mjs`。
+
+开发验证中修正两项测试夹具问题：比较机柜数组时原地 sort 意外改变“精确重试”请求，已改为 toSorted；临时 HTTP server 端口复用时碰到旧 keepalive socket，测试客户端关闭连接避免跨夹具复用。最终 26 项通过。还修正了暂时清空数字输入时的非法 SVG 坐标，以及结果不确定后版本变化仍需允许精确重试的 UI 路径。
+仅运行上述范围，未重跑全仓，不宣称原基线全部修复；没有进行浏览器断网响应丢失故障注入或完整性能实验。
+
+### 4. 保留数据、边界与下一步
+
+- 保留本机 `Rack editor demo — Hall A1`，ID `24b5422e-8206-4a76-bdf5-9f7e93a05aac`，v4，A01 locked、A02 90°/已拖动。图面支持继续编辑，当前无未保存草稿。
+- 原 `Rack UI demo — Hall A1` 未捕获或更改；没有将个人演示写入 seed，组员拉代码、迁移并自行创建方案。
+- 合成 Facility / 假设型号 / NOT_RECORDED 配准 / UNKNOWN 障碍 / NOT_RUN 均如实保留。当前可保存的空间布局不等于完整工程规划。
+- 未做设备与 U 位/重量/电力/冷却、障碍/禁放区、前后维护净距/通道、布局算法/候选、Rack Assistant、正式验证/发布、历史恢复或完整审计。全局 Assistant 未配置 provider 的既有状态没有改动。
+- 版本冲突当前保留草稿并让用户重读/放弃，没有自动合并；不确定保存跨工具切换保留意图，整页重载未保存意图不保证恢复。
+- 固定快照仅可通过当前 API 创建一次；源变化后的显式重绑定、命令历史保留限额、生产最小权限及正式性能分析待做。
+- 下一步先完成障碍/禁放区和维护净距的输入/规则，再推进设备与容量闭环，随后算法、候选、Assistant 和课程材料。
+- 全部工作留在本地，未执行 commit/push 或改 remotes；老师原目录未修改。
+
 ## 后续记录格式
 
 每轮追加一个日期标题，至少写清：

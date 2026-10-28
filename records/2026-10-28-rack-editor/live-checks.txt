@@ -1,0 +1,5 @@
+Live layout 24b5422e-8206-4a76-bdf5-9f7e93a05aac: v4, exactly two placements, fixed snapshot agrees with database.
+A01 locked; A02 rotated 90 degrees and dragged to x=55.50169946275522 m; full precision preserved.
+Admin/viewer GET and viewer check 200; other organisation 403; HTTP ETag "4".
+Spatial scope clear for 2 racks / 1 pair; whole-plan NOT_RUN and obstacle coverage UNKNOWN retained.
+Read-only checks left plan unchanged; previous v1 demo has no new snapshot or placements.

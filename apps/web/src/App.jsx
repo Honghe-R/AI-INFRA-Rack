@@ -521,7 +521,7 @@ function AppBody({ projects, projectsPending, projectsError, projectsNotice, sce
             return <RackSurface key={tab.tabId} client={assetClient} context={tab.workspaceContext}
               routeState={tab.routeState}
               onRouteChange={patch => workspace.setRouteState(tab.tabId, patch)}
-              onDirtyChange={dirty => workspace.setDirty(tab.tabId, dirty, dirty ? 'An empty Rack plan has not been saved.' : null)} />;
+              onDirtyChange={dirty => workspace.setDirty(tab.tabId, dirty, dirty ? 'Rack changes have not been saved.' : null)} />;
           }
           return <ToolSurfacePlaceholder tab={tab} responsive={resolved} />;
         }}

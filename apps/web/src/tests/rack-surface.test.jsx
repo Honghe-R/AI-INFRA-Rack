@@ -47,7 +47,7 @@ test('plan details distinguish source freshness, saved version, and unrun Rack v
     facilityInput: { revisionId: 'r', containerId: 'h', revisionEtag: 'saved-token' },
     facilityInputStatus: { status: 'STALE', currentRevisionEtag: 'current-token', lifecycleState: 'DRAFT', reasons: ['ETAG_CHANGED'] },
   }} />);
-  for (const text of ['Empty &lt;plan&gt;', 'NOT_RUN', 'Validation has not been run', 'Source changed', 'ETAG_CHANGED', 'saved-token', 'current-token', '0 · Empty plan']) assert.ok(html.includes(text), text);
+  for (const text of ['Empty &lt;plan&gt;', 'NOT_RUN', 'Validation has not been run', 'Source changed', 'ETAG_CHANGED', 'saved-token', 'current-token', '0 saved']) assert.ok(html.includes(text), text);
   assert.ok(!html.includes('Validated'));
   assert.match(renderToStaticMarkup(<SourceStatus status="UNAVAILABLE" />), /Source unavailable/);
   assert.match(renderToStaticMarkup(<SourceStatus />), /Source unknown/);

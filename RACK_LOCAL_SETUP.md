@@ -14,7 +14,7 @@ npm run dev
 ```
 
 `rack:setup` 从 `.env.rack.example` 生成被 Git 忽略的 `.env`，随机生成本地凭证，
-启动 `compose.rack.yaml` 中的两个依赖，执行全部迁移（当前 7 个）、身份/权限示例和 Facility 示例初始化。
+启动 `compose.rack.yaml` 中的两个依赖，执行全部迁移（当前 8 个）、身份/权限示例和 Facility 示例初始化。
 已有 `.env` 不会被覆盖；如不符合 Rack 隔离配置会停止并说明原因。
 不要在终端预先导出其他数据库、Compose 或存储配置；初始化助手会拒绝相关环境覆盖，避免操作其他环境。
 
@@ -81,7 +81,7 @@ node --env-file=.env records/2026-10-28-platform/check-runtime.mjs
 运行证据见 [records/2026-10-28-platform](records/2026-10-28-platform)。
 
 原平台已接通，另有 [空 Rack 方案创建/读取 API](RACK_API.md)。已有环境更新代码后先运行 `npm run migrate`，不必重跑 seed。
-正式 Rack 入口已接通空方案列表、创建和查看，操作见 [Rack 工作区说明](RACK_WORKSPACE.md)。
+正式 Rack 入口已接通方案列表、创建、固定机房快照与机柜编辑保存，操作见 [Rack 工作区说明](RACK_WORKSPACE.md)。
 选择方案后可查看绑定机房的只读米制平面图，支持范围与来源过期处理见 [RACK_FLOORPLAN.md](RACK_FLOORPLAN.md)。
 机柜保存尚未实现；现有空间规则仍通过独立只读预览展示。Assistant 尚无 LLM 服务配置，不能对话。
 当前本地数据库沿用初始化用户（超级用户）连接，适合这份单机开发基线；

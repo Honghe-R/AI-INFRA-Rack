@@ -2,6 +2,7 @@ import { ApiError } from '@ai-infra/core';
 import { RackInputError } from '@ai-infra/rack';
 import { RACK_KEYS, FACILITY_KEYS } from '@ai-infra/rbac';
 import { createRackPlanService } from '../services/rack-plans.js';
+import { createRackLayoutService } from '../services/rack-layout.js';
 
 async function adapt(operation) {
   try {
@@ -16,7 +17,29 @@ async function adapt(operation) {
 
 export function registerRackRoutes(router, { pool, guard }) {
   const service = createRackPlanService({ pool });
+  const layouts = createRackLayoutService({ pool });
   const base = '/api/v1/projects/:projectId/rack/plans';
+  async function facilityRead(ctx) {
+    if (!guard) throw new ApiError('SERVICE_UNAVAILABLE', 'Facility authorization is not configured.', { status: 503 });
+    await guard.check(FACILITY_KEYS.READ, ctx, { projectParam: 'projectId' });
+  }
+  router.get(`${base}/:planId/layout`, ctx => adapt(async () => {
+    await facilityRead(ctx);
+    const data = await layouts.get({projectId:ctx.params.projectId,planId:ctx.params.planId});
+    return {data,headers:{etag:`"${data.version}"`}};
+  }), {permission:RACK_KEYS.READ,projectParam:'projectId'});
+  router.post(`${base}/:planId/layout/check`, ctx => adapt(async () => {
+    await facilityRead(ctx);
+    return {data:await layouts.check({projectId:ctx.params.projectId,planId:ctx.params.planId,body:ctx.body})};
+  }), {permission:RACK_KEYS.READ,projectParam:'projectId'});
+  for (const [method,suffix,operation] of [['post','/room-snapshot','capture'],['put','/layout','save']]) {
+    router[method](`${base}/:planId${suffix}`, ctx=>adapt(async()=>{
+      await facilityRead(ctx);
+      const result=await layouts.mutate({projectId:ctx.params.projectId,planId:ctx.params.planId,actorId:ctx.user.userId,
+        body:ctx.body,key:ctx.headers['idempotency-key'],ifMatch:ctx.headers['if-match'],operation});
+      return {data:result.layout,meta:{replayed:result.replayed,applied_version:result.appliedVersion},headers:{etag:`"${result.layout.version}"`}};
+    }),{permission:RACK_KEYS.WRITE,projectParam:'projectId'});
+  }
   router.get(`${base}/:planId/room-view`, ctx => adapt(async () => {
     if (!guard) throw new ApiError('SERVICE_UNAVAILABLE', 'Facility authorization is not configured.', { status: 503 });
     await guard.check(FACILITY_KEYS.READ, ctx, { projectParam: 'projectId' });

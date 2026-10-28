@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { rackError } from './rack-plan-state.js';
+import { rackCorners } from './edit-layout-state.js';
 import { boundaryPath, CANVAS, fitRoom, gridLines, niceMetres, panCamera, ROOM_VIEW_REASONS, toScreen, zoomCamera } from './floorplan-view.js';
 
 export function RackRoomView({ client, plan, canReadFacility, facilityPending, facilityUnavailable, refresh }) {
@@ -39,12 +40,17 @@ export function RackRoomView({ client, plan, canReadFacility, facilityPending, f
 }
 
 /** SVG display in projected metres; screen Y inversion never changes the data. */
-export function RoomFloorplan({ room, view, sourceGeometry }) {
+export function RoomFloorplan({ room, view, sourceGeometry, placements = [], models = [], selectedId = null,
+  onSelect = null, onMove = null, report = null, focusRequest = null }) {
   const fit = fitRoom(view.extentM);
   const [camera, setCamera] = useState(fit);
   const svgRef = useRef(null);
   const dragging = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
+  useEffect(() => {
+    const rack=placements.find(item=>item.rackId===focusRequest?.rackId);
+    if(rack && Number.isFinite(rack.xM) && Number.isFinite(rack.yM)) setCamera({cx:rack.xM,cy:rack.yM,scale:Math.min(fit.scale*32,Math.max(fit.scale,50))});
+  },[focusRequest]);
   useEffect(() => {
     const svg = svgRef.current;
     const wheel = event => {
@@ -77,7 +83,7 @@ export function RoomFloorplan({ room, view, sourceGeometry }) {
   }
 
   return <section className="rack-floorplan" aria-label="Bound HALL floorplan">
-    <div className="rack-heading"><div><h3>{room.name}</h3><p className="rack-muted">Read-only floorplan · Projected grid metres</p></div>
+      <div className="rack-heading"><div><h3>{room.name}</h3><p className="rack-muted">{onMove ? 'Layout editor' : 'Saved layout'} · Projected grid metres</p></div>
       <div className="rack-actions" aria-label="Floorplan controls">
         <button type="button" aria-label="Zoom out floorplan" onClick={() => setCamera(current => zoomCamera(current, .8, fit.scale))}>−</button>
         <output aria-label="Floorplan zoom">{(camera.scale / fit.scale).toFixed(2)}×</output>
@@ -86,12 +92,12 @@ export function RoomFloorplan({ room, view, sourceGeometry }) {
       </div>
     </div>
     <svg ref={svgRef} className={`rack-room-canvas${isDragging ? ' is-dragging' : ''}`} viewBox={`0 0 ${CANVAS.width} ${CANVAS.height}`}
-      role="img" tabIndex={0} aria-label={`${room.name} floorplan. Drag to pan, scroll to zoom; arrow keys pan, plus and minus zoom, zero fits the room.`}
+      role="group" tabIndex={0} aria-label={`${room.name} floorplan. Drag to pan, scroll to zoom; arrow keys pan, plus and minus zoom, zero fits the room.`}
       onKeyDown={keydown}
       onPointerDown={event => {
         if (event.button !== 0 || dragging.current) return;
         event.currentTarget.focus(); event.currentTarget.setPointerCapture(event.pointerId);
-        dragging.current = { pointerId: event.pointerId, x: event.clientX, y: event.clientY }; setIsDragging(true);
+        dragging.current = { pointerId: event.pointerId, x: event.clientX, y: event.clientY, kind:'pan' }; setIsDragging(true);
       }}
       onPointerMove={event => {
         const previous = dragging.current;
@@ -99,13 +105,40 @@ export function RoomFloorplan({ room, view, sourceGeometry }) {
         const rect = event.currentTarget.getBoundingClientRect();
         const dx = (event.clientX - previous.x) * CANVAS.width / rect.width;
         const dy = (event.clientY - previous.y) * CANVAS.height / rect.height;
-        dragging.current = { pointerId: event.pointerId, x: event.clientX, y: event.clientY };
-        setCamera(current => panCamera(current, dx, dy));
+        if(previous.kind==='rack') {
+          onMove?.(previous.rackId,{xM:previous.xM+dx/camera.scale,yM:previous.yM-dy/camera.scale});
+        } else {
+          dragging.current = { pointerId: event.pointerId, x: event.clientX, y: event.clientY, kind:'pan' };
+          setCamera(current => panCamera(current, dx, dy));
+        }
       }} onPointerUp={finishDrag} onPointerCancel={finishDrag} onLostPointerCapture={() => { dragging.current = null; setIsDragging(false); }}>
       <title>{`${room.name} · Facility polygon in local projected metres`}</title>
       <rect width={CANVAS.width} height={CANVAS.height} className="rack-room-background" />
       <g className="rack-room-grid">{grid.lines.map((line, index) => <line key={index} x1={line[0]} y1={line[1]} x2={line[2]} y2={line[3]} />)}</g>
       <path d={boundaryPath(view.boundaryLocalM, camera)} fillRule="evenodd" className="rack-room-boundary" />
+      <g aria-label="Rack footprints">{placements.map(rack=>{
+        const model=models.find(item=>item.modelId===rack.modelId);
+        if(!model || !Number.isFinite(rack.xM) || !Number.isFinite(rack.yM)) return null;
+        const corners=rackCorners(rack,model).map(point=>toScreen(point,camera));
+        const center=toScreen([rack.xM,rack.yM],camera);
+        const issue=report?.diagnostics?.some(item=>item.rackIds.includes(rack.rackId));
+        return <g key={rack.rackId} role="button" tabIndex={0} aria-label={`Select rack ${rack.name}`}
+          className={`rack-drawn-rack${selectedId===rack.rackId?' is-selected':''}${issue?' has-issue':''}`}
+          onKeyDown={event=>{if(['Enter',' '].includes(event.key)){event.preventDefault();event.stopPropagation();onSelect?.(rack.rackId);}}}
+          onClick={()=>onSelect?.(rack.rackId)}
+          onPointerDown={event=>{
+            event.stopPropagation();onSelect?.(rack.rackId);
+            if(event.button!==0 || rack.locked || !onMove) return;
+            svgRef.current.focus();svgRef.current.setPointerCapture(event.pointerId);
+            dragging.current={kind:'rack',pointerId:event.pointerId,rackId:rack.rackId,x:event.clientX,y:event.clientY,xM:rack.xM,yM:rack.yM};
+            setIsDragging(true);
+          }}>
+          <title>{`${rack.name} · ${model.widthM} × ${model.depthM} m · ${rack.rotationDeg}°${rack.locked?' · Locked':''}`}</title>
+          <polygon points={corners.map(point=>point.join(',')).join(' ')} />
+          <line className="rack-front-edge" x1={corners[0][0]} y1={corners[0][1]} x2={corners[1][0]} y2={corners[1][1]} />
+          {camera.scale*model.widthM>22 && <text x={center[0]} y={center[1]-camera.scale*model.depthM/2-7} textAnchor="middle">{rack.name}</text>}
+        </g>;
+      })}</g>
       {origin[0] > 20 && origin[0] < CANVAS.width - 70 && origin[1] > 20 && origin[1] < CANVAS.height - 45 &&
         <g className="rack-room-origin"><circle cx={origin[0]} cy={origin[1]} r="4" /><text x={origin[0] + 9} y={origin[1] - 9}>(0, 0)</text></g>}
       <g className="rack-room-label"><rect x="12" y="12" width="168" height="30" rx="4" /><text x="22" y="32">Boundary · grid {grid.stepM} m</text></g>
@@ -120,7 +153,7 @@ export function RoomFloorplan({ room, view, sourceGeometry }) {
       <div><dt>Polygon area</dt><dd>{view.areaM2.toFixed(2)} m²</dd></div>
       <div><dt>Interior rings</dt><dd>{view.interiorRingCount}</dd></div>
     </dl>
-    <p className="rack-warning">Obstacles: UNKNOWN · Rack validation: NOT_RUN. The drawing does not establish a clear or usable room.</p>
+    <p className="rack-warning">Obstacles: UNKNOWN · Rack validation: NOT_RUN. Spatial checks cover Polygon containment, holes and rack overlap only.</p>
     <details className="rack-room-source"><summary>Coordinates and source</summary>
       <p>{synthetic ? 'Synthetic Facility sample (dev-seed-facility); not surveyed engineering data.'
         : `Facility provenance: ${sourceGeometry.provenanceReference ?? 'Not recorded'}.`}</p>
@@ -130,6 +163,6 @@ export function RoomFloorplan({ room, view, sourceGeometry }) {
       <p>Geometry <code>{sourceGeometry.geometryId}</code> · {sourceGeometry.role}</p>
       <p>Georeferencing review: {sourceGeometry.transformReviewState}. The stored projection is used for display; survey accuracy and projection distortion have not been verified.</p>
     </details>
-    {synthetic && <p className="rack-muted">Synthetic Facility sample · Read-only · No rack placements</p>}
+    {synthetic && <p className="rack-muted">Synthetic Facility sample · {placements.length} rack placement(s)</p>}
   </section>;
 }

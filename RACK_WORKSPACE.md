@@ -1,36 +1,23 @@
-# Rack 工作区：空方案列表、创建与查看
+# Rack 工作区：方案与机柜编辑
 
-当前接通空方案及其绑定 HALL 的只读平面图。启动方式见 [本地运行说明](RACK_LOCAL_SETUP.md)，后端契约见 [RACK_API.md](RACK_API.md)。
+当前接通方案列表、创建、固定 HALL Polygon 快照、二维机柜编辑和数据库保存。启动见 [本地运行说明](RACK_LOCAL_SETUP.md)，API 见 [RACK_API.md](RACK_API.md)，完整操作与数据边界见 [RACK_LAYOUT.md](RACK_LAYOUT.md)。
 
-## 操作
+1. 打开 http://localhost:5193/ → Northern DC Campus → Navigation → Rack。
+2. New empty plan → 名称/HALL → Save empty plan；新方案自动捕获受支持边界。旧方案先 Capture room input。
+3. Edit layout → Add rack → 在图中或清单选中柜；可拖动，或在属性中改中心坐标、旋转、锁定、删除。
+4. Focus rack 放大单柜；Fit room 复位。Spatial checks 显示越界、孔洞、重叠；点击诊断定位。
+5. 无上述冲突后 Save layout；Refresh plans 或整页重进后从数据库重读。放弃未保存更改用 Discard changes。
 
-1. 打开 <http://localhost:5193/>，进入 Northern DC Campus。
-2. 在 Navigation 中选择 Rack，进入 Plans。
-3. 点击 New empty plan，填写名称，从当前 Facility revision 选择一个 HALL。
-4. 点击 Save empty plan；成功后列表与详情从 API 读取已保存数据。
-5. 刷新整个页面，重新进入项目 → Rack，选择原方案，核对 ID、版本和来源。
-6. 来源未过期且边界受支持时，详情区显示机房平面图；拖动/滚轮/键盘查看，Fit room 复位。参见 [坐标与边界说明](RACK_FLOORPLAN.md)。
+本机演示：`Rack editor demo — Hall A1`，ID `24b5422e-8206-4a76-bdf5-9f7e93a05aac`。旧 `Rack UI demo — Hall A1` 未修改。本机数据不随 Git 分发，组员自行创建。
 
-已保留本机演示方案 `Rack UI demo — Hall A1`，ID 为 `3abd796d-461a-45f6-a0ce-ced7bce99020`。
-这是本机数据库内的记录，不随 Git 传给组员。其他人的本地环境按上述步骤创建自己的方案。
+列表严格继承项目/场景/Facility revision，默认每页 20 项。方案元数据需要 rack.read；快照图面还需 facility.read；写入需要 rack.write。viewer 无编辑入口，后端独立拒绝写入。
 
-## 行为与边界
+编辑状态和重试意图随工具标签保留，关闭/换上下文走 dirty 保护。创建/编辑有 beforeunload 提示；整页刷新后沿用平台行为回项目列表，未保存草稿不保证恢复，已保存数据可重读。有草稿时不能切换方案，先保存或放弃。
 
-- 列表严格继承当前项目、场景和 Facility revision；每页 20 条，支持前后翻页与刷新。
-- 创建需要 `rack.write`，选择机房还需能读取 Facility。只读账号仍可读保存的方案。
-- 首版只支持 DRAFT 来源 + HALL + 当前 ETag；选择机房不表示复制了边界或建立了局部米制坐标。
-- 详情显示 Rack 独立版本/状态、来源 ID、保存/当前 ETag 和来源变化原因；`NOT_RUN` 表示尚未做 Rack 验证。
-- 切换工具标签时，未保存表单和所选方案保留在当前工作区标签状态；关闭/切换项目走现有 dirty 保护。
-- 活动创建表单在浏览器刷新/离开时请求 beforeunload 提示。未保存表单没有跨整页重载的持久化保证；保存成功的方案保存在数据库。
-- 整页刷新沿用平台现有行为回到项目列表，再进入 Rack 重读。没有新增自动恢复项目、深链接或跨浏览器会话的方案选中状态。
-- 创建前保留 body 和 UUID 幂等 key；网络/5xx 等结果不确定时锁定输入，用 Retry same creation 重试同一意图。切换工具后重开也保留该意图。
-- 后端明确拒绝时保留名称/机房供修正；来源过期时先 Refresh Facility source。加载和错误分开显示，可重试。
-- 页面卸载会中止读取并忽略旧响应；请求可能已在服务端提交，保留的幂等意图用于重读结果。整页重载前仍应先解决不确定请求。
-- 只读平面图使用权威 UTM 投影到局部米制的平移，保留 Polygon 轮廓和孔洞。设施来源过期时不返回边界，避免将当前几何误作历史输入。
-- 机柜编辑/存储、机房快照、Polygon 校验、容量验证、优化和 Rack Assistant 均未接通。全局 Ask about Rack 是既有平台入口，不代表已集成 Rack 工具。
+锁定柜先单独保存解锁才能移动/删除。保存携带版本和幂等 key；旧版本拒绝覆盖，提供 Reload saved version / Discard changes；结果不确定时禁改并用 Retry same save 恢复。具体 contract 见布局说明。
 
-## 验证
+图面读取固定快照，来源变化后仍能查看旧图和机柜，但阻止新写入；不自动重绑定，也没有实时推送。合成 Facility 和假设机柜规格均明确标识；空间检查无冲突不是完整工程验证。
 
-证据在 [本轮记录目录](records/2026-10-28-rack-ui/)。API/数据库 12 项通过，相关 Web 测试 110 项通过，Web 构建成功。
-实际浏览器验证了创建、dirty 关闭提示、切换标签保留表单、整页刷新后重读相同 ID、viewer 列表和详情/无创建入口。
-没有通过断网模拟验证“提交已成功但响应丢失”的浏览器路径；该情况当前由幂等 API 回归及前端意图保留逻辑支撑，仍需后续故障注入验证。
+设备、容量、障碍物、维护净距、布局优化和 Rack Assistant 尚未实现。全局 Ask about Rack 仍是既有入口，不能当作 Rack 业务集成。
+
+历史证据分别见 [方案工作区](records/2026-10-28-rack-ui/)、[坐标显示](records/2026-10-28-rack-floorplan/)，本轮见 [机柜编辑](records/2026-10-28-rack-editor/)。本轮未进行浏览器断网响应丢失故障注入。
