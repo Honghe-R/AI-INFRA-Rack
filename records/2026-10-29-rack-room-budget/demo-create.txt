@@ -1,0 +1,21 @@
+{
+  "name": "Rack room budget demo — shared power and cooling",
+  "planId": "00afc319-b755-4ac7-9e11-d55bde7a283d",
+  "version": 2,
+  "installedDemandKw": 2,
+  "inventoryDemandKw": 5,
+  "roomLimitKw": 3,
+  "assignedDevices": 1,
+  "remainingReasons": [
+    {
+      "deviceId": "375ac78c-aeda-4178-8ba8-62b0671808dc",
+      "code": "ROOM_BUDGET_EXCEEDED",
+      "dimensions": [
+        "powerKw",
+        "coolingKw"
+      ]
+    }
+  ],
+  "blockedSave": "RACK_EQUIPMENT_CONFLICT",
+  "unchangedOldDemos": 6
+}

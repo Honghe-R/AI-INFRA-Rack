@@ -60,6 +60,10 @@ export function validateEditorEquipment(e, placements) {
   )
     return 'Equipment supports up to 512 devices and 256 rack limits.';
   const quantity = (v) => v === null || (Number.isFinite(v) && v >= 0 && v <= 1000000);
+  if (e.roomBudget != null && (e.roomBudget.source?.kind !== 'ASSUMED' ||
+    typeof e.roomBudget.source.reference !== 'string' || !e.roomBudget.source.reference.trim() || e.roomBudget.source.reference.length > 512 ||
+    ![e.roomBudget.maxPowerKw, e.roomBudget.maxCoolingKw].every(quantity)))
+    return 'Room budget needs an assumption reference and non-negative power/cooling limits (blank means unknown).';
   const rackIds = new Set(placements.map((p) => p.rackId));
   for (const d of e.devices) {
     if (

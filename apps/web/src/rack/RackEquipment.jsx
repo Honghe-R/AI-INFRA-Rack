@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { RackRoomCapacity } from './RackRoomCapacity.jsx';
 import { deviceFromCatalog, detachCatalogDevice, modelKey } from '../catalog/catalog-state.js';
 
 const dimensions = [
@@ -101,6 +102,7 @@ export function RackEquipment({
         Plan-local assumed specifications, not a global asset registry. Blank demand/limit means unknown; zero
         is explicit. Changes save together with the layout.
       </p>
+      {['all','capacity'].includes(mode) && <RackRoomCapacity equipment={e} report={report} editable={editable} onChange={onChange} />}
       <div hidden={mode === 'diagnostics'}>
       <label>
         Equipment planning reference
@@ -433,7 +435,7 @@ export function RackEquipment({
                       setSelectedId(issue.deviceIds[0] ?? null);
                     }}
                   >
-                    {issue.code}: {placements.find((p) => p.rackId === issue.rackId)?.name} ·{' '}
+                    {issue.code}: {issue.rackId === null ? 'Room budget' : placements.find((p) => p.rackId === issue.rackId)?.name} ·{' '}
                     {issue.deviceIds
                       .map((id) => e.devices.find((item) => item.deviceId === id)?.name ?? id)
                       .join(' ↔ ')}{' '}

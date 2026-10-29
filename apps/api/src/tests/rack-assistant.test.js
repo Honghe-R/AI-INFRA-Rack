@@ -64,6 +64,26 @@ test('capacity uses the shared checker and distinguishes known power from unknow
   assert.ok(f.permissions.some(p => p.key === 'rack.read'));
 });
 
+test('capacity reports plan-wide room totals even when filtered to one rack, bounding diagnostic device identities', async () => {
+  const f = fixture();
+  const secondRack = { ...f.layout.placements[0], rackId: randomUUID(), name: 'Rack B' };
+  f.layout.placements.push(secondRack);
+  const base = f.layout.equipment.devices[0];
+  f.layout.equipment.devices = Array.from({ length: 42 }, (_, i) => ({ ...base,
+    deviceId: randomUUID(), heightU: 1, startU: i % 21 + 1, rackId: i < 21 ? base.rackId : secondRack.rackId }));
+  f.layout.equipment.roomBudget = { maxPowerKw: 3, maxCoolingKw: null,
+    source: { kind: 'ASSUMED', reference: 'Test room budget' } };
+  const result = await f.invoke('rack_query_capacity', { rack: 'Rack A' });
+  assert.equal(result.racks.items.length, 1);
+  assert.equal(result.roomCapacity.scope, 'PLAN_INSTALLED_DEVICE_DEMAND');
+  assert.equal(result.roomCapacity.resources.powerKw.total, 84);
+  assert.equal(result.roomCapacity.status, 'ISSUES_FOUND');
+  const diagnostic = result.roomCapacity.diagnostics[0];
+  assert.equal(diagnostic.deviceCount, 42); assert.equal(diagnostic.deviceIds.length, 20);
+  assert.equal(diagnostic.deviceIdsTruncated, true);
+  assert.equal(result.validationState, 'NOT_RUN');
+});
+
 test('every call reauthorizes both permissions before any service read', async () => {
   const f = fixture(); f.deny('facility.read');
   await assert.rejects(f.invoke('rack_read_plan'), e => e.status === 403);

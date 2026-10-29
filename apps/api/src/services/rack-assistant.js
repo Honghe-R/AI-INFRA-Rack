@@ -20,12 +20,21 @@ function page(items, start) {
   return { items: items.slice(start, start + PAGE_SIZE), total: items.length,
     nextOffset: start + PAGE_SIZE < items.length ? start + PAGE_SIZE : null };
 }
+function diagnosticSummary(diagnostic) {
+  if (!diagnostic.deviceIds) return diagnostic;
+  return { ...diagnostic, deviceCount: diagnostic.deviceIds.length,
+    deviceIds: diagnostic.deviceIds.slice(0, PAGE_SIZE), deviceIdsTruncated: diagnostic.deviceIds.length > PAGE_SIZE };
+}
+function roomSummary(room) {
+  return room ? { ...room, diagnostics: room.diagnostics.map(diagnosticSummary) } : null;
+}
 function reportSummary(report) {
   if (!report) return null;
-  const { diagnostics = [], racks, unassignedDeviceIds, ...rest } = report;
+  const { diagnostics = [], racks, unassignedDeviceIds, roomCapacity, ...rest } = report;
   return { ...rest, ...(racks ? { rackCount: racks.length } : {}), diagnosticCount: diagnostics.length,
+    ...(roomCapacity ? { roomCapacity: roomSummary(roomCapacity) } : {}),
     ...(unassignedDeviceIds ? { unassignedCount: unassignedDeviceIds.length, unassignedDeviceIds: unassignedDeviceIds.slice(0, PAGE_SIZE), unassignedTruncated: unassignedDeviceIds.length > PAGE_SIZE } : {}),
-    diagnostics: diagnostics.slice(0, PAGE_SIZE), diagnosticsTruncated: diagnostics.length > PAGE_SIZE };
+    diagnostics: diagnostics.slice(0, PAGE_SIZE).map(diagnosticSummary), diagnosticsTruncated: diagnostics.length > PAGE_SIZE };
 }
 
 /** Model-facing tools are read-only adapters to the same Rack services as HTTP.
@@ -102,7 +111,7 @@ export function createRackAssistantSurface({ layouts, plans, authorize }) {
     }
     return { ...metadata(layout, ctx), status: report.status, coverage: report.coverage,
       devicesChecked: report.devicesChecked, unassignedCount: report.unassignedDeviceIds.length,
-      racks: page(racks, start), uncheckedRules: report.uncheckedRules };
+      roomCapacity: roomSummary(report.roomCapacity), racks: page(racks, start), uncheckedRules: report.uncheckedRules };
   });
   add('rack_check_saved_layout', 'Run the same exact Polygon and equipment checks as the editor on the selected saved plan. Does not validate, freeze or save the plan. At most 20 diagnostics per category, with counts.', schema(), async (ctx, args) => {
     await enter(ctx, args, []);

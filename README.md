@@ -1,5 +1,7 @@
 # AI Network Infrastructure Planner
 
+Latest Rack increment (2026-10-29): [plan-wide assumed room power/cooling budgets](RACK_ROOM_BUDGET.md), installed/inventory totals, shared save/candidate checks and budget-aware device allocation. Capacity has a new independent synthetic demo. Formal Facility allocations and access connectivity remain pending.
+
 本 Rack 副本的完整平台：首次执行 `npm ci`、`npm run rack:setup`，再执行 `npm run dev`，打开 http://localhost:5193/ 。
 组员请优先按 [本副本运行说明](RACK_LOCAL_SETUP.md)操作；下方原平台 Getting started 保留作上游参考。
 

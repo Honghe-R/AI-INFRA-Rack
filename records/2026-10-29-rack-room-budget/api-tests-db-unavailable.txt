@@ -1,0 +1,1000 @@
+TAP version 13
+# Subtest: the assembled host declares the facility projection: 22 capabilities and 6 UI actions
+ok 1 - the assembled host declares the facility projection: 22 capabilities and 6 UI actions
+  ---
+  duration_ms: 10.8804
+  type: 'test'
+  ...
+# Subtest: a deployment with no tool surface still resolves a context but exposes no tools
+ok 2 - a deployment with no tool surface still resolves a context but exposes no tools
+  ---
+  duration_ms: 0.3033
+  type: 'test'
+  ...
+# Subtest: API host registers the Rack surface and five namespaced tools alongside Facility
+ok 3 - API host registers the Rack surface and five namespaced tools alongside Facility
+  ---
+  duration_ms: 10.4231
+  type: 'test'
+  ...
+# Subtest: an unconfigured provider is explicitly unavailable and never replaced by a fake answer
+ok 4 - an unconfigured provider is explicitly unavailable and never replaced by a fake answer
+  ---
+  duration_ms: 0.4067
+  type: 'test'
+  ...
+# Subtest: Rack tools are read-only and selection cannot expose Facility mutation capabilities
+ok 5 - Rack tools are read-only and selection cannot expose Facility mutation capabilities
+  ---
+  duration_ms: 0.7881
+  type: 'test'
+  ...
+# Subtest: capacity uses the shared checker and distinguishes known power from unknown weight
+ok 6 - capacity uses the shared checker and distinguishes known power from unknown weight
+  ---
+  duration_ms: 1.4163
+  type: 'test'
+  ...
+# Subtest: every call reauthorizes both permissions before any service read
+ok 7 - every call reauthorizes both permissions before any service read
+  ---
+  duration_ms: 0.3031
+  type: 'test'
+  ...
+# Subtest: strict schemas reject forged plan/scope arguments, invalid pagination and invalid planner parameters
+ok 8 - strict schemas reject forged plan/scope arguments, invalid pagination and invalid planner parameters
+  ---
+  duration_ms: 0.8642
+  type: 'test'
+  ...
+# Subtest: tools require a selected plan, and refuse mismatched scenario/revision or advanced version
+ok 9 - tools require a selected plan, and refuse mismatched scenario/revision or advanced version
+  ---
+  duration_ms: 0.4271
+  type: 'test'
+  ...
+# Subtest: inventory pages do not silently pretend to be complete and duplicate rack names are refused
+ok 10 - inventory pages do not silently pretend to be complete and duplicate rack names are refused
+  ---
+  duration_ms: 0.6899
+  type: 'test'
+  ...
+# Subtest: checks send only saved content through the original checker and limit diagnostic output
+ok 11 - checks send only saved content through the original checker and limit diagnostic output
+  ---
+  duration_ms: 0.7193
+  type: 'test'
+  ...
+# Subtest: candidate generation is bounded, summary-only and uses exact saved version and snapshot
+ok 12 - candidate generation is bounded, summary-only and uses exact saved version and snapshot
+  ---
+  duration_ms: 0.5863
+  type: 'test'
+  ...
+# Subtest: generation refuses local dirty drafts and stale UI versions without invoking the planner
+ok 13 - generation refuses local dirty drafts and stale UI versions without invoking the planner
+  ---
+  duration_ms: 0.3353
+  type: 'test'
+  ...
+# Subtest: ten total calls cap a provider that emits many calls per iteration
+ok 14 - ten total calls cap a provider that emits many calls per iteration
+  ---
+  duration_ms: 0.4132
+  type: 'test'
+  ...
+# Subtest: scripted provider drives the real orchestrator through Rack read, capacity, checks and options
+ok 15 - scripted provider drives the real orchestrator through Rack read, capacity, checks and options
+  ---
+  duration_ms: 4.8091
+  type: 'test'
+  ...
+# Subtest: Rack room view reads a bound projected polygon with concavity and holes without changing the plan
+not ok 16 - Rack room view reads a bound projected polygon with concavity and holes without changing the plan
+  ---
+  duration_ms: 12.1848
+  type: 'test'
+  location: 'C:\\Users\\RHH\\Desktop\\AI-INFRA-Rack\\apps\\api\\src\\tests\\rack-plans.test.js:132:1'
+  failureType: 'testCodeFailure'
+  error: 'connect ECONNREFUSED 127.0.0.1:55532'
+  code: 'ECONNREFUSED'
+  stack: |-
+    C:\Users\RHH\Desktop\AI-INFRA-Rack\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async query (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:26:20)
+    async Object.createUser (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:131:20)
+    async fixture (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:37:22)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: Rack room view blocks changed, frozen and unavailable sources without returning replacement geometry
+not ok 17 - Rack room view blocks changed, frozen and unavailable sources without returning replacement geometry
+  ---
+  duration_ms: 4.0362
+  type: 'test'
+  location: 'C:\\Users\\RHH\\Desktop\\AI-INFRA-Rack\\apps\\api\\src\\tests\\rack-plans.test.js:160:1'
+  failureType: 'testCodeFailure'
+  error: 'connect ECONNREFUSED 127.0.0.1:55532'
+  code: 'ECONNREFUSED'
+  stack: |-
+    C:\Users\RHH\Desktop\AI-INFRA-Rack\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async query (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:26:20)
+    async Object.createUser (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:131:20)
+    async fixture (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:37:22)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Rack room view refuses ambiguous, invalid, unsupported-CRS and oversized boundaries
+not ok 18 - Rack room view refuses ambiguous, invalid, unsupported-CRS and oversized boundaries
+  ---
+  duration_ms: 1.0431
+  type: 'test'
+  location: 'C:\\Users\\RHH\\Desktop\\AI-INFRA-Rack\\apps\\api\\src\\tests\\rack-plans.test.js:184:1'
+  failureType: 'testCodeFailure'
+  error: 'connect ECONNREFUSED 127.0.0.1:55532'
+  code: 'ECONNREFUSED'
+  stack: |-
+    C:\Users\RHH\Desktop\AI-INFRA-Rack\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async query (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:26:20)
+    async Object.createUser (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:131:20)
+    async fixture (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:37:22)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Rack room view separately requires Facility read access for a custom Rack-only role
+not ok 19 - Rack room view separately requires Facility read access for a custom Rack-only role
+  ---
+  duration_ms: 1.0495
+  type: 'test'
+  location: 'C:\\Users\\RHH\\Desktop\\AI-INFRA-Rack\\apps\\api\\src\\tests\\rack-plans.test.js:205:1'
+  failureType: 'testCodeFailure'
+  error: 'connect ECONNREFUSED 127.0.0.1:55532'
+  code: 'ECONNREFUSED'
+  stack: |-
+    C:\Users\RHH\Desktop\AI-INFRA-Rack\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async query (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:26:20)
+    async Object.createUser (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:131:20)
+    async fixture (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:37:22)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Rack list paginates tied timestamps, filters scope and reports current source status
+not ok 20 - Rack list paginates tied timestamps, filters scope and reports current source status
+  ---
+  duration_ms: 1.1265
+  type: 'test'
+  location: 'C:\\Users\\RHH\\Desktop\\AI-INFRA-Rack\\apps\\api\\src\\tests\\rack-plans.test.js:226:1'
+  failureType: 'testCodeFailure'
+  error: 'connect ECONNREFUSED 127.0.0.1:55532'
+  code: 'ECONNREFUSED'
+  stack: |-
+    C:\Users\RHH\Desktop\AI-INFRA-Rack\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async query (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:26:20)
+    async Object.createUser (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:131:20)
+    async fixture (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:37:22)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Rack list authorizes reads and rejects malformed or unbounded queries
+not ok 21 - Rack list authorizes reads and rejects malformed or unbounded queries
+  ---
+  duration_ms: 0.9738
+  type: 'test'
+  location: 'C:\\Users\\RHH\\Desktop\\AI-INFRA-Rack\\apps\\api\\src\\tests\\rack-plans.test.js:263:1'
+  failureType: 'testCodeFailure'
+  error: 'connect ECONNREFUSED 127.0.0.1:55532'
+  code: 'ECONNREFUSED'
+  stack: |-
+    C:\Users\RHH\Desktop\AI-INFRA-Rack\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async query (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:26:20)
+    async Object.createUser (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:131:20)
+    async fixture (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:37:22)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Rack create/read persists a server-owned empty draft without changing Facility
+not ok 22 - Rack create/read persists a server-owned empty draft without changing Facility
+  ---
+  duration_ms: 0.9473
+  type: 'test'
+  location: 'C:\\Users\\RHH\\Desktop\\AI-INFRA-Rack\\apps\\api\\src\\tests\\rack-plans.test.js:275:1'
+  failureType: 'testCodeFailure'
+  error: 'connect ECONNREFUSED 127.0.0.1:55532'
+  code: 'ECONNREFUSED'
+  stack: |-
+    C:\Users\RHH\Desktop\AI-INFRA-Rack\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async query (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:26:20)
+    async Object.createUser (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:131:20)
+    async fixture (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:37:22)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Rack simultaneous creation retries converge; key reuse with different input conflicts
+not ok 23 - Rack simultaneous creation retries converge; key reuse with different input conflicts
+  ---
+  duration_ms: 1.1194
+  type: 'test'
+  location: 'C:\\Users\\RHH\\Desktop\\AI-INFRA-Rack\\apps\\api\\src\\tests\\rack-plans.test.js:296:1'
+  failureType: 'testCodeFailure'
+  error: 'connect ECONNREFUSED 127.0.0.1:55532'
+  code: 'ECONNREFUSED'
+  stack: |-
+    C:\Users\RHH\Desktop\AI-INFRA-Rack\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async query (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:26:20)
+    async Object.createUser (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:131:20)
+    async fixture (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:37:22)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Rack enforces authentication, role permissions and plan project scope
+not ok 24 - Rack enforces authentication, role permissions and plan project scope
+  ---
+  duration_ms: 1.6478
+  type: 'test'
+  location: 'C:\\Users\\RHH\\Desktop\\AI-INFRA-Rack\\apps\\api\\src\\tests\\rack-plans.test.js:311:1'
+  failureType: 'testCodeFailure'
+  error: 'connect ECONNREFUSED 127.0.0.1:55532'
+  code: 'ECONNREFUSED'
+  stack: |-
+    C:\Users\RHH\Desktop\AI-INFRA-Rack\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async query (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:26:20)
+    async Object.createUser (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:131:20)
+    async fixture (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:37:22)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Rack rejects invalid input, forged server fields and missing retry keys without inserting
+not ok 25 - Rack rejects invalid input, forged server fields and missing retry keys without inserting
+  ---
+  duration_ms: 3.2679
+  type: 'test'
+  location: 'C:\\Users\\RHH\\Desktop\\AI-INFRA-Rack\\apps\\api\\src\\tests\\rack-plans.test.js:324:1'
+  failureType: 'testCodeFailure'
+  error: 'connect ECONNREFUSED 127.0.0.1:55532'
+  code: 'ECONNREFUSED'
+  stack: |-
+    C:\Users\RHH\Desktop\AI-INFRA-Rack\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async query (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:26:20)
+    async Object.createUser (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:131:20)
+    async fixture (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:37:22)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Rack verifies the real room, revision, scenario and current token before creation
+not ok 26 - Rack verifies the real room, revision, scenario and current token before creation
+  ---
+  duration_ms: 2.4554
+  type: 'test'
+  location: 'C:\\Users\\RHH\\Desktop\\AI-INFRA-Rack\\apps\\api\\src\\tests\\rack-plans.test.js:346:1'
+  failureType: 'testCodeFailure'
+  error: 'connect ECONNREFUSED 127.0.0.1:55532'
+  code: 'ECONNREFUSED'
+  stack: |-
+    C:\Users\RHH\Desktop\AI-INFRA-Rack\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async query (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:26:20)
+    async Object.createUser (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:131:20)
+    async fixture (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:37:22)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Rack cannot create from frozen Facility input in this first slice
+not ok 27 - Rack cannot create from frozen Facility input in this first slice
+  ---
+  duration_ms: 3.7675
+  type: 'test'
+  location: 'C:\\Users\\RHH\\Desktop\\AI-INFRA-Rack\\apps\\api\\src\\tests\\rack-plans.test.js:365:1'
+  failureType: 'testCodeFailure'
+  error: 'connect ECONNREFUSED 127.0.0.1:55532'
+  code: 'ECONNREFUSED'
+  stack: |-
+    C:\Users\RHH\Desktop\AI-INFRA-Rack\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async query (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:26:20)
+    async Object.createUser (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:131:20)
+    async fixture (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:37:22)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Rack read and replay expose changed upstream input without rebinding the plan
+not ok 28 - Rack read and replay expose changed upstream input without rebinding the plan
+  ---
+  duration_ms: 1.1964
+  type: 'test'
+  location: 'C:\\Users\\RHH\\Desktop\\AI-INFRA-Rack\\apps\\api\\src\\tests\\rack-plans.test.js:371:1'
+  failureType: 'testCodeFailure'
+  error: 'connect ECONNREFUSED 127.0.0.1:55532'
+  code: 'ECONNREFUSED'
+  stack: |-
+    C:\Users\RHH\Desktop\AI-INFRA-Rack\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async query (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:26:20)
+    async Object.createUser (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:131:20)
+    async fixture (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:37:22)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Rack database composite foreign keys reject a cross-project room even for an owner connection
+not ok 29 - Rack database composite foreign keys reject a cross-project room even for an owner connection
+  ---
+  duration_ms: 0.9663
+  type: 'test'
+  location: 'C:\\Users\\RHH\\Desktop\\AI-INFRA-Rack\\apps\\api\\src\\tests\\rack-plans.test.js:395:1'
+  failureType: 'testCodeFailure'
+  error: 'connect ECONNREFUSED 127.0.0.1:55532'
+  code: 'ECONNREFUSED'
+  stack: |-
+    C:\Users\RHH\Desktop\AI-INFRA-Rack\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async query (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:26:20)
+    async Object.createUser (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:131:20)
+    async fixture (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:37:22)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Rack RLS isolates reads and writes under a real non-owner non-superuser role
+not ok 30 - Rack RLS isolates reads and writes under a real non-owner non-superuser role
+  ---
+  duration_ms: 0.9063
+  type: 'test'
+  location: 'C:\\Users\\RHH\\Desktop\\AI-INFRA-Rack\\apps\\api\\src\\tests\\rack-plans.test.js:404:1'
+  failureType: 'testCodeFailure'
+  error: 'connect ECONNREFUSED 127.0.0.1:55532'
+  code: 'ECONNREFUSED'
+  stack: |-
+    C:\Users\RHH\Desktop\AI-INFRA-Rack\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async query (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:26:20)
+    async Object.createUser (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:131:20)
+    async fixture (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:37:22)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: a concurrent Facility token update completes before Rack accepts the expected source version
+not ok 31 - a concurrent Facility token update completes before Rack accepts the expected source version
+  ---
+  duration_ms: 1.0842
+  type: 'test'
+  location: 'C:\\Users\\RHH\\Desktop\\AI-INFRA-Rack\\apps\\api\\src\\tests\\rack-plans.test.js:434:1'
+  failureType: 'testCodeFailure'
+  error: 'connect ECONNREFUSED 127.0.0.1:55532'
+  code: 'ECONNREFUSED'
+  stack: |-
+    C:\Users\RHH\Desktop\AI-INFRA-Rack\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async query (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:26:20)
+    async Object.createUser (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:131:20)
+    async fixture (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:37:22)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Rack catalog is a guarded read-only project endpoint with versioned composition and real rule examples
+not ok 32 - Rack catalog is a guarded read-only project endpoint with versioned composition and real rule examples
+  ---
+  duration_ms: 1.1348
+  type: 'test'
+  location: 'C:\\Users\\RHH\\Desktop\\AI-INFRA-Rack\\apps\\api\\src\\tests\\rack-plans.test.js:465:1'
+  failureType: 'testCodeFailure'
+  error: 'connect ECONNREFUSED 127.0.0.1:55532'
+  code: 'ECONNREFUSED'
+  stack: |-
+    C:\Users\RHH\Desktop\AI-INFRA-Rack\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async query (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:26:20)
+    async Object.createUser (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:131:20)
+    async fixture (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:37:22)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Rack pinned catalog equipment persists atomically, replays exactly and rejects forged specifications and versions
+not ok 33 - Rack pinned catalog equipment persists atomically, replays exactly and rejects forged specifications and versions
+  ---
+  duration_ms: 1.2077
+  type: 'test'
+  location: 'C:\\Users\\RHH\\Desktop\\AI-INFRA-Rack\\apps\\api\\src\\tests\\rack-plans.test.js:482:1'
+  failureType: 'testCodeFailure'
+  error: 'connect ECONNREFUSED 127.0.0.1:55532'
+  code: 'ECONNREFUSED'
+  stack: |-
+    C:\Users\RHH\Desktop\AI-INFRA-Rack\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async query (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:26:20)
+    async Object.createUser (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:131:20)
+    async fixture (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:37:22)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Rack layout captures geometry at creation and atomically persists/reloads versioned placements
+not ok 34 - Rack layout captures geometry at creation and atomically persists/reloads versioned placements
+  ---
+  duration_ms: 1.2669
+  type: 'test'
+  location: 'C:\\Users\\RHH\\Desktop\\AI-INFRA-Rack\\apps\\api\\src\\tests\\rack-plans.test.js:525:1'
+  failureType: 'testCodeFailure'
+  error: 'connect ECONNREFUSED 127.0.0.1:55532'
+  code: 'ECONNREFUSED'
+  stack: |-
+    C:\Users\RHH\Desktop\AI-INFRA-Rack\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async query (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:26:20)
+    async Object.createUser (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:131:20)
+    async fixture (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:37:22)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Rack real Polygon predicates distinguish walls, holes, rotations and rack edge contact
+not ok 35 - Rack real Polygon predicates distinguish walls, holes, rotations and rack edge contact
+  ---
+  duration_ms: 1.2561
+  type: 'test'
+  location: 'C:\\Users\\RHH\\Desktop\\AI-INFRA-Rack\\apps\\api\\src\\tests\\rack-plans.test.js:553:1'
+  failureType: 'testCodeFailure'
+  error: 'connect ECONNREFUSED 127.0.0.1:55532'
+  code: 'ECONNREFUSED'
+  stack: |-
+    C:\Users\RHH\Desktop\AI-INFRA-Rack\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async query (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:26:20)
+    async Object.createUser (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:131:20)
+    async fixture (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:37:22)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Rack rejects concave crossings with all corners inside and holes fully enclosed by a footprint
+not ok 36 - Rack rejects concave crossings with all corners inside and holes fully enclosed by a footprint
+  ---
+  duration_ms: 1.1226
+  type: 'test'
+  location: 'C:\\Users\\RHH\\Desktop\\AI-INFRA-Rack\\apps\\api\\src\\tests\\rack-plans.test.js:572:1'
+  failureType: 'testCodeFailure'
+  error: 'connect ECONNREFUSED 127.0.0.1:55532'
+  code: 'ECONNREFUSED'
+  stack: |-
+    C:\Users\RHH\Desktop\AI-INFRA-Rack\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async query (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:26:20)
+    async Object.createUser (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:131:20)
+    async fixture (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:37:22)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Rack legacy capture is explicit, idempotent and does not replace a fixed snapshot
+not ok 37 - Rack legacy capture is explicit, idempotent and does not replace a fixed snapshot
+  ---
+  duration_ms: 1.0416
+  type: 'test'
+  location: 'C:\\Users\\RHH\\Desktop\\AI-INFRA-Rack\\apps\\api\\src\\tests\\rack-plans.test.js:584:1'
+  failureType: 'testCodeFailure'
+  error: 'connect ECONNREFUSED 127.0.0.1:55532'
+  code: 'ECONNREFUSED'
+  stack: |-
+    C:\Users\RHH\Desktop\AI-INFRA-Rack\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async query (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:26:20)
+    async Object.createUser (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:131:20)
+    async fixture (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:37:22)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Rack snapshot survives stale Facility source while fresh commands are blocked
+not ok 38 - Rack snapshot survives stale Facility source while fresh commands are blocked
+  ---
+  duration_ms: 1.0463
+  type: 'test'
+  location: 'C:\\Users\\RHH\\Desktop\\AI-INFRA-Rack\\apps\\api\\src\\tests\\rack-plans.test.js:597:1'
+  failureType: 'testCodeFailure'
+  error: 'connect ECONNREFUSED 127.0.0.1:55532'
+  code: 'ECONNREFUSED'
+  stack: |-
+    C:\Users\RHH\Desktop\AI-INFRA-Rack\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async query (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:26:20)
+    async Object.createUser (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:131:20)
+    async fixture (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:37:22)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Rack locked positions require a separately saved unlock before move/delete
+not ok 39 - Rack locked positions require a separately saved unlock before move/delete
+  ---
+  duration_ms: 1.1027
+  type: 'test'
+  location: 'C:\\Users\\RHH\\Desktop\\AI-INFRA-Rack\\apps\\api\\src\\tests\\rack-plans.test.js:609:1'
+  failureType: 'testCodeFailure'
+  error: 'connect ECONNREFUSED 127.0.0.1:55532'
+  code: 'ECONNREFUSED'
+  stack: |-
+    C:\Users\RHH\Desktop\AI-INFRA-Rack\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async query (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:26:20)
+    async Object.createUser (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:131:20)
+    async fixture (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:37:22)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Rack layout guards scope, versions, snapshot identity and strict requests
+not ok 40 - Rack layout guards scope, versions, snapshot identity and strict requests
+  ---
+  duration_ms: 1.0531
+  type: 'test'
+  location: 'C:\\Users\\RHH\\Desktop\\AI-INFRA-Rack\\apps\\api\\src\\tests\\rack-plans.test.js:623:1'
+  failureType: 'testCodeFailure'
+  error: 'connect ECONNREFUSED 127.0.0.1:55532'
+  code: 'ECONNREFUSED'
+  stack: |-
+    C:\Users\RHH\Desktop\AI-INFRA-Rack\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async query (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:26:20)
+    async Object.createUser (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:131:20)
+    async fixture (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:37:22)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Rack competing writers cannot silently overwrite the same base version
+not ok 41 - Rack competing writers cannot silently overwrite the same base version
+  ---
+  duration_ms: 1.0098
+  type: 'test'
+  location: 'C:\\Users\\RHH\\Desktop\\AI-INFRA-Rack\\apps\\api\\src\\tests\\rack-plans.test.js:639:1'
+  failureType: 'testCodeFailure'
+  error: 'connect ECONNREFUSED 127.0.0.1:55532'
+  code: 'ECONNREFUSED'
+  stack: |-
+    C:\Users\RHH\Desktop\AI-INFRA-Rack\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async query (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:26:20)
+    async Object.createUser (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:131:20)
+    async fixture (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:37:22)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Rack new persistence tables enforce project RLS for read, insert and update
+not ok 42 - Rack new persistence tables enforce project RLS for read, insert and update
+  ---
+  duration_ms: 0.7601
+  type: 'test'
+  location: 'C:\\Users\\RHH\\Desktop\\AI-INFRA-Rack\\apps\\api\\src\\tests\\rack-plans.test.js:648:1'
+  failureType: 'testCodeFailure'
+  error: 'connect ECONNREFUSED 127.0.0.1:55532'
+  code: 'ECONNREFUSED'
+  stack: |-
+    C:\Users\RHH\Desktop\AI-INFRA-Rack\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async query (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:26:20)
+    async Object.createUser (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:131:20)
+    async fixture (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:37:22)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Rack save waits for a concurrent source update and rejects its obsolete input
+not ok 43 - Rack save waits for a concurrent source update and rejects its obsolete input
+  ---
+  duration_ms: 0.7419
+  type: 'test'
+  location: 'C:\\Users\\RHH\\Desktop\\AI-INFRA-Rack\\apps\\api\\src\\tests\\rack-plans.test.js:682:1'
+  failureType: 'testCodeFailure'
+  error: 'connect ECONNREFUSED 127.0.0.1:55532'
+  code: 'ECONNREFUSED'
+  stack: |-
+    C:\Users\RHH\Desktop\AI-INFRA-Rack\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async query (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:26:20)
+    async Object.createUser (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:131:20)
+    async fixture (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:37:22)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Rack equipment persists atomically, restores exact retries, preserves omitted equipment and rejects old versions
+not ok 44 - Rack equipment persists atomically, restores exact retries, preserves omitted equipment and rejects old versions
+  ---
+  duration_ms: 0.71
+  type: 'test'
+  location: 'C:\\Users\\RHH\\Desktop\\AI-INFRA-Rack\\apps\\api\\src\\tests\\rack-plans.test.js:704:1'
+  failureType: 'testCodeFailure'
+  error: 'connect ECONNREFUSED 127.0.0.1:55532'
+  code: 'ECONNREFUSED'
+  stack: |-
+    C:\Users\RHH\Desktop\AI-INFRA-Rack\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async query (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:26:20)
+    async Object.createUser (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:131:20)
+    async fixture (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:37:22)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Rack equipment diagnoses U overlap, overflow and lower-bound overcapacity and rolls back every field on failure
+not ok 45 - Rack equipment diagnoses U overlap, overflow and lower-bound overcapacity and rolls back every field on failure
+  ---
+  duration_ms: 0.7894
+  type: 'test'
+  location: 'C:\\Users\\RHH\\Desktop\\AI-INFRA-Rack\\apps\\api\\src\\tests\\rack-plans.test.js:722:1'
+  failureType: 'testCodeFailure'
+  error: 'connect ECONNREFUSED 127.0.0.1:55532'
+  code: 'ECONNREFUSED'
+  stack: |-
+    C:\Users\RHH\Desktop\AI-INFRA-Rack\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async query (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:26:20)
+    async Object.createUser (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:131:20)
+    async fixture (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:37:22)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Rack equipment moves between racks, unassigns without loss and protects rack deletion including legacy clients
+not ok 46 - Rack equipment moves between racks, unassigns without loss and protects rack deletion including legacy clients
+  ---
+  duration_ms: 0.9545
+  type: 'test'
+  location: 'C:\\Users\\RHH\\Desktop\\AI-INFRA-Rack\\apps\\api\\src\\tests\\rack-plans.test.js:735:1'
+  failureType: 'testCodeFailure'
+  error: 'connect ECONNREFUSED 127.0.0.1:55532'
+  code: 'ECONNREFUSED'
+  stack: |-
+    C:\Users\RHH\Desktop\AI-INFRA-Rack\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async query (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:26:20)
+    async Object.createUser (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:131:20)
+    async fixture (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:37:22)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Rack equipment rejects injected, foreign, duplicate and malformed inputs and retains project permissions
+not ok 47 - Rack equipment rejects injected, foreign, duplicate and malformed inputs and retains project permissions
+  ---
+  duration_ms: 0.8139
+  type: 'test'
+  location: 'C:\\Users\\RHH\\Desktop\\AI-INFRA-Rack\\apps\\api\\src\\tests\\rack-plans.test.js:747:1'
+  failureType: 'testCodeFailure'
+  error: 'connect ECONNREFUSED 127.0.0.1:55532'
+  code: 'ECONNREFUSED'
+  stack: |-
+    C:\Users\RHH\Desktop\AI-INFRA-Rack\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async query (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:26:20)
+    async Object.createUser (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:131:20)
+    async fixture (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:37:22)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Rack equipment explicit zero, partial unknown data and omission remain distinct; position lock permits equipment edits
+not ok 48 - Rack equipment explicit zero, partial unknown data and omission remain distinct; position lock permits equipment edits
+  ---
+  duration_ms: 0.7112
+  type: 'test'
+  location: 'C:\\Users\\RHH\\Desktop\\AI-INFRA-Rack\\apps\\api\\src\\tests\\rack-plans.test.js:762:1'
+  failureType: 'testCodeFailure'
+  error: 'connect ECONNREFUSED 127.0.0.1:55532'
+  code: 'ECONNREFUSED'
+  stack: |-
+    C:\Users\RHH\Desktop\AI-INFRA-Rack\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async query (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:26:20)
+    async Object.createUser (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:131:20)
+    async fixture (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:37:22)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Rack constraints persist atomically with racks, preserve omitted older-client values and reject stale updates
+not ok 49 - Rack constraints persist atomically with racks, preserve omitted older-client values and reject stale updates
+  ---
+  duration_ms: 0.9958
+  type: 'test'
+  location: 'C:\\Users\\RHH\\Desktop\\AI-INFRA-Rack\\apps\\api\\src\\tests\\rack-plans.test.js:773:1'
+  failureType: 'testCodeFailure'
+  error: 'connect ECONNREFUSED 127.0.0.1:55532'
+  code: 'ECONNREFUSED'
+  stack: |-
+    C:\Users\RHH\Desktop\AI-INFRA-Rack\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async query (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:26:20)
+    async Object.createUser (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:131:20)
+    async fixture (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:37:22)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Rack checks declared rectangles even with unknown coverage and rejects obstacle contact and invalid room placement
+not ok 50 - Rack checks declared rectangles even with unknown coverage and rejects obstacle contact and invalid room placement
+  ---
+  duration_ms: 0.9448
+  type: 'test'
+  location: 'C:\\Users\\RHH\\Desktop\\AI-INFRA-Rack\\apps\\api\\src\\tests\\rack-plans.test.js:792:1'
+  failureType: 'testCodeFailure'
+  error: 'connect ECONNREFUSED 127.0.0.1:55532'
+  code: 'ECONNREFUSED'
+  stack: |-
+    C:\Users\RHH\Desktop\AI-INFRA-Rack\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async query (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:26:20)
+    async Object.createUser (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:131:20)
+    async fixture (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:37:22)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Rack maintenance checks follow all four orientations and distinguish unset and explicit zero
+not ok 51 - Rack maintenance checks follow all four orientations and distinguish unset and explicit zero
+  ---
+  duration_ms: 0.7872
+  type: 'test'
+  location: 'C:\\Users\\RHH\\Desktop\\AI-INFRA-Rack\\apps\\api\\src\\tests\\rack-plans.test.js:807:1'
+  failureType: 'testCodeFailure'
+  error: 'connect ECONNREFUSED 127.0.0.1:55532'
+  code: 'ECONNREFUSED'
+  stack: |-
+    C:\Users\RHH\Desktop\AI-INFRA-Rack\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async query (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:26:20)
+    async Object.createUser (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:131:20)
+    async fixture (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:37:22)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Rack maintenance bands may overlap each other but rack bodies and obstacles cannot occupy them
+not ok 52 - Rack maintenance bands may overlap each other but rack bodies and obstacles cannot occupy them
+  ---
+  duration_ms: 0.7108
+  type: 'test'
+  location: 'C:\\Users\\RHH\\Desktop\\AI-INFRA-Rack\\apps\\api\\src\\tests\\rack-plans.test.js:824:1'
+  failureType: 'testCodeFailure'
+  error: 'connect ECONNREFUSED 127.0.0.1:55532'
+  code: 'ECONNREFUSED'
+  stack: |-
+    C:\Users\RHH\Desktop\AI-INFRA-Rack\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async query (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:26:20)
+    async Object.createUser (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:131:20)
+    async fixture (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:37:22)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Rack constraints reject malformed/injected inputs and reuse existing scope, read-only, freshness and version guards
+not ok 53 - Rack constraints reject malformed/injected inputs and reuse existing scope, read-only, freshness and version guards
+  ---
+  duration_ms: 0.7302
+  type: 'test'
+  location: 'C:\\Users\\RHH\\Desktop\\AI-INFRA-Rack\\apps\\api\\src\\tests\\rack-plans.test.js:835:1'
+  failureType: 'testCodeFailure'
+  error: 'connect ECONNREFUSED 127.0.0.1:55532'
+  code: 'ECONNREFUSED'
+  stack: |-
+    C:\Users\RHH\Desktop\AI-INFRA-Rack\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async query (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:26:20)
+    async Object.createUser (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:131:20)
+    async fixture (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:37:22)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Rack maintenance bands respect interior holes, exact rack contact and partial source coverage
+not ok 54 - Rack maintenance bands respect interior holes, exact rack contact and partial source coverage
+  ---
+  duration_ms: 0.9482
+  type: 'test'
+  location: 'C:\\Users\\RHH\\Desktop\\AI-INFRA-Rack\\apps\\api\\src\\tests\\rack-plans.test.js:850:1'
+  failureType: 'testCodeFailure'
+  error: 'connect ECONNREFUSED 127.0.0.1:55532'
+  code: 'ECONNREFUSED'
+  stack: |-
+    C:\Users\RHH\Desktop\AI-INFRA-Rack\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async query (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:26:20)
+    async Object.createUser (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:131:20)
+    async fixture (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:37:22)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Rack options are read-only, deterministic and checked against actual concave geometry, holes, obstacles and clearance
+not ok 55 - Rack options are read-only, deterministic and checked against actual concave geometry, holes, obstacles and clearance
+  ---
+  duration_ms: 0.8899
+  type: 'test'
+  location: 'C:\\Users\\RHH\\Desktop\\AI-INFRA-Rack\\apps\\api\\src\\tests\\rack-plans.test.js:866:1'
+  failureType: 'testCodeFailure'
+  error: 'connect ECONNREFUSED 127.0.0.1:55532'
+  code: 'ECONNREFUSED'
+  stack: |-
+    C:\Users\RHH\Desktop\AI-INFRA-Rack\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async query (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:26:20)
+    async Object.createUser (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:131:20)
+    async fixture (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:37:22)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Rack option application uses the existing atomic versioned save, replay protection, locks and source guard
+not ok 56 - Rack option application uses the existing atomic versioned save, replay protection, locks and source guard
+  ---
+  duration_ms: 0.7119
+  type: 'test'
+  location: 'C:\\Users\\RHH\\Desktop\\AI-INFRA-Rack\\apps\\api\\src\\tests\\rack-plans.test.js:892:1'
+  failureType: 'testCodeFailure'
+  error: 'connect ECONNREFUSED 127.0.0.1:55532'
+  code: 'ECONNREFUSED'
+  stack: |-
+    C:\Users\RHH\Desktop\AI-INFRA-Rack\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async query (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:26:20)
+    async Object.createUser (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:131:20)
+    async fixture (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:37:22)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Rack options enforce input, tenant and source boundaries and retain partial preview identities
+not ok 57 - Rack options enforce input, tenant and source boundaries and retain partial preview identities
+  ---
+  duration_ms: 0.6921
+  type: 'test'
+  location: 'C:\\Users\\RHH\\Desktop\\AI-INFRA-Rack\\apps\\api\\src\\tests\\rack-plans.test.js:913:1'
+  failureType: 'testCodeFailure'
+  error: 'connect ECONNREFUSED 127.0.0.1:55532'
+  code: 'ECONNREFUSED'
+  stack: |-
+    C:\Users\RHH\Desktop\AI-INFRA-Rack\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async query (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:26:20)
+    async Object.createUser (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:131:20)
+    async fixture (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:37:22)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Rack planner batch geometry agrees with complete checks for every orientation, holes, notches, obstacles and two-way maintenance intrusion
+not ok 58 - Rack planner batch geometry agrees with complete checks for every orientation, holes, notches, obstacles and two-way maintenance intrusion
+  ---
+  duration_ms: 0.846
+  type: 'test'
+  location: 'C:\\Users\\RHH\\Desktop\\AI-INFRA-Rack\\apps\\api\\src\\tests\\rack-plans.test.js:933:1'
+  failureType: 'testCodeFailure'
+  error: 'connect ECONNREFUSED 127.0.0.1:55532'
+  code: 'ECONNREFUSED'
+  stack: |-
+    C:\Users\RHH\Desktop\AI-INFRA-Rack\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async query (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:26:20)
+    async Object.createUser (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:131:20)
+    async fixture (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:37:22)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Rack equipment allocation is repeatable and read-only; partial results save atomically through the ordinary command
+not ok 59 - Rack equipment allocation is repeatable and read-only; partial results save atomically through the ordinary command
+  ---
+  duration_ms: 0.7687
+  type: 'test'
+  location: 'C:\\Users\\RHH\\Desktop\\AI-INFRA-Rack\\apps\\api\\src\\tests\\rack-plans.test.js:954:1'
+  failureType: 'testCodeFailure'
+  error: 'connect ECONNREFUSED 127.0.0.1:55532'
+  code: 'ECONNREFUSED'
+  stack: |-
+    C:\Users\RHH\Desktop\AI-INFRA-Rack\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async query (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:26:20)
+    async Object.createUser (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:131:20)
+    async fixture (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:37:22)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Rack equipment allocation rejects wrong scope/source/input and does not guess unknown capacities
+not ok 60 - Rack equipment allocation rejects wrong scope/source/input and does not guess unknown capacities
+  ---
+  duration_ms: 0.7237
+  type: 'test'
+  location: 'C:\\Users\\RHH\\Desktop\\AI-INFRA-Rack\\apps\\api\\src\\tests\\rack-plans.test.js:980:1'
+  failureType: 'testCodeFailure'
+  error: 'connect ECONNREFUSED 127.0.0.1:55532'
+  code: 'ECONNREFUSED'
+  stack: |-
+    C:\Users\RHH\Desktop\AI-INFRA-Rack\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async query (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:26:20)
+    async Object.createUser (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:131:20)
+    async fixture (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:37:22)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Rack room budgets persist atomically; legacy equipment edits retain them and oversubscription rolls back
+not ok 61 - Rack room budgets persist atomically; legacy equipment edits retain them and oversubscription rolls back
+  ---
+  duration_ms: 0.7152
+  type: 'test'
+  location: 'C:\\Users\\RHH\\Desktop\\AI-INFRA-Rack\\apps\\api\\src\\tests\\rack-plans.test.js:1020:1'
+  failureType: 'testCodeFailure'
+  error: 'connect ECONNREFUSED 127.0.0.1:55532'
+  code: 'ECONNREFUSED'
+  stack: |-
+    C:\Users\RHH\Desktop\AI-INFRA-Rack\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async query (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:26:20)
+    async Object.createUser (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:131:20)
+    async fixture (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:37:22)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Rack allocation respects the remaining room budget and preserves it through preview and ordinary save
+not ok 62 - Rack allocation respects the remaining room budget and preserves it through preview and ordinary save
+  ---
+  duration_ms: 0.7022
+  type: 'test'
+  location: 'C:\\Users\\RHH\\Desktop\\AI-INFRA-Rack\\apps\\api\\src\\tests\\rack-plans.test.js:1056:1'
+  failureType: 'testCodeFailure'
+  error: 'connect ECONNREFUSED 127.0.0.1:55532'
+  code: 'ECONNREFUSED'
+  stack: |-
+    C:\Users\RHH\Desktop\AI-INFRA-Rack\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async query (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:26:20)
+    async Object.createUser (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:131:20)
+    async fixture (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:37:22)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Rack room budget input is strict and layout candidates cannot stage a saved room conflict
+not ok 63 - Rack room budget input is strict and layout candidates cannot stage a saved room conflict
+  ---
+  duration_ms: 0.7299
+  type: 'test'
+  location: 'C:\\Users\\RHH\\Desktop\\AI-INFRA-Rack\\apps\\api\\src\\tests\\rack-plans.test.js:1078:1'
+  failureType: 'testCodeFailure'
+  error: 'connect ECONNREFUSED 127.0.0.1:55532'
+  code: 'ECONNREFUSED'
+  stack: |-
+    C:\Users\RHH\Desktop\AI-INFRA-Rack\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async query (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:26:20)
+    async Object.createUser (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:131:20)
+    async fixture (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:37:22)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Rack Assistant HTTP binds real plan scope and executes saved reads/checks/planner as a viewer without writing
+not ok 64 - Rack Assistant HTTP binds real plan scope and executes saved reads/checks/planner as a viewer without writing
+  ---
+  duration_ms: 0.7561
+  type: 'test'
+  location: 'C:\\Users\\RHH\\Desktop\\AI-INFRA-Rack\\apps\\api\\src\\tests\\rack-plans.test.js:1102:1'
+  failureType: 'testCodeFailure'
+  error: 'connect ECONNREFUSED 127.0.0.1:55532'
+  code: 'ECONNREFUSED'
+  stack: |-
+    C:\Users\RHH\Desktop\AI-INFRA-Rack\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async query (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:26:20)
+    async Object.createUser (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:131:20)
+    async fixture (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:37:22)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Rack Assistant canonical versions, missing selection and changed scope are refused before unsafe work
+not ok 65 - Rack Assistant canonical versions, missing selection and changed scope are refused before unsafe work
+  ---
+  duration_ms: 0.8949
+  type: 'test'
+  location: 'C:\\Users\\RHH\\Desktop\\AI-INFRA-Rack\\apps\\api\\src\\tests\\rack-plans.test.js:1143:1'
+  failureType: 'testCodeFailure'
+  error: 'connect ECONNREFUSED 127.0.0.1:55532'
+  code: 'ECONNREFUSED'
+  stack: |-
+    C:\Users\RHH\Desktop\AI-INFRA-Rack\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async query (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:26:20)
+    async Object.createUser (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rbac/src/repository.js:131:20)
+    async fixture (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:37:22)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..65
+# tests 65
+# suites 0
+# pass 15
+# fail 50
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 4180.414

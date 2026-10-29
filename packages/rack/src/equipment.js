@@ -1,5 +1,6 @@
 import { record, fail, text, uuid } from './input.js';
 import { assertCatalogDevice } from './catalog.js';
+import { normalizeRoomBudget, checkRoomBudget } from './room-budget.js';
 
 export const EMPTY_EQUIPMENT = Object.freeze({
   coverage: 'UNKNOWN',
@@ -29,7 +30,7 @@ function quantity(value, field) {
 
 /** Plan-local inventory, never a claim about a global physical asset registry. */
 export function normalizeEquipment(input, placements) {
-  record(input, 'equipment', new Set(['coverage', 'source', 'devices', 'rackLimits']));
+  record(input, 'equipment', new Set(['coverage', 'source', 'devices', 'rackLimits', 'roomBudget']));
   if (!['UNKNOWN', 'DECLARED_COMPLETE'].includes(input.coverage))
     fail('equipment.coverage', 'must be UNKNOWN or DECLARED_COMPLETE');
   record(input.source, 'equipment.source', new Set(['kind', 'reference']));
@@ -90,6 +91,7 @@ export function normalizeEquipment(input, placements) {
     source,
     devices: Object.freeze(devices),
     rackLimits: Object.freeze(rackLimits),
+    ...(Object.hasOwn(input, 'roomBudget') ? { roomBudget: normalizeRoomBudget(input.roomBudget) } : {}),
   });
 }
 
@@ -186,13 +188,15 @@ export function checkEquipment(equipment, placements, models) {
     };
   });
   const unassignedDeviceIds = equipment.devices.filter((d) => d.rackId === null).map((d) => d.deviceId);
+  const roomCapacity = checkRoomBudget(equipment);
+  diagnostics.push(...roomCapacity.diagnostics);
   const unknown = racks.some((r) => Object.values(r.capacities).some((c) => c.status === 'UNKNOWN'));
   return {
     status: diagnostics.length
       ? 'ISSUES_FOUND'
       : !equipment.devices.length
         ? 'NOT_CHECKED'
-        : equipment.coverage === 'UNKNOWN' || unassignedDeviceIds.length || unknown
+        : equipment.coverage === 'UNKNOWN' || unassignedDeviceIds.length || unknown || (equipment.roomBudget && roomCapacity.status === 'INCOMPLETE')
           ? 'INCOMPLETE'
           : 'CHECKED_SCOPE_CLEAR',
     coverage: equipment.coverage,
@@ -200,9 +204,11 @@ export function checkEquipment(equipment, placements, models) {
     devicesChecked: equipment.devices.length,
     installedDevices: equipment.devices.length - unassignedDeviceIds.length,
     unassignedDeviceIds,
+    roomCapacity,
     racks,
     diagnostics,
     uncheckedRules: [
+      ...(!equipment.roomBudget ? ['ROOM_POWER_COOLING_BUDGET'] : []),
       'GLOBAL_ASSET_IDENTITY',
       'DEPTH_RAIL_COMPATIBILITY',
       'POWER_FEEDS_REDUNDANCY',

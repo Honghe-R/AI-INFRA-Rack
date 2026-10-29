@@ -75,3 +75,60 @@ test('existing U errors are refused; allocation search caps bound devices, racks
 test('empty inventory returns an explicit no-op result', () => {
   const f=fixture(),r=f.run();assert.equal(r.assignments.length,0);assert.equal(r.metrics.attemptedDevices,0);assert.equal(r.equipmentReport.status,'NOT_CHECKED');
 });
+
+const roomBudget = (patch = {}) => ({ maxPowerKw: 3, maxCoolingKw: 3, source: { kind: 'ASSUMED', reference: 'Synthetic room allocation budget' }, ...patch });
+
+test('room allocation stops at the shared budget even when another rack has space and capacity', () => {
+  const f = fixture(); f.models[0].heightU = 2;
+  f.equipment.roomBudget = roomBudget({ maxPowerKw: 1, maxCoolingKw: 1 });
+  f.equipment.devices = [f.device(), f.device()];
+  const before = structuredClone(f.equipment), r = f.run();
+  assert.equal(r.algorithmId, 'unassigned-first-fit-decreasing-v2');
+  assert.equal(r.assignments.length, 1);
+  assert.equal(r.unassigned[0].code, 'ROOM_BUDGET_EXCEEDED');
+  assert.deepEqual(r.unassigned[0].dimensions, ['powerKw', 'coolingKw']);
+  assert.equal(r.equipmentReport.roomCapacity.resources.powerKw.remaining, 0);
+  assert.deepEqual(r.equipment.roomBudget, before.roomBudget);
+  assert.deepEqual(f.equipment, before); assert.deepEqual(f.run(), r);
+});
+
+test('installed demand on locked racks consumes the same room budget', () => {
+  const f = fixture(); f.placements[0].locked = true;
+  f.equipment.roomBudget = roomBudget({ maxCoolingKw: 1 });
+  const installed = f.device({ rackId: f.placements[0].rackId, startU: 1 });
+  f.equipment.devices = [installed, f.device()];
+  const r = f.run(); assert.equal(r.assignments.length, 0);
+  assert.deepEqual(r.unassigned[0].dimensions, ['coolingKw']);
+  assert.deepEqual(r.equipment.devices[0], installed);
+});
+
+test('active unknown room limits or installed demand prevent speculative allocation', () => {
+  const f = fixture(); f.equipment.roomBudget = roomBudget({ maxPowerKw: null });
+  f.equipment.devices = [f.device()];
+  assert.deepEqual(f.run().unassigned[0].unknownDimensions, ['powerKw']);
+  f.equipment.roomBudget = roomBudget(); f.placements[0].locked = true;
+  f.equipment.devices.push(f.device({ rackId: f.placements[0].rackId, startU: 1, coolingKw: null }));
+  const r = f.run(); assert.equal(r.unassigned[0].code, 'UNKNOWN_ROOM_BUDGET');
+  assert.deepEqual(r.unassigned[0].unknownDimensions, ['coolingKw']);
+});
+
+test('missing room budget keeps the previous per-rack allocation scope explicit', () => {
+  for (const value of [undefined, null]) {
+    const f = fixture(); if (value === null) f.equipment.roomBudget = null;
+    f.equipment.devices = [f.device(), f.device()];
+    const r = f.run(); assert.equal(r.assignments.length, 2);
+    assert.ok(r.equipmentReport.uncheckedRules.includes('ROOM_POWER_COOLING_BUDGET'));
+  }
+});
+
+test('zero budget admits zero demand, decimal sums fit, and existing room errors block generation', () => {
+  const f = fixture(); f.equipment.roomBudget = roomBudget({ maxPowerKw: 0, maxCoolingKw: 0 });
+  f.equipment.devices = [f.device({ powerKw: 0, coolingKw: 0 })];
+  assert.equal(f.run().assignments.length, 1);
+  f.equipment.roomBudget = roomBudget({ maxPowerKw: .3 });
+  f.equipment.devices = [f.device({ powerKw: .1 }), f.device({ powerKw: .2 })];
+  assert.equal(f.run().assignments.length, 2);
+  f.equipment.roomBudget = roomBudget({ maxPowerKw: 0 });
+  f.equipment.devices = [f.device({ rackId: f.placements[0].rackId, startU: 1 })];
+  assert.throws(f.run, /resolve existing/);
+});

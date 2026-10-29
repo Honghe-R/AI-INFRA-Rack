@@ -719,6 +719,40 @@ Docker 可能保留已下载的镜像缓存，本轮没有清理全局 Docker �
 - 自动分配不是全局装箱最优，也不重排已装设备；仍缺正式机房总预算/跨柜依赖、连续通道、工程级物理兼容、持久化验证/候选历史、大规模性能与生产限流。下一步优先补机房级预算输入/总需求对比和可复现性能实验，再整理汇报架构与演示，不以模块入口代替实现。
 - 未执行任何commit/push，老师原目录与线上平台未改。
 
+## 2026-10-29：第十八轮，机房功率/冷却假设预算与自动分配守卫
+
+### 范围与实际修改
+
+- 用户要求继续补缺项，沿用“暂不配置模型”。起始HEAD为cbe1615；仅改AI-INFRA-Rack，未commit/push、改remotes或触碰老师原目录/平台。
+- 新增 [room-budget.js](packages/rack/src/room-budget.js)：严格ASSUMED来源与可空双限值、冻结输入、全柜已安装需求/完整库存需求、独立状态/剩余/未知与结构化超限。锁定柜需求计入；未分配仅作库存提示，不预扣安装预算。不是权威Facility容量服务。
+- 原 [设备检查](packages/rack/src/equipment.js) 接入roomCapacity与原diagnostics；已知小计超限不被未知掩盖，普通保存422并原子回滚。原 [布局服务](apps/api/src/services/rack-layout.js) 同时兼容旧客户端equipment缺少roomBudget而保留已存值，显式null才关闭。预算和设备/布局同版本、权限/来源锁/幂等事务，无迁移和新端点。
+- [分配器](packages/rack/src/allocator.js) 升级unassigned-first-fit-decreasing-v2，每次新增前检查全柜剩余预算；UNKNOWN_ROOM_BUDGET与ROOM_BUDGET_EXCEEDED解释保留未分配。布局重排候选完整复核同一预算，超限canStage=false。
+- 新增 [Capacity机房卡片](apps/web/src/rack/RackRoomCapacity.jsx)：来源/功率/冷却限值、安装/库存总量、剩余/状态/诊断；编辑与现有共享草稿和完整检查绑定。Inputs识别预算变化；窄窗口表格横向滚动，避免末列逐字挤压。
+- Assistant容量工具返回方案范围总量，单柜筛选不缩小机房范围；报告诊断设备ID最多20项并附总数/截断标识。没有配置模型或修改.env。
+- 新增根 [RACK_ROOM_BUDGET.md](RACK_ROOM_BUDGET.md)，同步README、基础/结构/操作/API/设备/算法/Assistant说明与有证据的待办小项。历史轮次描述按当轮保留，以最新补充为准。
+
+### 验证与证据
+
+目录：[records/2026-10-29-rack-room-budget](records/2026-10-29-rack-room-budget/)，命令见 [commands.md](records/2026-10-29-rack-room-budget/commands.md)。
+
+| 范围 | 最终结果 | 证据 |
+| --- | --- | --- |
+| Rack领域 | 135通过、0失败/跳过；全柜/单柜差异、锁定/库存、未知/零、浮点、严格schema、分配限额/部分结果/不变性 | domain-tests.txt |
+| 数据库HTTP + 适配/投影 | 50+16=66通过、0失败/跳过；预算持久化/旧客户端保留、显式删除、权限/旧版本、422所有字段和命令回滚、只读候选/分配/普通保存、Assistant全柜口径与截断 | api-tests.txt |
+| Web定向 | 171通过，15文件；预算控件/未知/非法值、共享草稿复制与请求、依赖影响和原Rack/Assistant回归 | web-tests.txt |
+| Web构建 | 成功；保留既有大于500kB bundle提示 | web-build.txt |
+| 真实浏览器 | 保存版2/3/1与库存5、编辑预算1超限且保存禁用、空白未知、Discard恢复无dirty的v2；窄视口检查 | browser-checks.md、room-budget.jpg |
+| 独立本机示例 | 正常HTTP创建v2；2kW待装被预算阻止，1kW刚好可装；超限写入422，六个旧示例与新示例布局检查前后不变 | create-room-budget-demo.mjs、demo-create.txt、room-budget-demo.json |
+
+第一次API运行时Docker Desktop未启动，数据库55532拒绝连接，50失败/15通过，原始结果保留api-tests-db-unavailable.txt；启动已安装Docker与原ai-infra-rack-dev栈后独立重跑66全过，没有跳过/放松断言。未迁移/seed/setup/reset或删卷。启动本地API8797/Web5193用于验收，未配置provider的警告符合用户决定。不是全仓通过声明。
+
+### 本机示例、限制与下一步
+
+- 新示例 **Rack room budget demo — shared power and cooling**，ID00afc319-b755-4ac7-9e11-d55bde7a283d，v2，3柜/4设备，其中2台已安装。功率/冷却需求各2、预算3、剩余1kW；总库存5kW。规格和预算均为合成假设，原六个示例保留。浏览器临时改动均放弃，未保存分配候选。
+- 缺省预算保持旧设备检查的单柜范围，独立机房报告INCOMPLETE并保留未检查标识；显式启用但未知时算法不猜测。已安装范围CHECKED_SCOPE_CLEAR不等于所有库存能安装，整体validationState始终NOT_RUN。
+- 未纳入同房间其他方案、机柜空载功耗、PUE/回路/冗余/降额、热仿真、楼板载荷。正式权威容量分配、跨方案并发预留和上游事件仍未实现，不能宣称工程可行。
+- 下一步优先连续通道/访问连通检查、版本绑定验证记录，再做可复现性能/算法比较实验和汇报架构/API材料。真实模型按用户决定继续搁置。全部改动本地留给用户提交。
+
 ## 后续记录格式（第十七轮后沿用）
 
 每轮追加一个日期标题，至少写清：

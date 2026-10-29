@@ -1,5 +1,7 @@
 # 未分配设备自动上架
 
+第十八轮更新：算法版本为 **unassigned-first-fit-decreasing-v2**。启用 [机房预算](RACK_ROOM_BUDGET.md) 后，全柜安装需求（包含锁定柜）每次新增前统一检查；预算/既有需求未知时UNKNOWN_ROOM_BUDGET，超限ROOM_BUDGET_EXCEEDED。缺省预算仍按原单柜范围，并标明未检查机房预算。原示例与其他约束保持；下方v1步骤为原实现历史，v2补充以上守卫。
+
 2026-10-29，第十七轮。只修改 Rack 副本，未提交或推送；不增加迁移。
 
 ## 操作

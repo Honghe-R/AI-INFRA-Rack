@@ -47,7 +47,7 @@ export function rackInputSummary(layout, placements, constraints, equipment, dra
     if (!same(savedConstraints, constraints)) changed.push('rules');
     if (!same(savedEquipment.devices, equipment.devices) || !same(savedEquipment.coverage, equipment.coverage) ||
       !same(savedEquipment.source, equipment.source)) changed.push('devices');
-    if (!same(savedEquipment.rackLimits, equipment.rackLimits)) changed.push('limits');
+    if (!same(savedEquipment.rackLimits, equipment.rackLimits) || !same(savedEquipment.roomBudget ?? null, equipment.roomBudget ?? null)) changed.push('limits');
   }
   const pins = new Map();
   for (const device of equipment.devices) {

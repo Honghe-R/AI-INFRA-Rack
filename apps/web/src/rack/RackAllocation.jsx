@@ -4,6 +4,8 @@ import { optionStageReason, stageRackOption } from './rack-options-state.js';
 import { rackError } from './rack-plan-state.js';
 
 const reasons = {
+  UNKNOWN_ROOM_BUDGET: 'Room budget or installed room demand is unknown.',
+  ROOM_BUDGET_EXCEEDED: 'Installing this device would exceed the shared room power or cooling budget.',
   UNKNOWN_DEVICE_RESOURCE: 'Device weight, power or cooling demand is unknown.',
   NO_UNLOCKED_RACK: 'There are no unlocked target racks.',
   NO_ELIGIBLE_POSITION: 'No checked target fits this device under this greedy search.',
@@ -39,7 +41,7 @@ export function RackAllocation({ client, layout, draft, canWrite, onDraftChange 
   return <section className="rack-card" aria-label="Automatic device allocation">
     <h3>Auto-allocate unassigned devices</h3>
     <p>Largest U-height first, then first fitting rack and lowest continuous U range. Existing assignments and all rack positions stay fixed; locked racks are excluded as targets.</p>
-    <p className="rack-muted">Known weight, power and cooling demand and limits are required. Unknown data is not treated as zero or unlimited. Uses saved data only; at most 128 unassigned devices, 64 unlocked racks and 100 U per rack. This is a greedy suggestion, not an optimality or feasibility proof.</p>
+    <p className="rack-muted">Known weight, power and cooling demand and limits are required. Unknown data is not treated as zero or unlimited. An enabled room budget also constrains allocation across all racks; without one, room capacity remains unchecked. Uses saved data only; at most 128 unassigned devices, 64 unlocked racks and 100 U per rack. This is a greedy suggestion, not an optimality or feasibility proof.</p>
     <p>{unassigned} unassigned in saved v{layout.version}. Enter device demands and per-rack capacity assumptions below, then save before generating.</p>
     <button className="rack-primary" onClick={generate} disabled={pending || Boolean(draft) || !unassigned || layout.sourceStatus.status !== 'UNCHANGED'}>{pending ? 'Allocating…' : 'Generate device allocation'}</button>
     {draft && <p className="rack-warning">Save or discard the shared draft first. Automatic allocation will not overwrite local edits.</p>}

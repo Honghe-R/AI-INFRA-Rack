@@ -1014,6 +1014,91 @@ function rackAssistantRig() {
   return { host, providerCalls, surface, authorize };
 }
 
+const assumedRoomBudget = (patch = {}) => ({ maxPowerKw: 3, maxCoolingKw: 3,
+  source: { kind: 'ASSUMED', reference: 'Synthetic HTTP fixture room budget' }, ...patch });
+
+test('Rack room budgets persist atomically; legacy equipment edits retain them and oversubscription rolls back', {skip}, async()=>fixture(async f=>server(f.people,async request=>{
+  const {url,layout}=await prepared(f,request), a=rack(3,3), b=rack(6,2);
+  const equipment=equipmentInput([testDevice(a.rackId)],{
+    coverage:'DECLARED_COMPLETE', roomBudget:assumedRoomBudget(),
+    rackLimits:[a,b].map(r=>({rackId:r.rackId,maxWeightKg:100,maxPowerKw:10,maxCoolingKw:10})),
+  });
+  const body={...layoutBody(layout,[a,b]),equipment},key=randomUUID();
+  const first=await request(url,{method:'PUT',body,version:1,key,user:'editor'});
+  assert.equal(first.status,200,JSON.stringify(first));
+  const saved=first.body.data;assert.equal(saved.version,2);
+  assert.deepEqual(saved.equipment.roomBudget,equipment.roomBudget);
+  assert.equal((await request(url,{method:'PUT',body,version:1,key})).body.meta.replayed,true);
+  const commands=async()=>(await pool.query('SELECT count(*)::int n FROM rack_layout_commands WHERE plan_id=$1',[saved.planId])).rows[0].n;
+  const count=await commands();
+  const {roomBudget,...legacyEquipment}=equipment;
+  const bad={...body,placements:[{...a,name:'Must roll back'},b],constraints:constraintsInput({source:{kind:'ASSUMED',reference:'Must roll back'}}),
+    equipment:{...legacyEquipment,devices:[testDevice(a.rackId,{powerKw:2,coolingKw:2}),testDevice(b.rackId,{powerKw:2,coolingKw:2})]}};
+  const checked=await request(`${url}/check`,{body:bad,user:'viewer'});
+  assert.equal(checked.status,200,JSON.stringify(checked));
+  const report=checked.body.data.equipmentReport;
+  assert.ok(report.racks.every(r=>Object.values(r.capacities).every(c=>c.status==='WITHIN_LIMIT')));
+  assert.equal(report.roomCapacity.resources.powerKw.limit,3);
+  assert.equal(report.roomCapacity.resources.powerKw.total,4);
+  assert.equal(report.diagnostics.filter(d=>d.code==='ROOM_BUDGET_EXCEEDED').length,2);
+  const rejected=await request(url,{method:'PUT',body:bad,version:2});
+  assert.equal(rejected.status,422);assert.equal(rejected.body.error.code,'RACK_EQUIPMENT_CONFLICT');
+  assert.equal((await request(url,{method:'PUT',body,version:2,user:'viewer'})).status,403);
+  assert.deepEqual((await request(url)).body.data,saved);assert.equal(await commands(),count);
+  const legacySave=await request(url,{method:'PUT',version:2,body:{...body,equipment:legacyEquipment}});
+  assert.equal(legacySave.status,200);assert.deepEqual(legacySave.body.data.equipment.roomBudget,roomBudget);
+  const disabled=await request(url,{method:'PUT',version:3,body:{...bad,equipment:{...bad.equipment,roomBudget:null}}});
+  assert.equal(disabled.status,200,JSON.stringify(disabled));assert.equal(disabled.body.data.equipment.roomBudget,null);
+  assert.equal(disabled.body.data.version,4);assert.equal(disabled.body.data.validationState,'NOT_RUN');
+  assert.equal((await request(url,{method:'PUT',version:2,body})).status,412);
+})));
+
+test('Rack allocation respects the remaining room budget and preserves it through preview and ordinary save', {skip}, async()=>fixture(async f=>server(f.people,async request=>{
+  const {url,layout}=await prepared(f,request),fixed=rack(3,3,{locked:true}),target=rack(6,2);
+  const equipment=equipmentInput([testDevice(fixed.rackId),testDevice(null,{heightU:4}),testDevice(null)],{
+    roomBudget:assumedRoomBudget({maxPowerKw:2,maxCoolingKw:2}),
+    rackLimits:[fixed,target].map(r=>({rackId:r.rackId,maxWeightKg:100,maxPowerKw:10,maxCoolingKw:10})),
+  });
+  const initial=await request(url,{method:'PUT',version:1,body:{...layoutBody(layout,[fixed,target]),equipment}});
+  assert.equal(initial.status,200,JSON.stringify(initial));const saved=initial.body.data;
+  const body={contract_version:1,base_version:2,snapshot_id:saved.snapshot.snapshotId};
+  const generated=await request(`${url}/equipment-options`,{body,user:'viewer'});
+  assert.equal(generated.status,200,JSON.stringify(generated));const c=generated.body.data.candidates[0];
+  assert.equal(c.canStage,true);assert.equal(c.assignments.length,1);
+  assert.equal(c.assignments[0].rackId,target.rackId);
+  assert.equal(c.unassigned[0].code,'ROOM_BUDGET_EXCEEDED');
+  assert.equal(c.equipmentReport.roomCapacity.resources.powerKw.total,2);
+  assert.deepEqual(c.body.equipment.roomBudget,equipment.roomBudget);
+  assert.deepEqual((await request(url)).body.data,saved);
+  const applied=await request(url,{method:'PUT',version:2,body:c.body,user:'editor'});
+  assert.equal(applied.status,200,JSON.stringify(applied));assert.deepEqual(applied.body.data.equipment,c.body.equipment);
+  assert.equal((await request(`${url}/equipment-options`,{body})).status,412);
+})));
+
+test('Rack room budget input is strict and layout candidates cannot stage a saved room conflict', {skip}, async()=>fixture(async f=>server(f.people,async request=>{
+  const {url,layout}=await prepared(f,request),r=rack(3,3,{locked:true});
+  const equipment=equipmentInput([testDevice(r.rackId)],{roomBudget:assumedRoomBudget()});
+  for(const roomBudget of [assumedRoomBudget({maxPowerKw:'3'}),assumedRoomBudget({maxCoolingKw:-1}),assumedRoomBudget({extra:true}),{maxPowerKw:3,maxCoolingKw:3,source:{kind:'FACILITY',reference:'Forged'}}]) {
+    const body={...layoutBody(layout,[r]),equipment:{...equipment,roomBudget}};
+    assert.equal((await request(`${url}/check`,{body})).status,400);
+    assert.equal((await request(url,{method:'PUT',version:1,body})).status,400);
+  }
+  const initial=await request(url,{method:'PUT',version:1,body:{...layoutBody(layout,[r]),equipment}});
+  assert.equal(initial.status,200);
+  // Simulate incompatible persisted input, without relying on the normal save
+  // command (which rejects this state). Candidates must still recheck it.
+  const corrupt={...equipment,roomBudget:assumedRoomBudget({maxPowerKw:0})};
+  await pool.query('UPDATE rack_plans SET equipment=$2 WHERE plan_id=$1',[layout.planId,JSON.stringify(corrupt)]);
+  const options=await request(`${url}/options`,{user:'viewer',body:{contract_version:1,base_version:2,snapshot_id:layout.snapshot.snapshotId,options:{}}});
+  assert.equal(options.status,200,JSON.stringify(options));
+  assert.ok(options.body.data.candidates.length>0);
+  for(const c of options.body.data.candidates) {
+    assert.equal(c.canStage,false);
+    assert.ok(c.equipmentReport.diagnostics.some(d=>d.code==='ROOM_BUDGET_EXCEEDED'));
+  }
+  assert.equal((await request(url)).body.data.version,2);
+})));
+
 test('Rack Assistant HTTP binds real plan scope and executes saved reads/checks/planner as a viewer without writing', {skip}, async()=>fixture(async f=>{
   const rig = rackAssistantRig();
   await server(f.people, async request => {

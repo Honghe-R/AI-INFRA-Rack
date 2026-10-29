@@ -1,0 +1,4 @@
+warning: in the working copy of 'apps/api/src/tests/rack-assistant.test.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/api/src/tests/rack-plans.test.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/web/src/rack/rack.css', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'packages/rack/src/tests/allocator.test.js', LF will be replaced by CRLF the next time Git touches it

@@ -1,5 +1,6 @@
 import { normalizeEquipment, checkEquipment, CAPACITY_DIMENSIONS } from './equipment.js';
 import { fail } from './input.js';
+import { ROOM_BUDGET_DIMENSIONS, resourceDemand, exceedsResource } from './room-budget.js';
 
 export const ALLOCATION_LIMITS = Object.freeze({ unassignedDevices: 128, eligibleRacks: 64, rackHeightU: 100 });
 const lexical = (a, b) => a < b ? -1 : a > b ? 1 : 0;
@@ -39,6 +40,13 @@ export function allocateUnassignedEquipment({ equipment: input, placements, mode
     if (unknownDimensions.length) {
       unassigned.push({ deviceId: device.deviceId, code: 'UNKNOWN_DEVICE_RESOURCE', unknownDimensions }); continue;
     }
+    if (equipment.roomBudget) {
+      const installed = next.filter(d => d.rackId !== null);
+      const unknown = ROOM_BUDGET_DIMENSIONS.filter(([key, maxKey]) => equipment.roomBudget[maxKey] === null || installed.some(d => d[key] === null)).map(([key]) => key);
+      if (unknown.length) { unassigned.push({ deviceId: device.deviceId, code: 'UNKNOWN_ROOM_BUDGET', unknownDimensions: unknown }); continue; }
+      const exceeded = ROOM_BUDGET_DIMENSIONS.filter(([key, maxKey]) => exceedsResource(resourceDemand([...installed, device], key).knownSubtotal, equipment.roomBudget[maxKey])).map(([key]) => key);
+      if (exceeded.length) { unassigned.push({ deviceId: device.deviceId, code: 'ROOM_BUDGET_EXCEEDED', dimensions: exceeded }); continue; }
+    }
     let chosen = null;
     const rejectionCounts = {};
     const reject = code => { rejectionCounts[code] = (rejectionCounts[code] ?? 0) + 1; };
@@ -62,7 +70,7 @@ export function allocateUnassignedEquipment({ equipment: input, placements, mode
   const output = normalizeEquipment({ ...equipment, devices: next }, placements);
   const report = checkEquipment(output, placements, models);
   if (report.diagnostics.length) fail('equipment', 'generated allocation failed the shared equipment checker');
-  return { algorithmId: 'unassigned-first-fit-decreasing-v1', equipment: output, assignments, unassigned,
+  return { algorithmId: 'unassigned-first-fit-decreasing-v2', equipment: output, assignments, unassigned,
     baseline, equipmentReport: report, limits: ALLOCATION_LIMITS, scope: 'UNASSIGNED_DEVICES_ONLY',
     metrics: { attemptedDevices: pending.length, assignedDevices: assignments.length, remainingUnassigned: unassigned.length,
       eligibleRacks: racks.length, excludedLockedRacks: placements.filter(p => p.locked).length } };

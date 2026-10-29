@@ -26,6 +26,14 @@ function bodyFields(body, names) {
   if (body.contract_version !== 1) throw errors.unsupportedContractVersion(body.contract_version);
 }
 // A single statement gives reads a coherent plan/source/snapshot/layout/catalog.
+function equipmentInput(body, layout) {
+  if (!Object.hasOwn(body, 'equipment')) return layout.equipment;
+  const incoming = body.equipment;
+  if (incoming && typeof incoming === 'object' && !Array.isArray(incoming) &&
+      !Object.hasOwn(incoming, 'roomBudget') && Object.hasOwn(layout.equipment, 'roomBudget'))
+    return { ...incoming, roomBudget: layout.equipment.roomBudget };
+  return incoming;
+}
 async function read(client, projectId, planId) {
   const row = (
     await client.query(
@@ -283,7 +291,7 @@ export function createRackLayoutService({ pool }) {
             planId,
             snapshotId: layout.snapshot.snapshotId,
             equipmentReport: checkEquipment(
-              normalizeEquipment(Object.hasOwn(body, 'equipment') ? body.equipment : layout.equipment, entries.map(e => e.placement)),
+              normalizeEquipment(equipmentInput(body, layout), entries.map(e => e.placement)),
               entries.map(e => e.placement), layout.models,
             ),
             report: await check(
@@ -401,7 +409,7 @@ export function createRackLayoutService({ pool }) {
             Object.hasOwn(body, 'constraints') ? body.constraints : layout.constraints,
           );
           const report = await check(client, layout, entries, constraints);
-          const equipment = normalizeEquipment(Object.hasOwn(body, 'equipment') ? body.equipment : layout.equipment, placements);
+          const equipment = normalizeEquipment(equipmentInput(body, layout), placements);
           const equipmentReport = checkEquipment(equipment, placements, layout.models);
           if (equipmentReport.diagnostics.length)
             throw new ApiError('RACK_EQUIPMENT_CONFLICT', 'Resolve equipment and capacity conflicts before saving.', {

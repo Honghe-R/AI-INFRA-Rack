@@ -90,6 +90,8 @@
 .rack-device-form { border: 1px solid var(--border, #dce0e8); border-radius: 8px; padding: 12px; margin: 12px 0; }
 .rack-equipment .rack-muted { overflow-wrap: anywhere; }
 .rack-table-scroll { overflow-x: auto; }
+.rack-room-capacity table { min-width: 680px; }
+.rack-room-capacity th, .rack-room-capacity td { overflow-wrap: normal; word-break: normal; }
 .rack-capacity-summary table { width: 100%; border-collapse: collapse; font-size: 12px; }
 .rack-capacity-summary th, .rack-capacity-summary td { padding: 6px; border-bottom: 1px solid #dce0e8; text-align: left; }
 .rack-capacity-summary caption { text-align: left; font-weight: 600; padding: 8px 0; }
