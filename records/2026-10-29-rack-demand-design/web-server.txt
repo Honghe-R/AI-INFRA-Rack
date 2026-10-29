@@ -3,3 +3,17 @@
 
   ➜  Local:   http://127.0.0.1:5193/
   ➜  press h + enter to show help
+18:27:45 [vite] (client) hmr update /src/rack/RackSections.jsx
+18:27:45 [vite] (client) hmr update /src/rack/RackSurface.jsx
+18:27:45 [vite] (client) hmr update /src/rack/RackSurface.jsx, /src/App.jsx, /src/shell/WorkspaceShell.jsx, /src/app/providers.jsx, /src/shell/ActiveToolToolbar.jsx, /src/shell/GlobalSidebar.jsx, /src/shell/MainView.jsx, /src/shell/OpenViewTabs.jsx, /src/assistant/AssistantTranscript.jsx, /src/rack/RackSections.jsx
+18:27:45 [vite] (client) hmr update /src/rack/RackEditor.jsx
+18:27:45 [vite] (client) hmr update /src/rack/RackWorkbench.jsx
+18:27:46 [vite] (client) hmr invalidate /src/app/providers.jsx Could not Fast Refresh ("nextTabId" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+18:27:46 [vite] (client) hmr update /src/App.jsx, /src/shell/WorkspaceShell.jsx
+18:28:12 [vite] (client) hmr update /src/rack/RackWorkbench.jsx
+18:28:12 [vite] (client) hmr update /src/rack/RackDemandDesign.jsx
+18:28:12 [vite] (client) hmr invalidate /src/rack/RackDemandDesign.jsx Could not Fast Refresh ("designDemandBody" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+18:28:12 [vite] (client) hmr update /src/rack/RackEditor.jsx
+18:36:38 [vite] (client) hmr update /src/rack/RackDemandDesign.jsx
+18:36:38 [vite] (client) hmr invalidate /src/rack/RackDemandDesign.jsx Could not Fast Refresh ("designDemandBody" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+18:36:38 [vite] (client) hmr update /src/rack/RackEditor.jsx
