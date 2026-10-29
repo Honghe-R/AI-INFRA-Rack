@@ -381,3 +381,5 @@ PostGIS 检查障碍完整包含、机柜与障碍接触、前后维护带越界
 本轮规格与容量仅为方案假设，没有共享不可变设备型号库、全局物理资产占用、深度导轨兼容、正式容量分配、供电冗余或热仿真。整体 NOT_RUN 不变。操作、API、浮点比较、复杂度和限制详见 [RACK_EQUIPMENT.md](RACK_EQUIPMENT.md)。
 
 第十九轮：新增 32 柜 / 236 台已安装 / 8 台待上架的多排合成机房演示，以及地图选柜联动的设备概览和 U 位立面。操作、复现和边界见 [RACK_HALL_DEMO.md](RACK_HALL_DEMO.md)，证据见 [PROGRESS.md](PROGRESS.md)。布局扫描不保证比手工方案紧凑，通道连通仍未实现。
+
+第二十轮：Rack layout 已升级为点阵画布、拖拽吸附、机柜/设备右侧 Inspector 与完整工作台演示模式；复用原检查、版本化保存和权限。操作与边界见 [RACK_VISUAL_WORKBENCH.md](RACK_VISUAL_WORKBENCH.md)，进度和验证见 [PROGRESS.md](PROGRESS.md)。

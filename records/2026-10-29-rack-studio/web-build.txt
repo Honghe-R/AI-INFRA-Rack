@@ -1,0 +1,15 @@
+
+> @ai-infra/web@0.1.0 build
+> vite build
+
+Both esbuild and oxc options were set. oxc options will be used and esbuild options will be ignored. The following esbuild options were set: `{ jsx: 'automatic', jsxImportSource: 'react' }`
+vite v8.2.2 building client environment for production...
+transforming...
+✓ 1937 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.42 kB │ gzip:   0.28 kB
+dist/assets/index-BX2ew0PY.css  109.37 kB │ gzip:  17.17 kB
+dist/assets/index-CBEGTBM3.js   903.58 kB │ gzip: 243.30 kB
+
+✓ built in 463ms

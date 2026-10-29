@@ -35,3 +35,5 @@
 第十六轮：Layout options 选择保存方案、网格与旋转参数 → Generate layout options → 比较现状/行扫描/大柜优先 → 检查未放置项、报告、逐柜位置变更和预览图 → 勾选复核 → Use selected option as draft → Rack layout 自动聚焦 → Save layout。已有草稿时禁止覆盖，旧版本/来源变化仍由后端阻止。候选仅在页面暂存，详见 [RACK_PLANNER.md](RACK_PLANNER.md)。
 
 第十九轮：新增 32 柜 / 236 台已安装 / 8 台待上架的多排合成机房演示，以及地图选柜联动的设备概览和 U 位立面。操作、复现和边界见 [RACK_HALL_DEMO.md](RACK_HALL_DEMO.md)，证据见 [PROGRESS.md](PROGRESS.md)。布局扫描不保证比手工方案紧凑，通道连通仍未实现。
+
+第二十轮：Rack layout 已升级为点阵画布、拖拽吸附、机柜/设备右侧 Inspector 与完整工作台演示模式；复用原检查、版本化保存和权限。操作与边界见 [RACK_VISUAL_WORKBENCH.md](RACK_VISUAL_WORKBENCH.md)，进度和验证见 [PROGRESS.md](PROGRESS.md)。

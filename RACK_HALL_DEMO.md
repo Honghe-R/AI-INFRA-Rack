@@ -1,5 +1,7 @@
 # 多排机房演示（第十九轮）
 
+第二十轮更新：Rack layout 已改为点阵工作台与右侧 Inspector。现在点“设备区”或“整个房间”自动适配，点“展开工作台”同时展开画布和详情；原 Fit racks / Expand map 控件仍用于 Space rules 和算法候选图。最新操作见 [RACK_VISUAL_WORKBENCH.md](RACK_VISUAL_WORKBENCH.md)。
+
 本地平台 http://localhost:5193/ → Northern DC Campus → Rack，选择 **完整机房演示 · 32柜 / 多排混合设备** → **Rack layout**。
 
 ## 内容与查看方法

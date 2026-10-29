@@ -563,3 +563,5 @@ Written screenshots land wherever `--out` points (`ui-shots/` is ignored by git)
 * **Secrets never reach logs.** Log fields pass through a redactor that strips credential-shaped keys and signed-URL query parameters.
 
 第十九轮：新增 32 柜 / 236 台已安装 / 8 台待上架的多排合成机房演示，以及地图选柜联动的设备概览和 U 位立面。操作、复现和边界见 [RACK_HALL_DEMO.md](RACK_HALL_DEMO.md)，证据见 [PROGRESS.md](PROGRESS.md)。布局扫描不保证比手工方案紧凑，通道连通仍未实现。
+
+第二十轮：Rack layout 已升级为点阵画布、拖拽吸附、机柜/设备右侧 Inspector 与完整工作台演示模式；复用原检查、版本化保存和权限。操作与边界见 [RACK_VISUAL_WORKBENCH.md](RACK_VISUAL_WORKBENCH.md)，进度和验证见 [PROGRESS.md](PROGRESS.md)。

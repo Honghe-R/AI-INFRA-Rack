@@ -7,7 +7,7 @@ import { RackPlanOverview } from './RackSections.jsx';
 import { RackInputs } from './RackInputs.jsx';
 import { RackOptions } from './RackOptions.jsx';
 import { RackAllocation } from './RackAllocation.jsx';
-import { RackHallInventory } from './RackHallInventory.jsx';
+import { RackWorkbench } from './RackWorkbench.jsx';
 import {
   beginLayoutDraft,
   layoutCheckBody,
@@ -268,46 +268,8 @@ export function RackEditor({
       if (!signal.aborted) setBusy(false);
     }
   }
-  return (
-    <section className="rack-editor" aria-label="Rack layout editor">
-      {notice && (
-        <p className="rack-notice" role="status">
-          {notice}
-        </p>
-      )}
-      {error && (
-        <p role="alert" className="rack-error">
-          {error}
-        </p>
-      )}
-      {stale && (
-        <p className="rack-warning" role="status">
-          Facility source changed. The fixed snapshot and saved racks remain visible; writes are blocked.{' '}
-          {layout.sourceStatus.reasons.join(', ')}
-        </p>
-      )}
-      {versionConflict && (
-        <p role="alert" className="rack-error">
-          The saved plan advanced to v{layout.version}; this draft is based on v{draft.baseVersion}. Your
-          input is retained. Discard it to load the current saved layout.
-        </p>
-      )}
-      {!snapshot ? (
-        <div className="rack-floor-unavailable">
-          <h3>Fix the room input before editing</h3>
-          <p>
-            This legacy plan has no stored Polygon snapshot. Capture its unchanged Facility boundary once.
-          </p>
-          {canWrite && (
-            <button disabled={busy || (!captureAttempt && stale)} onClick={() => mutate('capture')}>
-              {busy ? 'Capturing…' : captureAttempt ? 'Retry same capture' : 'Capture room input'}
-            </button>
-          )}
-          {!canWrite && <p>A project editor must capture the input first.</p>}
-        </div>
-      ) : (
-        <>
-          <div className="rack-actions rack-editor-actions">
+  const editorActions = (
+<div className="rack-actions rack-editor-actions">
             {!draft && canWrite && (
               <button
                 className="rack-primary"
@@ -364,6 +326,47 @@ export function RackEditor({
               {placements.length}/256 racks
             </span>
           </div>
+  );
+  return (
+    <section className="rack-editor" aria-label="Rack layout editor">
+      {notice && (
+        <p className="rack-notice" role="status">
+          {notice}
+        </p>
+      )}
+      {error && (
+        <p role="alert" className="rack-error">
+          {error}
+        </p>
+      )}
+      {stale && (
+        <p className="rack-warning" role="status">
+          Facility source changed. The fixed snapshot and saved racks remain visible; writes are blocked.{' '}
+          {layout.sourceStatus.reasons.join(', ')}
+        </p>
+      )}
+      {versionConflict && (
+        <p role="alert" className="rack-error">
+          The saved plan advanced to v{layout.version}; this draft is based on v{draft.baseVersion}. Your
+          input is retained. Discard it to load the current saved layout.
+        </p>
+      )}
+      {!snapshot ? (
+        <div className="rack-floor-unavailable">
+          <h3>Fix the room input before editing</h3>
+          <p>
+            This legacy plan has no stored Polygon snapshot. Capture its unchanged Facility boundary once.
+          </p>
+          {canWrite && (
+            <button disabled={busy || (!captureAttempt && stale)} onClick={() => mutate('capture')}>
+              {busy ? 'Capturing…' : captureAttempt ? 'Retry same capture' : 'Capture room input'}
+            </button>
+          )}
+          {!canWrite && <p>A project editor must capture the input first.</p>}
+        </div>
+      ) : (
+        <>
+          {section !== 'layout' && editorActions}
           {draft && <p className="rack-muted">Layout, equipment, constraints and capacity share this draft and save together.</p>}
           {inputError && <p role="alert" className="rack-error">{inputError}</p>}
           {(checkState.error || (!inputError && currentReport?.diagnostics.length > 0) ||
@@ -383,7 +386,17 @@ export function RackEditor({
             }} onNavigate={onNavigate} /></div>
           <div hidden={section !== 'equipment'}><RackAllocation client={client} layout={layout} draft={draft} canWrite={canWrite}
             onDraftChange={value => { onDraftChange(value); setError(null); setNotice('Device allocation loaded as an unsaved draft. Review and Save layout to apply.'); }} /></div>
-          <div hidden={!['layout', 'constraints'].includes(section)} data-rack-panel="layout">
+          {section === 'layout' && <RackWorkbench key={snapshot.snapshotId} snapshot={snapshot}
+            placements={placements} models={models} constraints={constraints} equipment={equipment}
+            report={currentReport} equipmentReport={equipmentReport} selectedId={selectedId}
+            onSelect={setSelectedId} editable={editable} onMove={updateRack}
+            isPositionLocked={id => placements.some(p => p.rackId === id && p.locked) || layout.placements.some(p => p.rackId === id && p.locked)}
+            onUpdate={patch => updateRack(selectedId, patch)} onNavigate={onNavigate} focusRequest={focusRequest}
+            modelId={modelId} onModelChange={setModelId} onAdd={addRack} actions={editorActions}
+            feedback={error || inputError || (checkState.error ? rackError(checkState.error) :
+              checkState.pending || checkState.body !== checkKey ? '正在检查当前布局…' :
+              currentReport?.diagnostics.length || equipmentReport?.diagnostics.length ? '存在检查冲突，请调整后再保存。' : notice)} />}
+          <div hidden={section !== 'constraints'} data-rack-panel="layout">
           <RoomFloorplan
             key={snapshot.snapshotId}
             room={snapshot.room}
@@ -401,12 +414,9 @@ export function RackEditor({
             equipmentReport={equipmentReport}
             focusRequest={focusRequest}
           />
-          {section === 'layout' && <RackHallInventory placements={placements} models={models} equipment={equipment}
-            report={equipmentReport} selectedId={selectedId} onSelect={id => {
-              setSelectedId(id); setFocusRequest({rackId:id,nonce:Date.now()});
-            }} onNavigate={onNavigate} />}
           </div>
-          <div hidden={section !== 'layout'} className="rack-editor-columns" data-rack-panel="rack-properties">
+          <details hidden={section !== 'layout'} className="rack-studio-advanced"><summary>精确坐标与机柜管理</summary>
+          <div className="rack-editor-columns" data-rack-panel="rack-properties">
             <section className="rack-card" aria-label="Rack inventory">
               <h3>Racks</h3>
               <label>
@@ -562,7 +572,7 @@ export function RackEditor({
                 <p>Select a rack in the drawing or list.</p>
               )}
             </section>
-          </div>
+          </div></details>
           <div hidden={!['equipment', 'capacity', 'validate'].includes(section)} data-rack-panel="equipment">
           <RackEquipment
             mode={section === 'validate' ? 'diagnostics' : section === 'capacity' ? 'capacity' : 'equipment'}
