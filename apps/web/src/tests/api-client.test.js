@@ -195,6 +195,30 @@ test('assistant reads carry the context key and the history path is encoded', as
   assert.equal(requested[2], '/api/v1/assistant/usage');
 });
 
+test('Rack lifecycle carries exact version and retry identity, and trash listing keeps scope filters', async () => {
+  const calls=[];
+  const client=createApiClient({fetchImpl:async(url,options)=>{
+    calls.push({url,options}); return jsonResponse(200,{data:{}});
+  }});
+  const signal=new AbortController().signal;
+  for(const operation of ['rename','delete','restore']) {
+    const body={contract_version:1,...(operation==='rename'?{name:'A'}:{})};
+    await client.manageRackPlan('project /','plan /',operation,body,{version:4,idempotencyKey:'same-key',signal});
+    const call=calls.at(-1);
+    assert.equal(call.options.method,{rename:'PATCH',delete:'DELETE',restore:'POST'}[operation]);
+    assert.equal(call.url,`/api/v1/projects/project%20%2F/rack/plans/plan%20%2F${operation==='restore'?'/restore':''}`);
+    assert.equal(call.options.headers['If-Match'],'"4"');
+    assert.equal(call.options.headers['Idempotency-Key'],'same-key');
+    assert.equal(call.options.signal,signal);
+    assert.equal(call.options.cache,'no-store');
+    assert.deepEqual(JSON.parse(call.options.body),body);
+  }
+  await client.listRackPlans('p',{scenarioId:'s',revisionId:'r',cursor:'c',deleted:true});
+  const query=new URL(calls.at(-1).url,'http://localhost').searchParams;
+  for(const [key,value] of Object.entries({scenario_id:'s',revision_id:'r',cursor:'c',deleted:'true',limit:'20'}))
+    assert.equal(query.get(key),value);
+});
+
 test('the facility graph is read for one revision, with both identifiers encoded', async () => {
   let requested = null;
   const client = createApiClient({

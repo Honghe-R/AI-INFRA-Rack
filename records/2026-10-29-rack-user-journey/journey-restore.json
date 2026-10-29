@@ -1,0 +1,11 @@
+{
+  "planId": "481e475a-269c-44fa-a404-d0d1d3ab6c48",
+  "version": 5,
+  "preserved": [
+    "snapshot",
+    "placements",
+    "constraints",
+    "equipment"
+  ],
+  "exactlyEqual": true
+}

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { rackError } from './rack-plan-state.js';
 import { rackCorners, displayClearanceBands } from './edit-layout-state.js';
 import { rackLoadDisplay, rackGroupCamera } from './floorplan-load.js';
@@ -8,10 +8,8 @@ import {
   fitRoom,
   gridLines,
   niceMetres,
-  panCamera,
   ROOM_VIEW_REASONS,
   toScreen,
-  zoomCamera,
 } from './floorplan-view.js';
 
 export function RackRoomView({
@@ -112,6 +110,7 @@ export function RoomFloorplan({
   const fit = fitRoom(view.extentM);
   const [camera, setCamera] = useState(() => rackGroupCamera(placements, models, fit) ?? fit);
   const svgRef = useRef(null);
+  const dotsId = `rack-preview-dots-${useId().replace(/:/g, '')}`;
   const dragging = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
   const sectionRef = useRef(null);
@@ -129,8 +128,8 @@ export function RoomFloorplan({
       setExpandError(null);
       if (document.fullscreenElement === sectionRef.current) await document.exitFullscreen();
       else if (sectionRef.current.requestFullscreen) await sectionRef.current.requestFullscreen();
-      else setExpandError('This browser does not support expanding the map. Zoom and pan remain available.');
-    } catch { setExpandError('The browser could not expand the map. Zoom and pan remain available.'); }
+      else setExpandError('This browser does not support expanding the map. Automatic fit remains available.');
+    } catch { setExpandError('The browser could not expand the map. Automatic fit remains available.'); }
   }
   useEffect(() => {
     if (focusRequest?.fitRacks) {
@@ -143,27 +142,6 @@ export function RoomFloorplan({
     if (rack && Number.isFinite(rack.xM) && Number.isFinite(rack.yM))
       setCamera({ cx: rack.xM, cy: rack.yM, scale: Math.min(fit.scale * 32, Math.max(fit.scale, 50)) });
   }, [focusRequest]);
-  useEffect(() => {
-    const svg = svgRef.current;
-    const wheel = (event) => {
-      event.preventDefault();
-      const rect = svg.getBoundingClientRect();
-      const anchor = [
-        ((event.clientX - rect.left) * CANVAS.width) / rect.width,
-        ((event.clientY - rect.top) * CANVAS.height) / rect.height,
-      ];
-      setCamera((current) =>
-        zoomCamera(
-          current,
-          Math.exp(-Math.max(-500, Math.min(500, event.deltaY)) * 0.002),
-          fit.scale,
-          anchor,
-        ),
-      );
-    };
-    svg.addEventListener('wheel', wheel, { passive: false });
-    return () => svg.removeEventListener('wheel', wheel);
-  }, [fit.scale]);
   const grid = gridLines(camera);
   const scaleM = niceMetres(110 / camera.scale);
   const origin = toScreen([0, 0], camera);
@@ -176,13 +154,7 @@ export function RoomFloorplan({
       event.currentTarget.releasePointerCapture(event.pointerId);
   }
   function keydown(event) {
-    const delta = { ArrowLeft: [80, 0], ArrowRight: [-80, 0], ArrowUp: [0, 80], ArrowDown: [0, -80] }[
-      event.key
-    ];
-    if (delta) setCamera((current) => panCamera(current, ...delta));
-    else if (['+', '='].includes(event.key)) setCamera((current) => zoomCamera(current, 1.25, fit.scale));
-    else if (event.key === '-') setCamera((current) => zoomCamera(current, 0.8, fit.scale));
-    else if (['0', 'Home'].includes(event.key)) setCamera(fit);
+    if (['0', 'Home'].includes(event.key)) setCamera(fit);
     else return;
     event.preventDefault();
   }
@@ -192,25 +164,10 @@ export function RoomFloorplan({
       <div className="rack-heading">
         <div>
           <h3>{room.name}</h3>
-          <p className="rack-muted">{layoutLabel ?? (onMove ? 'Layout editor' : 'Saved layout')} · Projected grid metres</p>
+          <p className="rack-muted">{layoutLabel ?? (onMove ? 'Layout editor' : 'Saved layout')} · Projected grid metres · 自动适配点阵视图</p>
         </div>
         <div className="rack-actions" aria-label="Floorplan controls">
           <button onClick={toggleExpanded}>{expanded ? 'Exit expanded map' : 'Expand map'}</button>
-          <button
-            type="button"
-            aria-label="Zoom out floorplan"
-            onClick={() => setCamera((current) => zoomCamera(current, 0.8, fit.scale))}
-          >
-            −
-          </button>
-          <output aria-label="Floorplan zoom">{(camera.scale / fit.scale).toFixed(2)}×</output>
-          <button
-            type="button"
-            aria-label="Zoom in floorplan"
-            onClick={() => setCamera((current) => zoomCamera(current, 1.25, fit.scale))}
-          >
-            +
-          </button>
           <button type="button" onClick={() => setCamera(fit)}>
             Fit room
           </button>
@@ -234,14 +191,11 @@ export function RoomFloorplan({
         viewBox={`0 0 ${CANVAS.width} ${CANVAS.height}`}
         role="group"
         tabIndex={0}
-        aria-label={`${room.name} floorplan. Drag to pan, scroll to zoom; arrow keys pan, plus and minus zoom, zero fits the room.`}
+        aria-label={`${room.name} floorplan. Automatic fit; select racks or use Fit room and Fit racks.`}
         onKeyDown={keydown}
         onPointerDown={(event) => {
           if (event.button !== 0 || dragging.current) return;
           event.currentTarget.focus();
-          event.currentTarget.setPointerCapture(event.pointerId);
-          dragging.current = { pointerId: event.pointerId, x: event.clientX, y: event.clientY, kind: 'pan' };
-          setIsDragging(true);
         }}
         onPointerMove={(event) => {
           const previous = dragging.current;
@@ -254,14 +208,6 @@ export function RoomFloorplan({
               xM: previous.xM + dx / camera.scale,
               yM: previous.yM - dy / camera.scale,
             });
-          } else {
-            dragging.current = {
-              pointerId: event.pointerId,
-              x: event.clientX,
-              y: event.clientY,
-              kind: 'pan',
-            };
-            setCamera((current) => panCamera(current, dx, dy));
           }
         }}
         onPointerUp={finishDrag}
@@ -273,16 +219,13 @@ export function RoomFloorplan({
       >
         <title>{`${room.name} · Facility polygon in local projected metres`}</title>
         <rect width={CANVAS.width} height={CANVAS.height} className="rack-room-background" />
-        <g className="rack-room-grid">
-          {grid.lines.map((line, index) => (
-            <line key={index} x1={line[0]} y1={line[1]} x2={line[2]} y2={line[3]} />
-          ))}
-        </g>
         <path
           d={boundaryPath(view.boundaryLocalM, camera)}
           fillRule="evenodd"
           className="rack-room-boundary"
         />
+        <defs><pattern id={dotsId} width="12" height="12" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="0.65" fill="currentColor"/></pattern></defs>
+        <rect width={CANVAS.width} height={CANVAS.height} fill={`url(#${dotsId})`} opacity="0.22" pointerEvents="none"/>
         <g aria-label="Maintenance bands">
           {(showMaintenance ? placements : []).flatMap((rack) => {
             const model = models.find((m) => m.modelId === rack.modelId);
@@ -440,7 +383,7 @@ export function RoomFloorplan({
       <p className="rack-muted">
         Dashed blue: front maintenance · Dashed amber: rear maintenance · Shaded blocks: planning obstacles
       </p>
-      <p className="rack-muted">Drag to pan · Scroll or + / − to zoom · Arrow keys to pan · 0 to fit room · Fit racks to inspect the equipment area · Esc to exit expanded view</p>
+      <p className="rack-muted">点阵仅辅助阅读，不代表物理网格 · Fit room 查看全房 · Fit racks 自动适配设备区 · 0 回到全房 · Esc 退出展开视图</p>
       <dl className="rack-floor-stats">
         <div>
           <dt>X extent</dt>

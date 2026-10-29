@@ -1,0 +1,32 @@
+TAP version 13
+# Subtest: demand design uses real concave Polygon/holes, is deterministic and read-only, then saves through the ordinary transaction
+not ok 1 - demand design uses real concave Polygon/holes, is deterministic and read-only, then saves through the ordinary transaction
+  ---
+  duration_ms: 1737.4112
+  type: 'test'
+  location: 'C:\\Users\\RHH\\Desktop\\AI-INFRA-Rack\\apps\\api\\src\\tests\\rack-plans.test.js:599:1'
+  failureType: 'testCodeFailure'
+  error: 'GEOSCovers: TopologyException: side location conflict at 0.59999999999999987 1'
+  code: 'XX000'
+  name: 'error'
+  stack: |-
+    C:\Users\RHH\Desktop\AI-INFRA-Rack\node_modules\pg\lib\client.js:694:17
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async pickRackPosition (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/services/rack-planner-geometry.js:6:18)
+    async flush (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rack/src/demand-planner.js:115:17)
+    async locate (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rack/src/demand-planner.js:123:61)
+    async generateDemandOptions (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/rack/src/demand-planner.js:148:19)
+    async withTenant.readOnly (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/services/rack-layout.js:206:25)
+    async withTenant (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/packages/db/src/pool.js:72:20)
+    async file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:605:3
+    async server (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:113:9)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1984.3414

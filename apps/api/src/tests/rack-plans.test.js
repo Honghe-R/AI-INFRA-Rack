@@ -108,12 +108,80 @@ async function server(people, fn, { assistant = null } = {}) {
       headers: { 'connection': 'close', 'x-test-user': user, ...(body === undefined ? {} : { 'content-type': 'application/json' }), ...(key === null ? {} : { 'idempotency-key': key }), ...(version === undefined ? {} : {'if-match':`"${version}"`}) },
       ...(body === undefined ? {} : { body: JSON.stringify(body) }),
     });
-    return { status: response.status, body: await response.json(), location: response.headers.get('location') };
+    return { status: response.status, body: await response.json(), location: response.headers.get('location'), cacheControl: response.headers.get('cache-control') };
   };
   try { await fn(request); } finally { await new Promise(resolve => app.close(resolve)); }
 }
 
 const path = p => `/api/v1/projects/${p.projectId}/rack/plans`;
+
+test('new-user lifecycle retains layout, equipment and constraints across rename/delete/restore and blocks deleted writes', {skip}, async()=>fixture(async f=>server(f.people,async request=>{
+  await addBoundary(f.a);
+  const creationKey=randomUUID(),created=await request(path(f.a),{body:f.input(),key:creationKey});
+  assert.equal(created.status,201); assert.equal(created.cacheControl,'no-store');
+  const url=created.location,layout=(await request(`${url}/layout`)).body.data;
+  const rackId=randomUUID(),placement={rackId,modelId:layout.models[0].modelId,name:'First rack',xM:3,yM:7,rotationDeg:0,locked:false};
+  const body={contract_version:1,snapshot_id:layout.snapshot.snapshotId,placements:[placement],
+    constraints:{...layout.constraints,clearance:{frontM:1,rearM:.6},obstacles:[{obstacleId:randomUUID(),name:'Reserved',xM:8,yM:2,widthM:1,depthM:1}]},
+    equipment:{...layout.equipment,devices:[{deviceId:randomUUID(),name:'Server',heightU:2,weightKg:10,powerKw:1,coolingKw:1,rackId,startU:1}],
+      rackLimits:[{rackId,maxWeightKg:100,maxPowerKw:3,maxCoolingKw:3}]}};
+  const saved=await request(`${url}/layout`,{method:'PUT',body,version:1});assert.equal(saved.status,200);
+  const renameKey=randomUUID(),rename={method:'PATCH',body:{contract_version:1,name:'New user plan'},version:2,key:renameKey};
+  const named=await request(url,rename);assert.equal(named.status,200);assert.equal(named.body.data.name,'New user plan');assert.equal(named.body.data.version,3);
+  assert.equal((await request(url,rename)).body.meta.replayed,true);
+  assert.equal((await request(url,{...rename,body:{...rename.body,name:'Different'}})).status,409);
+  const remove={method:'DELETE',body:{contract_version:1},version:3,key:randomUUID()};
+  const deleted=await request(url,remove);assert.equal(deleted.status,200);assert.ok(deleted.body.data.deletedAt);assert.equal(deleted.body.data.version,4);
+  assert.equal((await request(url,remove)).body.meta.replayed,true);
+  assert.equal((await request(path(f.a))).body.data.items.length,0);
+  const trash=(await request(`${path(f.a)}?deleted=true`)).body.data.items;assert.equal(trash.length,1);assert.equal(trash[0].planId,created.body.data.planId);
+  assert.equal((await request(`${path(f.a)}?cursor=${trash[0].planId}`)).body.data.items.length,0);
+  for(const suffix of ['/layout','/room-view']) {
+    const removed=await request(url+suffix);
+    assert.equal(removed.status,410);assert.equal(removed.cacheControl,'no-store');
+  }
+  assert.equal((await request(`${url}/layout/check`,{body})).status,410);
+  assert.equal((await request(`${url}/layout`,{method:'PUT',body,version:2})).status,410);
+  assert.equal((await request(path(f.a),{body:f.input(),key:creationKey})).status,409,'creation replay cannot recreate a deleted plan');
+  const restore={body:{contract_version:1},version:4,key:randomUUID()};
+  const restored=await request(`${url}/restore`,restore);assert.equal(restored.status,200);assert.equal(restored.body.data.deletedAt,null);assert.equal(restored.body.data.version,5);
+  assert.equal((await request(`${url}/restore`,restore)).body.meta.replayed,true);
+  const reopened=(await request(`${url}/layout`)).body.data;
+  for(const key of ['snapshot','placements','constraints','equipment'])assert.deepEqual(reopened[key],saved.body.data[key]);
+  assert.equal((await request(url,{method:'DELETE',body:{contract_version:1},version:3})).status,412);
+  assert.equal((await request(path(f.a))).body.data.items.length,1);
+})));
+
+test('lifecycle enforces tenant, permission, preconditions and atomic command rollback', {skip},async()=>fixture(async f=>server(f.people,async request=>{
+  const created=await request(path(f.a),{body:f.input()}),url=created.location;
+  for(const operation of [{method:'DELETE',body:{contract_version:1}},{method:'PATCH',body:{contract_version:1,name:'Renamed'}},{method:'POST',suffix:'/restore',body:{contract_version:1}}]) {
+    const {suffix='',...opts}=operation;
+    assert.equal((await request(url+suffix,{...opts,version:1,user:'viewer'})).status,403);
+    assert.equal((await request(url+suffix,{...opts,version:1,user:'outsider'})).status,403);
+    assert.equal((await request(`${path(f.b)}/${created.body.data.planId}${suffix}`,{...opts,version:1})).status,404);
+  }
+  assert.equal((await request(url,{method:'DELETE',body:{contract_version:1}})).status,428);
+  assert.equal((await request(url,{method:'DELETE',body:{contract_version:1},version:1,key:null})).status,428);
+  assert.equal((await request(url,{method:'DELETE',body:{contract_version:1,extra:true},version:1})).status,400);
+  assert.equal((await request(url,{method:'PATCH',body:{contract_version:1,name:' '},version:1})).status,400);
+  assert.equal((await request(`${path(f.a)}?deleted=maybe`)).status,400);
+  const count=(await pool.query('SELECT count(*)::int AS n FROM rack_layout_commands WHERE project_id=$1',[f.a.projectId])).rows[0].n;assert.equal(count,0);
+  // Cleanup and rename stay possible when Facility changed; restoring never bypasses the layout source lock.
+  await pool.query('UPDATE revision_etags SET etag=$1 WHERE project_id=$2',[randomUUID(),f.a.projectId]);
+  assert.equal((await request(url,{method:'DELETE',body:{contract_version:1},version:1})).status,200);
+  assert.equal((await request(`${url}/restore`,{body:{contract_version:1},version:2})).status,200);
+  assert.equal((await request(url)).body.data.facilityInputStatus.status,'STALE');
+})));
+
+test('delete and layout save serialize on the same version without resurrecting a plan', {skip},async()=>fixture(async f=>server(f.people,async request=>{
+  await addBoundary(f.a);const created=await request(path(f.a),{body:f.input()}),url=created.location;
+  const layout=(await request(`${url}/layout`)).body.data;
+  const body={contract_version:1,snapshot_id:layout.snapshot.snapshotId,placements:[],constraints:layout.constraints,equipment:layout.equipment};
+  const results=await Promise.all([request(url,{method:'DELETE',body:{contract_version:1},version:1}),request(`${url}/layout`,{method:'PUT',body,version:1})]);
+  assert.equal(results.filter(r=>r.status===200).length,1);
+  assert.ok(results.some(r=>[410,412].includes(r.status)));
+  assert.equal((await request(url)).body.data.version,2);
+})));
 
 const roomOuter = [[500000,4400000],[500010,4400000],[500010,4400004],[500004,4400004],[500004,4400010],[500000,4400010],[500000,4400000]];
 const roomHole = [[500001,4400001],[500002,4400001],[500002,4400002],[500001,4400002],[500001,4400001]];
@@ -521,6 +589,52 @@ async function prepared(f,request,coordinates) {
   assert.equal(response.status,200,JSON.stringify(response.body));
   return {url,planUrl:created.location,layout:response.body.data};
 }
+
+function designRequest(layout, patch={}) {
+  return {contract_version:1,base_version:layout.version,snapshot_id:layout.snapshot.snapshotId,
+    demand:{groups:[{modelId:'demo-gpu-4u',version:1,quantity:8},{modelId:'demo-tor-1u',version:1,quantity:2}],
+      rackModelId:layout.models[0].modelId,maxRacks:8,rackLimits:{maxWeightKg:800,maxPowerKw:12,maxCoolingKw:12},
+      gapM:.2,sourceReference:'HTTP test assumptions',constraints:{...layout.constraints,clearance:{frontM:1,rearM:.6}},...patch}};
+}
+test('demand design uses real concave Polygon/holes, is deterministic and read-only, then saves through the ordinary transaction', {skip},async()=>fixture(async f=>server(f.people,async request=>{
+  const {url,layout}=await prepared(f,request),body=designRequest(layout);
+  const result=await request(`${url}/design-options`,{body,user:'viewer'});assert.equal(result.status,200,JSON.stringify(result.body));
+  assert.equal(result.body.data.persisted,false);assert.equal(result.body.data.validationState,'NOT_RUN');assert.equal(result.body.data.candidates.length,2);
+  for(const c of result.body.data.candidates){assert.equal(c.canStage,true,JSON.stringify(c));assert.equal(c.body.equipment.devices.length,10);assert.equal(c.metrics.assignedDevices,10);assert.equal(c.report.diagnostics.length,0);assert.equal(c.equipmentReport.diagnostics.length,0);}
+  assert.deepEqual((await request(`${url}/design-options`,{body})).body.data.candidates,result.body.data.candidates);
+  const touching=await request(`${url}/design-options`,{body:designRequest(layout,{gapM:0})});
+  assert.equal(touching.status,200,JSON.stringify(touching.body));
+  assert.ok(touching.body.data.candidates.every(c=>c.canStage),'zero minimum gap is robust to floating point while preserving required front/rear clearance');
+  const after=(await request(url)).body.data;assert.deepEqual(after,layout);
+  assert.equal((await pool.query('SELECT count(*)::int n FROM rack_layout_commands WHERE project_id=$1',[f.a.projectId])).rows[0].n,0);
+  const candidate=result.body.data.candidates[0];
+  assert.equal((await request(url,{method:'PUT',body:candidate.body,version:1,user:'viewer'})).status,403);
+  const saved=await request(url,{method:'PUT',body:candidate.body,version:1});assert.equal(saved.status,200,JSON.stringify(saved.body));
+  assert.equal(saved.body.data.version,2);assert.deepEqual(saved.body.data.equipment,candidate.body.equipment);
+  assert.equal((await request(`${url}/design-options`,{body})).status,412);
+  assert.equal((await request(`${url}/design-options`,{body:{...body,base_version:2}})).status,409);
+})));
+test('demand planning blocks tenant, changed source, wrong snapshot and malformed catalog/limits without writing', {skip},async()=>fixture(async f=>server(f.people,async request=>{
+  const {url,layout}=await prepared(f,request),body=designRequest(layout);
+  assert.equal((await request(`${url}/design-options`,{body,user:'outsider'})).status,403);
+  assert.equal((await request(`${path(f.b)}/${layout.planId}/layout/design-options`,{body})).status,404);
+  assert.equal((await request(`${url}/design-options`,{body:{...body,snapshot_id:randomUUID()}})).status,409);
+  for(const demand of [{...body.demand,groups:[{modelId:'demo-gpu-4u',version:99,quantity:1}]},{...body.demand,maxRacks:33},{...body.demand,rackLimits:{...body.demand.rackLimits,maxPowerKw:null}}])
+    assert.equal((await request(`${url}/design-options`,{body:{...body,demand}})).status,400);
+  await pool.query('UPDATE revision_etags SET etag=$1 WHERE project_id=$2',[randomUUID(),f.a.projectId]);
+  assert.equal((await request(`${url}/design-options`,{body})).status,409);
+  assert.equal((await request(url)).body.data.version,1);
+})));
+test('demand geometry failures and incomplete device/budget demands cannot stage, and never silently drop inventory', {skip},async()=>fixture(async f=>server(f.people,async request=>{
+  const {url,layout}=await prepared(f,request);
+  for(const patch of [{groups:[{modelId:'demo-optical-2u',version:1,quantity:2}]},
+    {roomBudget:{source:{kind:'ASSUMED',reference:'test'},maxPowerKw:0,maxCoolingKw:100}},
+    {constraints:{...layout.constraints,clearance:{frontM:10,rearM:10}}}]) {
+    const result=await request(`${url}/design-options`,{body:designRequest(layout,patch)});assert.equal(result.status,200,JSON.stringify(result.body));
+    for(const c of result.body.data.candidates){assert.equal(c.canStage,false);assert.ok(c.unplaced.length);assert.equal(c.body.equipment.devices.length,patch.groups?2:10);}
+  }
+  assert.deepEqual((await request(url)).body.data,layout);
+})));
 
 test('Rack layout captures geometry at creation and atomically persists/reloads versioned placements', {skip}, async()=>fixture(async f=>server(f.people,async request=>{
   const {url,planUrl,layout}=await prepared(f,request);

@@ -14,7 +14,7 @@ npm run dev
 ```
 
 `rack:setup` 从 `.env.rack.example` 生成被 Git 忽略的 `.env`，随机生成本地凭证，
-启动 `compose.rack.yaml` 中的两个依赖，执行全部迁移（当前 10 个）、身份/权限示例和 Facility 示例初始化。已有副本只需 `npm run migrate`，不要重复初始化或 reset。
+启动 `compose.rack.yaml` 中的两个依赖，执行全部迁移（当前 11 个）、身份/权限示例和 Facility 示例初始化。已有副本只需 `npm run migrate`，不要重复初始化或 reset。
 已有 `.env` 不会被覆盖；如不符合 Rack 隔离配置会停止并说明原因。
 不要在终端预先导出其他数据库、Compose 或存储配置；初始化助手会拒绝相关环境覆盖，避免操作其他环境。
 

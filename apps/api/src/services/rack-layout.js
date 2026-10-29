@@ -8,6 +8,7 @@ import { readRackRoomView } from './rack-plans.js';
 import { generateRackOptions, normalizePlannerOptions, layoutMetrics, PLANNER_LIMITS } from '@ai-infra/rack';
 import { pickRackPosition } from './rack-planner-geometry.js';
 import { allocateUnassignedEquipment } from '@ai-infra/rack';
+import { generateDemandOptions, normalizeDesignDemand, DEMAND_LIMITS } from '@ai-infra/rack';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const conflict = (code, message, details = []) => new ApiError(code, message, { status: 409, details });
@@ -37,7 +38,7 @@ function equipmentInput(body, layout) {
 async function read(client, projectId, planId) {
   const row = (
     await client.query(
-      `SELECT p.plan_id,p.project_id,p.scenario_id,p.version,p.source_revision_id,
+      `SELECT p.plan_id,p.project_id,p.scenario_id,p.version,p.source_revision_id,p.deleted_at,
     p.source_container_id,p.source_revision_etag,p.spatial_constraints,p.equipment,r.lifecycle_state,e.etag,s.snapshot_id,s.document,
     COALESCE((SELECT jsonb_agg(jsonb_build_object('rackId',q.rack_id,'modelId',q.model_id,'name',q.name,
       'xM',q.x_m,'yM',q.y_m,'rotationDeg',q.rotation_deg,'locked',q.locked) ORDER BY q.rack_id)
@@ -51,6 +52,7 @@ async function read(client, projectId, planId) {
     )
   ).rows[0];
   if (!row) throw errors.notFound('Rack plan not found.');
+  if (row.deleted_at) throw new ApiError('RACK_PLAN_DELETED','This plan is in deleted plans. Restore it before editing or planning.',{status:410});
   const reasons = [];
   if (row.lifecycle_state !== 'DRAFT') reasons.push('SOURCE_NOT_DRAFT');
   if (!row.etag) reasons.push('ETAG_MISSING');
@@ -180,6 +182,51 @@ async function check(client, layout, entries, constraints) {
 
 export function createRackLayoutService({ pool }) {
   return {
+    async designOptions({ projectId, planId, body }) {
+      scope(projectId, planId);
+      bodyFields(body, ['contract_version','base_version','snapshot_id','demand']);
+      if (!Number.isSafeInteger(body.base_version) || body.base_version < 1) throw new RackInputError('base_version','must be a positive integer');
+      const demand = normalizeDesignDemand(body.demand), started = performance.now();
+      const deadline = () => {
+        if (performance.now()-started > 15000) throw new ApiError('RACK_PLANNING_TIMEOUT','Design search exceeded 15 seconds; no data changed.',{status:503});
+      };
+      return withTenant(pool,projectId,async client => {
+        await client.query("SET LOCAL statement_timeout = '5000ms'");
+        const layout = await read(client,projectId,planId);
+        if(layout.version!==body.base_version) throw new ApiError('RACK_VERSION_CONFLICT','Reload before designing.',{status:412});
+        if(!layout.snapshot || layout.snapshot.snapshotId!==body.snapshot_id) throw conflict('RACK_SNAPSHOT_MISMATCH','Reload the fixed room input.');
+        if(layout.sourceStatus.status!=='UNCHANGED') throw conflict('RACK_SOURCE_STALE','Review the changed Facility source before designing.');
+        if(layout.placements.length || layout.equipment.devices.length || layout.equipment.rackLimits.length)
+          throw conflict('RACK_DESIGN_REQUIRES_EMPTY_PLAN','Demand design starts from an empty saved plan. Create a new plan to preserve existing work.');
+        const inputFingerprint=createHash('sha256').update(JSON.stringify({layout,demand})).digest('hex');
+        const makeId=(kind,index)=>{
+          const h=createHash('sha256').update(`${inputFingerprint}:${kind}:${index}`).digest('hex');
+          return `${h.slice(0,8)}-${h.slice(8,12)}-5${h.slice(13,16)}-a${h.slice(17,20)}-${h.slice(20,32)}`;
+        };
+        const generated=await generateDemandOptions({projectId,planId,demand,models:layout.models,boundary:layout.snapshot.view.boundaryLocalM,
+          constraints:layout.constraints,roomBudget:layout.equipment.roomBudget,makeId,
+          pickArrangement:async proposals=>{deadline();return pickRackPosition(client,layout,demand.constraints ?? layout.constraints,proposals,[]);}});
+        const candidates=[];
+        for(const candidate of generated) {
+          deadline();
+          const placements=candidate.placements.map(({projectId:_project,planId:_plan,...p})=>p);
+          const entries=normalizeEditableLayout({placements,models:layout.models,projectId,planId});
+          const report=await check(client,layout,entries,candidate.constraints);
+          const equipmentReport=checkEquipment(candidate.equipment,candidate.placements,layout.models);
+          const {equipment,constraints,...rest}=candidate;
+          candidates.push({...rest,placements,optionId:`${candidate.algorithmId}:${inputFingerprint}`,report,equipmentReport,
+            canStage:!candidate.unplaced.length && !report.diagnostics.length && !equipmentReport.diagnostics.length,
+            body:{contract_version:1,snapshot_id:layout.snapshot.snapshotId,placements,constraints,equipment}});
+        }
+        deadline();
+        return {contractVersion:1,projectId,planId,baseVersion:layout.version,snapshotId:layout.snapshot.snapshotId,
+          facilityInput:layout.facilityInput,inputFingerprint,demand,limits:DEMAND_LIMITS,candidates,
+          elapsedMs:Math.round(performance.now()-started),scope:'EMPTY_PLAN_DEMAND_DESIGN',persisted:false,validationState:'NOT_RUN'};
+      },{readOnly:true}).catch(error=>{
+        if(error.code==='57014')throw new ApiError('RACK_PLANNING_TIMEOUT','A design query reached its time limit. No data changed.',{status:503});
+        throw error;
+      });
+    },
     async options({ projectId, planId, body }) {
       scope(projectId, planId);
       bodyFields(body, ['contract_version', 'base_version', 'snapshot_id', 'options']);

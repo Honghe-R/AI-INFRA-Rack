@@ -54,6 +54,7 @@ function present(row) {
   return {
     ...plan, version: row.version, placements: row.placements ?? [],
     createdAt: row.created_at.toISOString(), createdBy: row.created_by,
+    deletedAt: row.deleted_at?.toISOString() ?? null, deletedBy: row.deleted_by ?? null,
     facilityInputStatus: {
       status: !row.current_etag ? 'UNAVAILABLE' : reasons.length ? 'STALE' : 'UNCHANGED',
       reasons, currentRevisionEtag: row.current_etag ?? null, lifecycleState: row.source_state,
@@ -73,7 +74,9 @@ export function createRackPlanService({ pool }) {
     },
     async list({ projectId, query = {} }) {
       if (typeof projectId !== 'string' || !UUID.test(projectId)) throw missing();
-      fields(query, 'query', ['scenario_id', 'revision_id', 'cursor', 'limit']);
+      fields(query, 'query', ['scenario_id', 'revision_id', 'cursor', 'limit', 'deleted']);
+      if (query.deleted !== undefined && !['true', 'false'].includes(query.deleted))
+        throw new RackInputError('deleted', 'must be true or false');
       for (const key of ['scenario_id', 'revision_id', 'cursor']) {
         if (query[key] !== undefined && !UUID.test(query[key])) throw new RackInputError(key, 'must be a UUID');
       }
@@ -86,15 +89,17 @@ export function createRackPlanService({ pool }) {
         // to retain PostgreSQL timestamp precision, including tied creation times.
         const result = await client.query(`${READ}
           WHERE p.project_id = $1
+            AND (p.deleted_at IS NOT NULL) = $6
             AND ($2::uuid IS NULL OR p.scenario_id = $2)
             AND ($3::uuid IS NULL OR p.source_revision_id = $3)
             AND ($4::uuid IS NULL OR (p.created_at, p.plan_id) < (
               SELECT c.created_at, c.plan_id FROM rack_plans c
               WHERE c.project_id = $1 AND c.plan_id = $4
+                AND (c.deleted_at IS NOT NULL) = $6
                 AND ($2::uuid IS NULL OR c.scenario_id = $2)
                 AND ($3::uuid IS NULL OR c.source_revision_id = $3)))
           ORDER BY p.created_at DESC, p.plan_id DESC LIMIT $5`,
-        [projectId, query.scenario_id ?? null, query.revision_id ?? null, query.cursor ?? null, limit + 1]);
+        [projectId, query.scenario_id ?? null, query.revision_id ?? null, query.cursor ?? null, limit + 1, query.deleted === 'true']);
         const items = result.rows.slice(0, limit).map(present);
         return { items, nextCursor: result.rows.length > limit ? items.at(-1).planId : null };
       }, { readOnly: true });
@@ -119,6 +124,7 @@ export function createRackPlanService({ pool }) {
           if (replay.rows[0].creation_hash !== hash) {
             throw new ApiError('IDEMPOTENCY_KEY_REUSED', 'This key was already used for a different Rack plan request.', { status: 409 });
           }
+          if (replay.rows[0].deleted_at) throw new ApiError('RACK_PLAN_DELETED', 'The original plan was deleted. Restore it from deleted plans.', { status: 409 });
           return { plan: present(replay.rows[0]), replayed: true };
         }
         // Lock the upstream token before checking source records.
@@ -157,6 +163,44 @@ export function createRackPlanService({ pool }) {
         }
         const stored = await client.query(`${READ} WHERE p.project_id = $1 AND p.plan_id = $2`, [plan.projectId, plan.planId]);
         return { plan: present(stored.rows[0]), replayed: false };
+      });
+    },
+    async manage({ projectId, planId, actorId, operation, body, key, ifMatch }) {
+      if (!UUID.test(projectId ?? '') || !UUID.test(planId ?? '')) throw missing();
+      if (!UUID.test(actorId ?? '')) throw errors.unauthorized();
+      if (!['rename','delete','restore'].includes(operation)) throw new RackInputError('operation','unsupported operation');
+      fields(body, 'body', operation === 'rename' ? ['contract_version','name'] : ['contract_version']);
+      if (body.contract_version !== 1) throw errors.unsupportedContractVersion(body.contract_version);
+      const name = operation === 'rename' && typeof body.name === 'string' ? body.name.trim() : null;
+      if (operation === 'rename' && (!name || body.name.length > 160 || /[\x00-\x1f\x7f]/.test(name)))
+        throw new RackInputError('name','must be 1–160 characters without control characters');
+      if (!key) throw new ApiError('IDEMPOTENCY_KEY_REQUIRED','Idempotency-Key is required.',{status:428});
+      if (!UUID.test(key)) throw new RackInputError('Idempotency-Key','must be a UUID');
+      if (!ifMatch) throw new ApiError('PRECONDITION_REQUIRED','If-Match is required.',{status:428});
+      if (!/^"[1-9][0-9]*"$/.test(ifMatch) || !Number.isSafeInteger(Number(ifMatch.slice(1,-1))))
+        throw new RackInputError('If-Match','must be a quoted positive integer version');
+      const version=Number(ifMatch.slice(1,-1));
+      const hash=createHash('sha256').update(JSON.stringify({operation,version,body})).digest('hex');
+      return withTenant(pool,projectId,async client=>{
+        const locked=await client.query('SELECT plan_id FROM rack_plans WHERE project_id=$1 AND plan_id=$2 FOR UPDATE',[projectId,planId]);
+        if(!locked.rows.length)throw missing();
+        const previous=(await client.query('SELECT request_hash,applied_version FROM rack_layout_commands WHERE project_id=$1 AND plan_id=$2 AND command_key=$3',[projectId,planId,key])).rows[0];
+        let row=(await client.query(`${READ} WHERE p.project_id=$1 AND p.plan_id=$2`,[projectId,planId])).rows[0];
+        if(previous){
+          if(previous.request_hash!==hash)throw new ApiError('IDEMPOTENCY_KEY_REUSED','This key belongs to another request.',{status:409});
+          return {plan:present(row),replayed:true,appliedVersion:previous.applied_version};
+        }
+        if(row.version!==version)throw new ApiError('RACK_VERSION_CONFLICT','The plan changed. Refresh and review it before trying again.',{status:412,details:[{currentVersion:row.version}]});
+        if(operation==='restore'&&!row.deleted_at)throw new ApiError('RACK_PLAN_NOT_DELETED','This plan is already active.',{status:409});
+        if(operation!=='restore'&&row.deleted_at)throw new ApiError('RACK_PLAN_DELETED','Restore this plan before editing it.',{status:409});
+        // Same plan-row lock as layout saves: an old draft cannot overwrite deletion/restoration.
+        await client.query(`UPDATE rack_plans SET name=COALESCE($3,name),
+          deleted_at=CASE WHEN $4='delete' THEN now() WHEN $4='restore' THEN NULL ELSE deleted_at END,
+          deleted_by=CASE WHEN $4='delete' THEN $5::uuid WHEN $4='restore' THEN NULL ELSE deleted_by END,
+          version=version+1,updated_at=now(),updated_by=$5 WHERE project_id=$1 AND plan_id=$2`,[projectId,planId,name,operation,actorId]);
+        await client.query('INSERT INTO rack_layout_commands(project_id,plan_id,command_key,request_hash,applied_version,created_by) VALUES($1,$2,$3,$4,$5,$6)',[projectId,planId,key,hash,version+1,actorId]);
+        row=(await client.query(`${READ} WHERE p.project_id=$1 AND p.plan_id=$2`,[projectId,planId])).rows[0];
+        return {plan:present(row),replayed:false,appliedVersion:row.version};
       });
     },
     async get({ projectId, planId }) {
@@ -200,6 +244,7 @@ export async function readRackRoomView(client, { projectId, planId }) {
     WHERE p.project_id=$1 AND p.plan_id=$2`, [projectId, planId, MAX_ROOM_VIEW_POINTS]);
   const row = result.rows[0];
   if (!row) throw missing();
+  if (row.deleted_at) throw new ApiError('RACK_PLAN_DELETED','This plan is in deleted plans. Restore it before opening the layout.',{status:410});
   const plan = present(row);
   const base = { contractVersion: 1, planId: plan.planId, planVersion: plan.version,
     facilityInput: plan.facilityInput, facilityInputStatus: plan.facilityInputStatus,

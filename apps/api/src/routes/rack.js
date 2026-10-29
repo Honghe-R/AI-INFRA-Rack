@@ -43,6 +43,10 @@ export function registerRackRoutes(router, { pool, guard }) {
     await facilityRead(ctx);
     return { data: await layouts.equipmentOptions({ projectId:ctx.params.projectId, planId:ctx.params.planId, body:ctx.body }) };
   }), {permission:RACK_KEYS.READ,projectParam:'projectId'});
+  router.post(`${base}/:planId/layout/design-options`, ctx => adapt(async () => {
+    await facilityRead(ctx);
+    return {data:await layouts.designOptions({projectId:ctx.params.projectId,planId:ctx.params.planId,body:ctx.body})};
+  }), {permission:RACK_KEYS.READ,projectParam:'projectId'});
   for (const [method,suffix,operation] of [['post','/room-snapshot','capture'],['put','/layout','save']]) {
     router[method](`${base}/:planId${suffix}`, ctx=>adapt(async()=>{
       await facilityRead(ctx);
@@ -73,4 +77,11 @@ export function registerRackRoutes(router, { pool, guard }) {
   router.get(`${base}/:planId`, ctx => adapt(async () => ({
     data: await service.get({ projectId: ctx.params.projectId, planId: ctx.params.planId }),
   })), { permission: RACK_KEYS.READ, projectParam: 'projectId' });
+  for(const [method,suffix,operation] of [['patch','','rename'],['delete','','delete'],['post','/restore','restore']]) {
+    router[method](`${base}/:planId${suffix}`,ctx=>adapt(async()=>{
+      const result=await service.manage({projectId:ctx.params.projectId,planId:ctx.params.planId,
+        actorId:ctx.user.userId,operation,body:ctx.body,key:ctx.headers['idempotency-key'],ifMatch:ctx.headers['if-match']});
+      return {data:result.plan,meta:{replayed:result.replayed,applied_version:result.appliedVersion},headers:{etag:`"${result.plan.version}"`}};
+    }),{permission:RACK_KEYS.WRITE,projectParam:'projectId'});
+  }
 }

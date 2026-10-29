@@ -1,0 +1,1 @@
+{"applied":["011_rack_plan_lifecycle.sql"],"skipped":["001_facility_schema.sql","002_workspace_identity_rbac.sql","003_project_assets.sql","004_asset_access_grants.sql","005_map_tile_proxy.sql","006_assistant_host.sql","007_rack_plans.sql","008_rack_layout.sql","009_rack_spatial_constraints.sql","010_rack_equipment.sql"],"drifted":[],"pending":["011_rack_plan_lifecycle.sql"]}

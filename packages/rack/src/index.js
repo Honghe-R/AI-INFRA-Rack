@@ -19,3 +19,4 @@ export { getCatalogExamples } from './catalog-examples.js';
 export { generateRackOptions, normalizePlannerOptions, plannerGeometry, layoutMetrics, PLANNER_LIMITS } from './planner.js';
 export { allocateUnassignedEquipment, ALLOCATION_LIMITS } from './allocator.js';
 export { normalizeRoomBudget, checkRoomBudget } from './room-budget.js';
+export { normalizeDesignDemand, generateDemandOptions, DEMAND_LIMITS } from './demand-planner.js';

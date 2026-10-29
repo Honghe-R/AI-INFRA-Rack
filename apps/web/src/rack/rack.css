@@ -266,6 +266,11 @@
 .rack-surface .rack-inspector-link, .rack-surface .rack-inspector-back { display: inline-flex; align-items: center; gap: 5px; margin-top: 16px; padding: 0; font-size: 11px; border: 0; color: var(--accent); background: transparent; }
 .rack-inspector-empty { text-align: center; padding: 50px 10px 28px; color: var(--text-muted); }.rack-inspector-empty > svg { color: var(--accent); }.rack-inspector-empty h3 { font-size: 15px; color: var(--text); }.rack-inspector-empty p { font-size: 11px; }
 .rack-studio-advanced { margin-top: 20px; border-top: 1px solid var(--line); padding-top: 14px; }.rack-studio-advanced > summary { cursor: pointer; font-size: 12px; }
+.rack-journey { display:flex; gap:8px; flex-wrap:wrap; margin:16px 0; }
+.rack-journey button[aria-current="step"] { background:var(--accent-soft); color:var(--accent); border-color:var(--accent); }
+.rack-plan-actions { margin:16px 0; padding:14px; background:var(--surface-sunken); border-radius:8px; }
+.rack-plan-actions label { display:grid; gap:6px; margin-bottom:12px; }.rack-plan-actions input { max-width:100%; box-sizing:border-box; }
+.rack-plan-actions h3 { margin:0 0 12px; }.rack-plan-actions .rack-danger { color:var(--error); }
 .rack-workbench:fullscreen { margin: 0; border: 0; border-radius: 0; overflow: auto; height: 100dvh; color: var(--text); }
 .rack-workbench:fullscreen .rack-workbench-body { grid-template-columns: minmax(0,1fr) 330px; }
 .rack-workbench:fullscreen .rack-inspector { max-height: calc(100dvh - 112px); }

@@ -1,0 +1,57 @@
+
+> @ai-infra/web@0.1.0 test
+> vitest run src/tests/rack-surface.test.jsx src/tests/rack-editor.test.jsx src/tests/rack-sections.test.jsx src/tests/rack-workbench.test.jsx src/tests/rack-constraints.test.jsx src/tests/rack-equipment.test.jsx src/tests/rack-room-budget.test.jsx src/tests/api-client.test.js
+
+
+ RUN  v2.1.9 C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/web
+
+ ✓ src/tests/api-client.test.js (12 tests) 7ms
+ ✓ src/tests/rack-equipment.test.jsx (5 tests) 18ms
+ ✓ src/tests/rack-constraints.test.jsx (5 tests) 17ms
+ ✓ src/tests/rack-editor.test.jsx (4 tests) 13ms
+ ✓ src/tests/rack-sections.test.jsx (4 tests) 13ms
+ ✓ src/tests/rack-workbench.test.jsx (7 tests) 38ms
+ ❯ src/tests/rack-surface.test.jsx (5 tests | 1 failed) 15ms
+   × plan management separates recovery and blocks writes with a draft or without permission 12ms
+     → The input did not match the regular expression /value="Exact retained name" disabled=""/. Input:
+
+'<section class="rack-plan-actions" aria-label="方案管理"><form><h3>重命名方案</h3><label>方案名称<input required="" maxLength="160" disabled="" value="Exact retained name"/></label><div class="rack-actions"><button class="rack-primary">重试原操作</button><button type="button" disabled="">取消</button></div></form></section>'
+
+ ✓ src/tests/rack-room-budget.test.jsx (4 tests) 50ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/tests/rack-surface.test.jsx > plan management separates recovery and blocks writes with a draft or without permission
+AssertionError: The input did not match the regular expression /value="Exact retained name" disabled=""/. Input:
+
+'<section class="rack-plan-actions" aria-label="方案管理"><form><h3>重命名方案</h3><label>方案名称<input required="" maxLength="160" disabled="" value="Exact retained name"/></label><div class="rack-actions"><button class="rack-primary">重试原操作</button><button type="button" disabled="">取消</button></div></form></section>'
+
+
+- Expected: 
+/value="Exact retained name" disabled=""/
+
++ Received: 
+"<section class=\"rack-plan-actions\" aria-label=\"方案管理\"><form><h3>重命名方案</h3><label>方案名称<input required=\"\" maxLength=\"160\" disabled=\"\" value=\"Exact retained name\"/></label><div class=\"rack-actions\"><button class=\"rack-primary\">重试原操作</button><button type=\"button\" disabled=\"\">取消</button></div></form></section>"
+
+ ❯ src/tests/rack-surface.test.jsx:22:10
+     20|   assert.match(trash,/恢复方案/); assert.doesNotMatch(trash,/删除方案|…
+     21|   const retry=renderToStaticMarkup(<RackPlanActions plan={plan} canWri…
+     22|   assert.match(retry,/value="Exact retained name" disabled=""/);
+       |          ^
+     23|   assert.match(retry,/重试原操作/);
+     24| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+ Test Files  1 failed | 7 passed (8)
+      Tests  1 failed | 45 passed (46)
+   Start at  16:18:16
+   Duration  1.46s (transform 681ms, setup 0ms, collect 2.91s, tests 172ms, environment 1ms, prepare 2.51s)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path C:\Users\RHH\Desktop\AI-INFRA-Rack\apps\web
+npm error workspace @ai-infra/web@0.1.0
+npm error location C:\Users\RHH\Desktop\AI-INFRA-Rack\apps\web
+npm error command failed
+npm error command C:\Windows\system32\cmd.exe /d /s /c vitest run src/tests/rack-surface.test.jsx src/tests/rack-editor.test.jsx src/tests/rack-sections.test.jsx src/tests/rack-workbench.test.jsx src/tests/rack-constraints.test.jsx src/tests/rack-equipment.test.jsx src/tests/rack-room-budget.test.jsx src/tests/api-client.test.js

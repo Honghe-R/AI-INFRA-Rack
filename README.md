@@ -1,5 +1,9 @@
 # AI Network Infrastructure Planner
 
+最新 Rack 增量（2026-10-29，第二十二轮）：[按设备数量自动设计](RACK_DEMAND_DESIGN.md)，空方案输入设备数量与约束，生成机柜/U位/空间候选，复核后普通保存。[标准设计文档](doc/tools/rack/Overview.md)按老师8份bundle补齐。测试与本机进程尚待重启的排序修正见PROGRESS.md。
+
+最新 Rack 增量（2026-10-29）：[从新建到删除的完整操作](RACK_USER_JOURNEY.md)，创建后自动进入布局、跨页步骤导航、方案重命名与可恢复删除；截图旧demo已移入本机“已删除方案”。已有环境先 `npm run migrate` 应用011，再正常启动；不要重新seed/reset。实现与验证见 [PROGRESS.md](PROGRESS.md)。
+
 Latest Rack increment (2026-10-29): [plan-wide assumed room power/cooling budgets](RACK_ROOM_BUDGET.md), installed/inventory totals, shared save/candidate checks and budget-aware device allocation. Capacity has a new independent synthetic demo. Formal Facility allocations and access connectivity remain pending.
 
 本 Rack 副本的完整平台：首次执行 `npm ci`、`npm run rack:setup`，再执行 `npm run dev`，打开 http://localhost:5193/ 。

@@ -11,7 +11,7 @@ function DeviceIcon({device}) { const Icon=iconFor[deviceKind(device)[1]]; retur
 function Facts({items}) { return <dl className="rack-inspector-facts">{items.map(([label,value])=><div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>; }
 
 export function RackInspector({rack, model, devices, selectedDevice, report, onDevice, onBack, onNavigate,
-  editable, positionLocked, onUpdate, onClose, pending=false}) {
+  editable, positionLocked, onUpdate, onRemove, onClose, pending=false}) {
   const installed=devices.filter(d=>d.rackId===rack?.rackId);
   const summary=report?.racks.find(r=>r.rackId===rack?.rackId);
   return <aside className="rack-inspector" aria-label="对象详情">
@@ -27,7 +27,7 @@ export function RackInspector({rack, model, devices, selectedDevice, report, onD
         ['型号',selectedDevice.catalogRef?`${selectedDevice.catalogRef.modelId} · v${selectedDevice.catalogRef.version}`:'自定义假设规格'],
       ]}/>
       <details><summary>标识与来源</summary><code>{selectedDevice.deviceId}</code><p>规格取自方案内保存的假设数据；未知值不会按零计算。</p></details>
-      <button className="rack-inspector-link" onClick={()=>onNavigate('equipment')}>打开设备与 U 位管理 →</button>
+      {onNavigate&&<button className="rack-inspector-link" onClick={()=>onNavigate('equipment')}>打开设备与 U 位管理 →</button>}
     </> : rack ? <>
       <div className="rack-inspector-title"><Server size={24}/><h3>{rack.name}</h3><span className="rack-type-chip">机柜</span></div>
       <p className="rack-inspector-subtitle">{model?.name} · {positionLocked?'位置锁定':'可调整位置'}</p>
@@ -38,7 +38,9 @@ export function RackInspector({rack, model, devices, selectedDevice, report, onD
       <div className="rack-inspector-loads"><Load label="U 位" value={summary?`${summary.occupiedU} / ${summary.heightU} U`:'待检查'} ratio={summary?summary.occupiedU/summary.heightU:null}/>
         <Load label="功率" value={rackLoadDisplay('power',rack.rackId,report).label} ratio={summary?.capacities.powerKw.limit>0?summary.capacities.powerKw.knownSubtotal/summary.capacities.powerKw.limit:null}/></div>
       <div className="rack-actions"><button aria-label="旋转选中机柜" disabled={!editable||positionLocked} onClick={()=>onUpdate({rotationDeg:(rack.rotationDeg+90)%360})}><RotateCw size={14}/>旋转 90°</button>
-        <button onClick={()=>onNavigate('capacity')}>容量详情 →</button></div>
+        {onNavigate&&<button onClick={()=>onNavigate('capacity')}>容量详情 →</button>}
+        {onRemove&&<button className="rack-danger" disabled={!editable||positionLocked||installed.length>0} onClick={onRemove}>删除选中机柜</button>}</div>
+      {onRemove&&<p className="rack-muted">{installed.length?'请先在设备页卸架或迁移柜内设备，再删除机柜。':'删除机柜后需保存才生效；保存前可用 Discard changes 撤销。'}</p>}
       {positionLocked&&<p className="rack-muted"><LockKeyhole size={12}/> 已保存锁定柜须先单独解锁并保存，才能移动。</p>}
       <h4>柜内设备 <span>{installed.length}</span></h4>
       <p className="rack-muted">点击设备块或清单查看详情 · U1 在底部</p>
@@ -51,7 +53,7 @@ export function RackInspector({rack, model, devices, selectedDevice, report, onD
       </div>}
       <DeviceList devices={installed} onDevice={onDevice}/>
       {!installed.length&&<p className="rack-muted">机柜为空，可进入设备页上架。</p>}
-      <button className="rack-inspector-link" onClick={()=>onNavigate('equipment')}>管理设备与 U 位 →</button>
+      {onNavigate&&<button className="rack-inspector-link" onClick={()=>onNavigate('equipment')}>管理设备与 U 位 →</button>}
     </> : <>
       <div className="rack-inspector-empty"><Layers size={30}/><h3>{pending?'待上架设备':'选择一个机柜'}</h3><p>{pending?'点击设备查看规格，前往设备页分配位置。':'点画布中的机柜查看容量、柜内设备与规格。'}</p></div>
       {pending&&<DeviceList devices={devices.filter(d=>d.rackId===null)} onDevice={onDevice}/>}
@@ -63,7 +65,7 @@ function DeviceList({devices,onDevice}) { return <ul className="rack-inspector-d
 
 export function RackWorkbench({snapshot, placements, models, constraints, equipment, report, equipmentReport,
   selectedId, onSelect, editable, onMove, isPositionLocked, onUpdate, onNavigate, focusRequest,
-  modelId, onModelChange, onAdd, actions, feedback}) {
+  modelId, onModelChange, onAdd, onRemove, actions, feedback}) {
   const {view,room}=snapshot;
   const [camera,setCamera]=useState(()=>equipmentCamera(placements,models,constraints,view.extentM));
   const [scope,setScope]=useState('equipment'),[mode,setMode]=useState('power');
@@ -158,7 +160,7 @@ export function RackWorkbench({snapshot, placements, models, constraints, equipm
       <p role="status" className="rack-studio-status">{message||'物理尺寸保持等比例；点阵是画布背景，吸附间距以米为准。'}</p>
     </div><RackInspector rack={selected} model={model} devices={equipment.devices} selectedDevice={device} report={equipmentReport} onDevice={chooseDevice}
       onBack={()=>setSelectedDeviceId(null)} onClose={()=>{onSelect(null);setSelectedDeviceId(null);setPending(false);}}
-      onNavigate={onNavigate} editable={editable} positionLocked={selected?isPositionLocked(selected.rackId):false} onUpdate={onUpdate} pending={pending}/></div>
+      onNavigate={onNavigate} editable={editable} positionLocked={selected?isPositionLocked(selected.rackId):false} onUpdate={onUpdate} onRemove={onRemove} pending={pending}/></div>
     <p className="rack-studio-boundary">合成／假设输入 · 禁放区和维护带仍参加后端检查；设备保存在机柜与 U 位中。整体工程验证未运行，通道连通和网络布线未验证。</p>
   </section>;
 }

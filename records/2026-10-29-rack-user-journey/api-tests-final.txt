@@ -1,0 +1,328 @@
+TAP version 13
+# Subtest: new-user lifecycle retains layout, equipment and constraints across rename/delete/restore and blocks deleted writes
+ok 1 - new-user lifecycle retains layout, equipment and constraints across rename/delete/restore and blocks deleted writes
+  ---
+  duration_ms: 965.2481
+  type: 'test'
+  ...
+# Subtest: lifecycle enforces tenant, permission, preconditions and atomic command rollback
+ok 2 - lifecycle enforces tenant, permission, preconditions and atomic command rollback
+  ---
+  duration_ms: 264.6443
+  type: 'test'
+  ...
+# Subtest: delete and layout save serialize on the same version without resurrecting a plan
+ok 3 - delete and layout save serialize on the same version without resurrecting a plan
+  ---
+  duration_ms: 259.2849
+  type: 'test'
+  ...
+# Subtest: Rack room view reads a bound projected polygon with concavity and holes without changing the plan
+ok 4 - Rack room view reads a bound projected polygon with concavity and holes without changing the plan
+  ---
+  duration_ms: 177.4376
+  type: 'test'
+  ...
+# Subtest: Rack room view blocks changed, frozen and unavailable sources without returning replacement geometry
+ok 5 - Rack room view blocks changed, frozen and unavailable sources without returning replacement geometry
+  ---
+  duration_ms: 192.7279
+  type: 'test'
+  ...
+# Subtest: Rack room view refuses ambiguous, invalid, unsupported-CRS and oversized boundaries
+ok 6 - Rack room view refuses ambiguous, invalid, unsupported-CRS and oversized boundaries
+  ---
+  duration_ms: 175.286
+  type: 'test'
+  ...
+# Subtest: Rack room view separately requires Facility read access for a custom Rack-only role
+ok 7 - Rack room view separately requires Facility read access for a custom Rack-only role
+  ---
+  duration_ms: 182.6935
+  type: 'test'
+  ...
+# Subtest: Rack list paginates tied timestamps, filters scope and reports current source status
+ok 8 - Rack list paginates tied timestamps, filters scope and reports current source status
+  ---
+  duration_ms: 394.0595
+  type: 'test'
+  ...
+# Subtest: Rack list authorizes reads and rejects malformed or unbounded queries
+ok 9 - Rack list authorizes reads and rejects malformed or unbounded queries
+  ---
+  duration_ms: 133.8707
+  type: 'test'
+  ...
+# Subtest: Rack create/read persists a server-owned empty draft without changing Facility
+ok 10 - Rack create/read persists a server-owned empty draft without changing Facility
+  ---
+  duration_ms: 108.8568
+  type: 'test'
+  ...
+# Subtest: Rack simultaneous creation retries converge; key reuse with different input conflicts
+ok 11 - Rack simultaneous creation retries converge; key reuse with different input conflicts
+  ---
+  duration_ms: 141.9339
+  type: 'test'
+  ...
+# Subtest: Rack enforces authentication, role permissions and plan project scope
+ok 12 - Rack enforces authentication, role permissions and plan project scope
+  ---
+  duration_ms: 148.9297
+  type: 'test'
+  ...
+# Subtest: Rack rejects invalid input, forged server fields and missing retry keys without inserting
+ok 13 - Rack rejects invalid input, forged server fields and missing retry keys without inserting
+  ---
+  duration_ms: 397.2389
+  type: 'test'
+  ...
+# Subtest: Rack verifies the real room, revision, scenario and current token before creation
+ok 14 - Rack verifies the real room, revision, scenario and current token before creation
+  ---
+  duration_ms: 288.7327
+  type: 'test'
+  ...
+# Subtest: Rack cannot create from frozen Facility input in this first slice
+ok 15 - Rack cannot create from frozen Facility input in this first slice
+  ---
+  duration_ms: 363.8912
+  type: 'test'
+  ...
+# Subtest: Rack read and replay expose changed upstream input without rebinding the plan
+ok 16 - Rack read and replay expose changed upstream input without rebinding the plan
+  ---
+  duration_ms: 182.3628
+  type: 'test'
+  ...
+# Subtest: Rack database composite foreign keys reject a cross-project room even for an owner connection
+ok 17 - Rack database composite foreign keys reject a cross-project room even for an owner connection
+  ---
+  duration_ms: 141.0654
+  type: 'test'
+  ...
+# Subtest: Rack RLS isolates reads and writes under a real non-owner non-superuser role
+ok 18 - Rack RLS isolates reads and writes under a real non-owner non-superuser role
+  ---
+  duration_ms: 143.6651
+  type: 'test'
+  ...
+# Subtest: a concurrent Facility token update completes before Rack accepts the expected source version
+ok 19 - a concurrent Facility token update completes before Rack accepts the expected source version
+  ---
+  duration_ms: 133.4716
+  type: 'test'
+  ...
+# Subtest: Rack catalog is a guarded read-only project endpoint with versioned composition and real rule examples
+ok 20 - Rack catalog is a guarded read-only project endpoint with versioned composition and real rule examples
+  ---
+  duration_ms: 175.589
+  type: 'test'
+  ...
+# Subtest: Rack pinned catalog equipment persists atomically, replays exactly and rejects forged specifications and versions
+ok 21 - Rack pinned catalog equipment persists atomically, replays exactly and rejects forged specifications and versions
+  ---
+  duration_ms: 2124.3764
+  type: 'test'
+  ...
+# Subtest: Rack layout captures geometry at creation and atomically persists/reloads versioned placements
+ok 22 - Rack layout captures geometry at creation and atomically persists/reloads versioned placements
+  ---
+  duration_ms: 1344.8828
+  type: 'test'
+  ...
+# Subtest: Rack real Polygon predicates distinguish walls, holes, rotations and rack edge contact
+ok 23 - Rack real Polygon predicates distinguish walls, holes, rotations and rack edge contact
+  ---
+  duration_ms: 3479.7003
+  type: 'test'
+  ...
+# Subtest: Rack rejects concave crossings with all corners inside and holes fully enclosed by a footprint
+ok 24 - Rack rejects concave crossings with all corners inside and holes fully enclosed by a footprint
+  ---
+  duration_ms: 524.4357
+  type: 'test'
+  ...
+# Subtest: Rack legacy capture is explicit, idempotent and does not replace a fixed snapshot
+ok 25 - Rack legacy capture is explicit, idempotent and does not replace a fixed snapshot
+  ---
+  duration_ms: 269.8766
+  type: 'test'
+  ...
+# Subtest: Rack snapshot survives stale Facility source while fresh commands are blocked
+ok 26 - Rack snapshot survives stale Facility source while fresh commands are blocked
+  ---
+  duration_ms: 852.6047
+  type: 'test'
+  ...
+# Subtest: Rack locked positions require a separately saved unlock before move/delete
+ok 27 - Rack locked positions require a separately saved unlock before move/delete
+  ---
+  duration_ms: 1644.9552
+  type: 'test'
+  ...
+# Subtest: Rack layout guards scope, versions, snapshot identity and strict requests
+ok 28 - Rack layout guards scope, versions, snapshot identity and strict requests
+  ---
+  duration_ms: 319.409
+  type: 'test'
+  ...
+# Subtest: Rack competing writers cannot silently overwrite the same base version
+ok 29 - Rack competing writers cannot silently overwrite the same base version
+  ---
+  duration_ms: 510.4011
+  type: 'test'
+  ...
+# Subtest: Rack new persistence tables enforce project RLS for read, insert and update
+ok 30 - Rack new persistence tables enforce project RLS for read, insert and update
+  ---
+  duration_ms: 968.0894
+  type: 'test'
+  ...
+# Subtest: Rack save waits for a concurrent source update and rejects its obsolete input
+ok 31 - Rack save waits for a concurrent source update and rejects its obsolete input
+  ---
+  duration_ms: 189.1891
+  type: 'test'
+  ...
+# Subtest: Rack equipment persists atomically, restores exact retries, preserves omitted equipment and rejects old versions
+ok 32 - Rack equipment persists atomically, restores exact retries, preserves omitted equipment and rejects old versions
+  ---
+  duration_ms: 1197.5399
+  type: 'test'
+  ...
+# Subtest: Rack equipment diagnoses U overlap, overflow and lower-bound overcapacity and rolls back every field on failure
+ok 33 - Rack equipment diagnoses U overlap, overflow and lower-bound overcapacity and rolls back every field on failure
+  ---
+  duration_ms: 1322.1514
+  type: 'test'
+  ...
+# Subtest: Rack equipment moves between racks, unassigns without loss and protects rack deletion including legacy clients
+ok 34 - Rack equipment moves between racks, unassigns without loss and protects rack deletion including legacy clients
+  ---
+  duration_ms: 1940.0577
+  type: 'test'
+  ...
+# Subtest: Rack equipment rejects injected, foreign, duplicate and malformed inputs and retains project permissions
+ok 35 - Rack equipment rejects injected, foreign, duplicate and malformed inputs and retains project permissions
+  ---
+  duration_ms: 359.8007
+  type: 'test'
+  ...
+# Subtest: Rack equipment explicit zero, partial unknown data and omission remain distinct; position lock permits equipment edits
+ok 36 - Rack equipment explicit zero, partial unknown data and omission remain distinct; position lock permits equipment edits
+  ---
+  duration_ms: 1118.5178
+  type: 'test'
+  ...
+# Subtest: Rack constraints persist atomically with racks, preserve omitted older-client values and reject stale updates
+ok 37 - Rack constraints persist atomically with racks, preserve omitted older-client values and reject stale updates
+  ---
+  duration_ms: 2146.2447
+  type: 'test'
+  ...
+# Subtest: Rack checks declared rectangles even with unknown coverage and rejects obstacle contact and invalid room placement
+ok 38 - Rack checks declared rectangles even with unknown coverage and rejects obstacle contact and invalid room placement
+  ---
+  duration_ms: 1975.2539
+  type: 'test'
+  ...
+# Subtest: Rack maintenance checks follow all four orientations and distinguish unset and explicit zero
+ok 39 - Rack maintenance checks follow all four orientations and distinguish unset and explicit zero
+  ---
+  duration_ms: 2536.4673
+  type: 'test'
+  ...
+# Subtest: Rack maintenance bands may overlap each other but rack bodies and obstacles cannot occupy them
+ok 40 - Rack maintenance bands may overlap each other but rack bodies and obstacles cannot occupy them
+  ---
+  duration_ms: 1273.9825
+  type: 'test'
+  ...
+# Subtest: Rack constraints reject malformed/injected inputs and reuse existing scope, read-only, freshness and version guards
+ok 41 - Rack constraints reject malformed/injected inputs and reuse existing scope, read-only, freshness and version guards
+  ---
+  duration_ms: 170.2266
+  type: 'test'
+  ...
+# Subtest: Rack maintenance bands respect interior holes, exact rack contact and partial source coverage
+ok 42 - Rack maintenance bands respect interior holes, exact rack contact and partial source coverage
+  ---
+  duration_ms: 1258.2253
+  type: 'test'
+  ...
+# Subtest: Rack options are read-only, deterministic and checked against actual concave geometry, holes, obstacles and clearance
+ok 43 - Rack options are read-only, deterministic and checked against actual concave geometry, holes, obstacles and clearance
+  ---
+  duration_ms: 2884.6674
+  type: 'test'
+  ...
+# Subtest: Rack option application uses the existing atomic versioned save, replay protection, locks and source guard
+ok 44 - Rack option application uses the existing atomic versioned save, replay protection, locks and source guard
+  ---
+  duration_ms: 1321.522
+  type: 'test'
+  ...
+# Subtest: Rack options enforce input, tenant and source boundaries and retain partial preview identities
+ok 45 - Rack options enforce input, tenant and source boundaries and retain partial preview identities
+  ---
+  duration_ms: 1327.1204
+  type: 'test'
+  ...
+# Subtest: Rack planner batch geometry agrees with complete checks for every orientation, holes, notches, obstacles and two-way maintenance intrusion
+ok 46 - Rack planner batch geometry agrees with complete checks for every orientation, holes, notches, obstacles and two-way maintenance intrusion
+  ---
+  duration_ms: 10413.5611
+  type: 'test'
+  ...
+# Subtest: Rack equipment allocation is repeatable and read-only; partial results save atomically through the ordinary command
+ok 47 - Rack equipment allocation is repeatable and read-only; partial results save atomically through the ordinary command
+  ---
+  duration_ms: 1320.0554
+  type: 'test'
+  ...
+# Subtest: Rack equipment allocation rejects wrong scope/source/input and does not guess unknown capacities
+ok 48 - Rack equipment allocation rejects wrong scope/source/input and does not guess unknown capacities
+  ---
+  duration_ms: 785.397
+  type: 'test'
+  ...
+# Subtest: Rack room budgets persist atomically; legacy equipment edits retain them and oversubscription rolls back
+ok 49 - Rack room budgets persist atomically; legacy equipment edits retain them and oversubscription rolls back
+  ---
+  duration_ms: 1692.887
+  type: 'test'
+  ...
+# Subtest: Rack allocation respects the remaining room budget and preserves it through preview and ordinary save
+ok 50 - Rack allocation respects the remaining room budget and preserves it through preview and ordinary save
+  ---
+  duration_ms: 1025.5971
+  type: 'test'
+  ...
+# Subtest: Rack room budget input is strict and layout candidates cannot stage a saved room conflict
+ok 51 - Rack room budget input is strict and layout candidates cannot stage a saved room conflict
+  ---
+  duration_ms: 2615.4235
+  type: 'test'
+  ...
+# Subtest: Rack Assistant HTTP binds real plan scope and executes saved reads/checks/planner as a viewer without writing
+ok 52 - Rack Assistant HTTP binds real plan scope and executes saved reads/checks/planner as a viewer without writing
+  ---
+  duration_ms: 2728.4787
+  type: 'test'
+  ...
+# Subtest: Rack Assistant canonical versions, missing selection and changed scope are refused before unsafe work
+ok 53 - Rack Assistant canonical versions, missing selection and changed scope are refused before unsafe work
+  ---
+  duration_ms: 608.7441
+  type: 'test'
+  ...
+1..53
+# tests 53
+# suites 0
+# pass 53
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 59493.326

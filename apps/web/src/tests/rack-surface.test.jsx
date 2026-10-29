@@ -2,12 +2,27 @@ import { test } from 'vitest';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { RackPlanDetail, SourceStatus } from '../rack/RackSurface.jsx';
+import { RackPlanActions } from '../rack/RackPlanActions.jsx';
 import { planIntent, rackError, roomSource, samePlanScope, uncertainCreation } from '../rack/rack-plan-state.js';
 
 const context = { projectId: 'p', scenarioId: 's', revisionId: 'r' };
 const envelope = { ...context, lifecycleState: 'DRAFT', etag: 'token', designContext: { containers: [
   { kind: 'BUILDING', containerId: 'b', name: 'Building' }, { kind: 'HALL', containerId: 'h', name: 'Hall' },
 ] } };
+
+test('plan management separates recovery and blocks writes with a draft or without permission', () => {
+  const plan={planId:'plan',name:'Example',placements:[]};
+  assert.equal(renderToStaticMarkup(<RackPlanActions plan={plan} canWrite={false}/>),'');
+  const active=renderToStaticMarkup(<RackPlanActions plan={plan} canWrite blocked/>);
+  assert.match(active,/disabled=""[^>]*>删除方案/);
+  assert.match(active,/先保存或放弃/);
+  const trash=renderToStaticMarkup(<RackPlanActions plan={{...plan,deletedAt:'today'}} canWrite/>);
+  assert.match(trash,/恢复方案/); assert.doesNotMatch(trash,/删除方案|重命名方案/);
+  const retry=renderToStaticMarkup(<RackPlanActions plan={plan} canWrite attempt={{operation:'rename',body:{name:'Exact retained name'}}}/>);
+  const input=retry.match(/<input[^>]*>/)?.[0]??'';
+  assert.match(input,/value="Exact retained name"/); assert.match(input,/disabled=""/);
+  assert.match(retry,/重试原操作/);
+});
 
 test('Rack creation binds only an actual HALL in the exact current source', () => {
   assert.deepEqual(roomSource(envelope, context).rooms.map(room => room.containerId), ['h']);

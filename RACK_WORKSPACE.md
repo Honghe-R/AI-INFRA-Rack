@@ -1,5 +1,7 @@
 # Rack 工作区：方案与机柜编辑
 
+第二十一轮：新建后自动进入布局，顶部增加步骤导航；Plans 支持重命名、删除和恢复，画布对象详情增加空机柜删除入口。截图中的旧单功能示例已移入本机“已删除方案”。最新完整操作以 [从新建到删除](RACK_USER_JOURNEY.md) 为准；下方各轮示例名称和边界为历史记录。
+
 第十八轮：Rack → Capacity → 选择 **Rack room budget demo — shared power and cooling**。已安装需求各2kW/预算3kW/剩余1kW；库存5kW。Edit layout可改预算并看到超限禁用保存；空白为未知，Discard恢复。自动上架只增加可容纳的1kW设备。完整边界和测试见 [RACK_ROOM_BUDGET.md](RACK_ROOM_BUDGET.md)。
 
 第十七轮：Devices & U slots 新增 [自动上架](RACK_ALLOCATION.md)。选 **Rack allocation demo — unassigned devices** → Generate device allocation → 查看3台建议/2台未分配原因、容量/立面 → 勾选复核 → Use allocation as draft → Save layout；验收后示例保留未应用v2状态。全局 [Rack Assistant工具已接线](RACK_ASSISTANT.md)，用户决定暂不配置模型，因此自然语言对话当前不可用。

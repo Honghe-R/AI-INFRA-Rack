@@ -1,0 +1,2 @@
+{"intervalMs":1000,"timestamp":"2026-10-29T10:22:24.588Z","level":"info","service":"ai-infra-api","service_version":"0.1.0","message":"startup.validation_worker"}
+{"port":8797,"env":"development","timestamp":"2026-10-29T10:22:24.593Z","level":"info","service":"ai-infra-api","service_version":"0.1.0","message":"server.listening"}

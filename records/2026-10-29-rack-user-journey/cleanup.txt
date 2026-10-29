@@ -1,0 +1,70 @@
+{
+  "records": [
+    {
+      "planId": "00afc319-b755-4ac7-9e11-d55bde7a283d",
+      "name": "Rack room budget demo — shared power and cooling",
+      "previousVersion": 2,
+      "version": 3,
+      "deletedAt": "2026-10-29T08:17:35.717Z",
+      "contentSha256": "5fc94028c442d03ec529e42db93e1c6d6f603c6b28e38cdca5d5b33004d0e572",
+      "contentUnchanged": true
+    },
+    {
+      "planId": "44b72453-8cf6-47ff-ab61-0d4c28c99c21",
+      "name": "Rack allocation demo — unassigned devices",
+      "previousVersion": 2,
+      "version": 3,
+      "deletedAt": "2026-10-29T08:17:35.750Z",
+      "contentSha256": "c3c05fbb9b4222a7514f07258de144f5f93b2f1f2f6739d2aaaedf9613cd7f5c",
+      "contentUnchanged": true
+    },
+    {
+      "planId": "e446aafb-1846-4a69-af10-636fd50ba87c",
+      "name": "Rack catalog demo — six racks",
+      "previousVersion": 2,
+      "version": 3,
+      "deletedAt": "2026-10-29T08:17:35.777Z",
+      "contentSha256": "be729a0a7e76f898bc11a5147d6cb5837fe444836de68b4300a5f3ca0a675b14",
+      "contentUnchanged": true
+    },
+    {
+      "planId": "cb017b9b-ca11-483b-a5fd-c8f527195072",
+      "name": "Rack equipment demo — Hall A1",
+      "previousVersion": 2,
+      "version": 3,
+      "deletedAt": "2026-10-29T08:17:35.803Z",
+      "contentSha256": "f9c45a0307f2e50e2c8bbb5af4d9102cc238ca3da1dd74f32c3d7a0624d7a1e6",
+      "contentUnchanged": true
+    },
+    {
+      "planId": "88e1821b-e8fe-49ce-ba9e-ecfda6925c77",
+      "name": "Rack constraints demo — Hall A1",
+      "previousVersion": 2,
+      "version": 3,
+      "deletedAt": "2026-10-29T08:17:35.828Z",
+      "contentSha256": "2033411f097c1cb297b74fe57f84af4ce65bb54977831e649f4822f7edd41f90",
+      "contentUnchanged": true
+    },
+    {
+      "planId": "24b5422e-8206-4a76-bdf5-9f7e93a05aac",
+      "name": "Rack editor demo — Hall A1",
+      "previousVersion": 4,
+      "version": 5,
+      "deletedAt": "2026-10-29T08:17:35.850Z",
+      "contentSha256": "49f78b1527c77548956e64f93572f401b2a084b90e335db776315a7dd6298f7e",
+      "contentUnchanged": true
+    },
+    {
+      "planId": "3abd796d-461a-45f6-a0ce-ced7bce99020",
+      "name": "Rack UI demo — Hall A1",
+      "previousVersion": 1,
+      "version": 2,
+      "deletedAt": "2026-10-29T08:17:35.886Z",
+      "contentSha256": "c3d51fb5dd72b1f30bd8592c44d59ce1ab4784b22f1cebb27441b7a9676e8033",
+      "contentUnchanged": true
+    }
+  ],
+  "retainedDemo": "4b8f7bf3-9015-455f-8bc8-ef3520f0d748",
+  "retainedDemoUnchanged": true,
+  "facilityUnchanged": true
+}

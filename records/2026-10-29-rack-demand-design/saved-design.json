@@ -1,0 +1,506 @@
+{
+  "contractVersion": 1,
+  "projectId": "4c11ab8d-5d57-4ad8-ad55-ac08574fba46",
+  "planId": "8fbee1e3-7b0a-4584-b785-5a289e9bbdb3",
+  "scenarioId": "4ee0094b-9f4e-4e45-8c3e-244fe83348d2",
+  "version": 2,
+  "facilityInput": {
+    "projectId": "4c11ab8d-5d57-4ad8-ad55-ac08574fba46",
+    "scenarioId": "4ee0094b-9f4e-4e45-8c3e-244fe83348d2",
+    "revisionId": "c5b4b888-e66e-4ffa-bb0e-2dd738ed5f4d",
+    "containerId": "4f938d55-5868-550a-aff9-5fadfcc47df0",
+    "revisionEtag": "1f1b35f2-b80b-4831-8c29-065b2ea848bf"
+  },
+  "sourceStatus": {
+    "status": "UNCHANGED",
+    "reasons": []
+  },
+  "snapshot": {
+    "snapshotId": "77a5f00f-240a-46a7-b172-a6466eb073f4",
+    "room": {
+      "name": "Data Hall A1",
+      "containerId": "4f938d55-5868-550a-aff9-5fadfcc47df0"
+    },
+    "view": {
+      "axes": {
+        "x": "GRID_EAST",
+        "y": "GRID_NORTH"
+      },
+      "unit": "m",
+      "frame": "ROOM_LOCAL",
+      "areaM2": 9229.7885502152,
+      "extentM": {
+        "width": 106.30000472674146,
+        "height": 91.6410998404026
+      },
+      "sourceCrs": "EPSG:32618",
+      "transform": "TRANSLATE_ONLY",
+      "boundaryLocalM": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              0,
+              2.846076300367713
+            ],
+            [
+              103.86749604786746,
+              0
+            ],
+            [
+              106.30000472674146,
+              88.7950067166239
+            ],
+            [
+              2.4336828286759555,
+              91.6410998404026
+            ],
+            [
+              0,
+              2.846076300367713
+            ]
+          ]
+        ]
+      },
+      "obstacleCoverage": "UNKNOWN",
+      "originProjectedM": [
+        284382.0712852464,
+        4324510.556012935
+      ],
+      "interiorRingCount": 0,
+      "originDescription": "Minimum easting and northing of the outer ring; the origin may lie outside a concave room."
+    },
+    "facilityInput": {
+      "projectId": "4c11ab8d-5d57-4ad8-ad55-ac08574fba46",
+      "revisionId": "c5b4b888-e66e-4ffa-bb0e-2dd738ed5f4d",
+      "scenarioId": "4ee0094b-9f4e-4e45-8c3e-244fe83348d2",
+      "containerId": "4f938d55-5868-550a-aff9-5fadfcc47df0",
+      "revisionEtag": "1f1b35f2-b80b-4831-8c29-065b2ea848bf"
+    },
+    "sourceGeometry": {
+      "crs": "EPSG:32618",
+      "role": "FLOOR_BOUNDARY",
+      "srid": 32618,
+      "geometryId": "f8651b26-2f80-5294-ba0b-394bb85143f8",
+      "provenanceReference": "dev-seed-facility",
+      "transformReviewState": "NOT_RECORDED"
+    }
+  },
+  "placements": [
+    {
+      "xM": 53.15000236337073,
+      "yM": 46.020549920201304,
+      "name": "Rack 02",
+      "locked": false,
+      "rackId": "417352a2-fc7d-5877-ab2b-3883b0786815",
+      "modelId": "10000000-0000-4000-8000-000000000001",
+      "rotationDeg": 0
+    },
+    {
+      "xM": 53.15000236337073,
+      "yM": 43.020549920201304,
+      "name": "Rack 01",
+      "locked": false,
+      "rackId": "73c6a838-d67b-55f0-a160-350f23262614",
+      "modelId": "10000000-0000-4000-8000-000000000001",
+      "rotationDeg": 0
+    },
+    {
+      "xM": 53.15000236337073,
+      "yM": 49.020549920201304,
+      "name": "Rack 03",
+      "locked": false,
+      "rackId": "9f628f99-08b0-57f7-aab7-910d62e98081",
+      "modelId": "10000000-0000-4000-8000-000000000001",
+      "rotationDeg": 0
+    }
+  ],
+  "constraints": {
+    "source": {
+      "kind": "ASSUMED",
+      "reference": "Planning inputs not recorded."
+    },
+    "clearance": {
+      "rearM": 0.6,
+      "frontM": 1
+    },
+    "obstacles": [],
+    "obstacleCoverage": "UNKNOWN"
+  },
+  "equipment": {
+    "source": {
+      "kind": "ASSUMED",
+      "reference": "课程规划假设，需在实际部署前核实。"
+    },
+    "devices": [
+      {
+        "name": "GPU server · 4U 1",
+        "rackId": "73c6a838-d67b-55f0-a160-350f23262614",
+        "startU": 1,
+        "heightU": 4,
+        "powerKw": 3,
+        "deviceId": "0787554f-da8d-5357-a7ed-3367a446d9ec",
+        "weightKg": 80,
+        "coolingKw": 3,
+        "catalogRef": {
+          "modelId": "demo-gpu-4u",
+          "version": 1
+        }
+      },
+      {
+        "name": "GPU server · 4U 2",
+        "rackId": "73c6a838-d67b-55f0-a160-350f23262614",
+        "startU": 5,
+        "heightU": 4,
+        "powerKw": 3,
+        "deviceId": "87210dbd-8b2b-5191-a5b9-750c1b22e7df",
+        "weightKg": 80,
+        "coolingKw": 3,
+        "catalogRef": {
+          "modelId": "demo-gpu-4u",
+          "version": 1
+        }
+      },
+      {
+        "name": "GPU server · 4U 3",
+        "rackId": "73c6a838-d67b-55f0-a160-350f23262614",
+        "startU": 9,
+        "heightU": 4,
+        "powerKw": 3,
+        "deviceId": "9910644b-1757-56b9-af74-d48d3823a590",
+        "weightKg": 80,
+        "coolingKw": 3,
+        "catalogRef": {
+          "modelId": "demo-gpu-4u",
+          "version": 1
+        }
+      },
+      {
+        "name": "GPU server · 4U 4",
+        "rackId": "73c6a838-d67b-55f0-a160-350f23262614",
+        "startU": 13,
+        "heightU": 4,
+        "powerKw": 3,
+        "deviceId": "c37d78cf-433c-5fee-aff2-b58cef798334",
+        "weightKg": 80,
+        "coolingKw": 3,
+        "catalogRef": {
+          "modelId": "demo-gpu-4u",
+          "version": 1
+        }
+      },
+      {
+        "name": "GPU server · 4U 5",
+        "rackId": "417352a2-fc7d-5877-ab2b-3883b0786815",
+        "startU": 1,
+        "heightU": 4,
+        "powerKw": 3,
+        "deviceId": "b15b9cf1-2ae8-5adc-a643-23ef2323e0cd",
+        "weightKg": 80,
+        "coolingKw": 3,
+        "catalogRef": {
+          "modelId": "demo-gpu-4u",
+          "version": 1
+        }
+      },
+      {
+        "name": "GPU server · 4U 6",
+        "rackId": "417352a2-fc7d-5877-ab2b-3883b0786815",
+        "startU": 5,
+        "heightU": 4,
+        "powerKw": 3,
+        "deviceId": "41786210-cf55-5f02-ab2f-e8986c2026bd",
+        "weightKg": 80,
+        "coolingKw": 3,
+        "catalogRef": {
+          "modelId": "demo-gpu-4u",
+          "version": 1
+        }
+      },
+      {
+        "name": "GPU server · 4U 7",
+        "rackId": "417352a2-fc7d-5877-ab2b-3883b0786815",
+        "startU": 9,
+        "heightU": 4,
+        "powerKw": 3,
+        "deviceId": "b3deca9d-3e25-56e9-abd9-0610a261a7e7",
+        "weightKg": 80,
+        "coolingKw": 3,
+        "catalogRef": {
+          "modelId": "demo-gpu-4u",
+          "version": 1
+        }
+      },
+      {
+        "name": "GPU server · 4U 8",
+        "rackId": "417352a2-fc7d-5877-ab2b-3883b0786815",
+        "startU": 13,
+        "heightU": 4,
+        "powerKw": 3,
+        "deviceId": "eb9e87f4-1c01-5d50-ab64-53b4cc4aab96",
+        "weightKg": 80,
+        "coolingKw": 3,
+        "catalogRef": {
+          "modelId": "demo-gpu-4u",
+          "version": 1
+        }
+      },
+      {
+        "name": "Compute server · 2U 1",
+        "rackId": "9f628f99-08b0-57f7-aab7-910d62e98081",
+        "startU": 1,
+        "heightU": 2,
+        "powerKw": 0.8,
+        "deviceId": "fbb038e4-9b94-59c9-aeab-42aff9182b32",
+        "weightKg": 25,
+        "coolingKw": 0.8,
+        "catalogRef": {
+          "modelId": "demo-compute-2u",
+          "version": 1
+        }
+      },
+      {
+        "name": "Compute server · 2U 2",
+        "rackId": "9f628f99-08b0-57f7-aab7-910d62e98081",
+        "startU": 3,
+        "heightU": 2,
+        "powerKw": 0.8,
+        "deviceId": "f3a3ae5a-4c6b-5c3a-a281-79c082c47755",
+        "weightKg": 25,
+        "coolingKw": 0.8,
+        "catalogRef": {
+          "modelId": "demo-compute-2u",
+          "version": 1
+        }
+      },
+      {
+        "name": "Compute server · 2U 3",
+        "rackId": "9f628f99-08b0-57f7-aab7-910d62e98081",
+        "startU": 5,
+        "heightU": 2,
+        "powerKw": 0.8,
+        "deviceId": "38879bf7-920d-5fb4-ac80-6add3a99e0f6",
+        "weightKg": 25,
+        "coolingKw": 0.8,
+        "catalogRef": {
+          "modelId": "demo-compute-2u",
+          "version": 1
+        }
+      },
+      {
+        "name": "Compute server · 2U 4",
+        "rackId": "9f628f99-08b0-57f7-aab7-910d62e98081",
+        "startU": 7,
+        "heightU": 2,
+        "powerKw": 0.8,
+        "deviceId": "1f58407f-cc8a-5eb5-a114-5f24176020dc",
+        "weightKg": 25,
+        "coolingKw": 0.8,
+        "catalogRef": {
+          "modelId": "demo-compute-2u",
+          "version": 1
+        }
+      },
+      {
+        "name": "Compute server · 2U 5",
+        "rackId": "9f628f99-08b0-57f7-aab7-910d62e98081",
+        "startU": 9,
+        "heightU": 2,
+        "powerKw": 0.8,
+        "deviceId": "a3342459-c8f5-5802-ac72-9e6d59ea0996",
+        "weightKg": 25,
+        "coolingKw": 0.8,
+        "catalogRef": {
+          "modelId": "demo-compute-2u",
+          "version": 1
+        }
+      },
+      {
+        "name": "Compute server · 2U 6",
+        "rackId": "9f628f99-08b0-57f7-aab7-910d62e98081",
+        "startU": 11,
+        "heightU": 2,
+        "powerKw": 0.8,
+        "deviceId": "accb3eee-b0da-54a8-a378-a16aa06bde7e",
+        "weightKg": 25,
+        "coolingKw": 0.8,
+        "catalogRef": {
+          "modelId": "demo-compute-2u",
+          "version": 1
+        }
+      },
+      {
+        "name": "Compute server · 2U 7",
+        "rackId": "9f628f99-08b0-57f7-aab7-910d62e98081",
+        "startU": 13,
+        "heightU": 2,
+        "powerKw": 0.8,
+        "deviceId": "2d5a3202-a09f-521b-abbc-276b837bfa8e",
+        "weightKg": 25,
+        "coolingKw": 0.8,
+        "catalogRef": {
+          "modelId": "demo-compute-2u",
+          "version": 1
+        }
+      },
+      {
+        "name": "Compute server · 2U 8",
+        "rackId": "9f628f99-08b0-57f7-aab7-910d62e98081",
+        "startU": 15,
+        "heightU": 2,
+        "powerKw": 0.8,
+        "deviceId": "34f6ec25-9547-5bad-a45a-16dcccfd6488",
+        "weightKg": 25,
+        "coolingKw": 0.8,
+        "catalogRef": {
+          "modelId": "demo-compute-2u",
+          "version": 1
+        }
+      },
+      {
+        "name": "Compute server · 2U 9",
+        "rackId": "9f628f99-08b0-57f7-aab7-910d62e98081",
+        "startU": 17,
+        "heightU": 2,
+        "powerKw": 0.8,
+        "deviceId": "370496eb-34b8-52d6-a701-1c1819ccd481",
+        "weightKg": 25,
+        "coolingKw": 0.8,
+        "catalogRef": {
+          "modelId": "demo-compute-2u",
+          "version": 1
+        }
+      },
+      {
+        "name": "Compute server · 2U 10",
+        "rackId": "9f628f99-08b0-57f7-aab7-910d62e98081",
+        "startU": 19,
+        "heightU": 2,
+        "powerKw": 0.8,
+        "deviceId": "800cb517-7072-5b14-a0bb-e72f8fd4813e",
+        "weightKg": 25,
+        "coolingKw": 0.8,
+        "catalogRef": {
+          "modelId": "demo-compute-2u",
+          "version": 1
+        }
+      },
+      {
+        "name": "Compute server · 2U 11",
+        "rackId": "9f628f99-08b0-57f7-aab7-910d62e98081",
+        "startU": 21,
+        "heightU": 2,
+        "powerKw": 0.8,
+        "deviceId": "384d7428-bb33-5819-a66d-c7ae2987c853",
+        "weightKg": 25,
+        "coolingKw": 0.8,
+        "catalogRef": {
+          "modelId": "demo-compute-2u",
+          "version": 1
+        }
+      },
+      {
+        "name": "Compute server · 2U 12",
+        "rackId": "9f628f99-08b0-57f7-aab7-910d62e98081",
+        "startU": 23,
+        "heightU": 2,
+        "powerKw": 0.8,
+        "deviceId": "a55b0a96-4c13-57ae-adeb-48d8cf2b1785",
+        "weightKg": 25,
+        "coolingKw": 0.8,
+        "catalogRef": {
+          "modelId": "demo-compute-2u",
+          "version": 1
+        }
+      },
+      {
+        "name": "ToR switch · 1U 1",
+        "rackId": "9f628f99-08b0-57f7-aab7-910d62e98081",
+        "startU": 25,
+        "heightU": 1,
+        "powerKw": 0.3,
+        "deviceId": "6986c455-2753-5a20-a2fa-c6d7eadda6cb",
+        "weightKg": 10,
+        "coolingKw": 0.3,
+        "catalogRef": {
+          "modelId": "demo-tor-1u",
+          "version": 1
+        }
+      },
+      {
+        "name": "ToR switch · 1U 2",
+        "rackId": "9f628f99-08b0-57f7-aab7-910d62e98081",
+        "startU": 26,
+        "heightU": 1,
+        "powerKw": 0.3,
+        "deviceId": "8a00c4c1-689c-5615-a457-d8d9bc427db6",
+        "weightKg": 10,
+        "coolingKw": 0.3,
+        "catalogRef": {
+          "modelId": "demo-tor-1u",
+          "version": 1
+        }
+      }
+    ],
+    "coverage": "DECLARED_COMPLETE",
+    "rackLimits": [
+      {
+        "rackId": "73c6a838-d67b-55f0-a160-350f23262614",
+        "maxPowerKw": 12,
+        "maxWeightKg": 800,
+        "maxCoolingKw": 12
+      },
+      {
+        "rackId": "417352a2-fc7d-5877-ab2b-3883b0786815",
+        "maxPowerKw": 12,
+        "maxWeightKg": 800,
+        "maxCoolingKw": 12
+      },
+      {
+        "rackId": "9f628f99-08b0-57f7-aab7-910d62e98081",
+        "maxPowerKw": 12,
+        "maxWeightKg": 800,
+        "maxCoolingKw": 12
+      }
+    ],
+    "roomBudget": {
+      "source": {
+        "kind": "ASSUMED",
+        "reference": "课程规划假设，需在实际部署前核实。"
+      },
+      "maxPowerKw": 40,
+      "maxCoolingKw": 40
+    }
+  },
+  "models": [
+    {
+      "name": "Demo 600 × 1200 mm / 42U",
+      "depthM": 1.2,
+      "source": {
+        "kind": "ASSUMED",
+        "reference": "Course demonstration assumption; not a vendor or engineering specification."
+      },
+      "widthM": 0.6,
+      "heightU": 42,
+      "modelId": "10000000-0000-4000-8000-000000000001",
+      "maxPowerKw": null,
+      "maxWeightKg": null,
+      "maxCoolingKw": null
+    },
+    {
+      "name": "Demo 800 × 1200 mm / 42U",
+      "depthM": 1.2,
+      "source": {
+        "kind": "ASSUMED",
+        "reference": "Course demonstration assumption; not a vendor or engineering specification."
+      },
+      "widthM": 0.8,
+      "heightU": 42,
+      "modelId": "10000000-0000-4000-8000-000000000002",
+      "maxPowerKw": null,
+      "maxWeightKg": null,
+      "maxCoolingKw": null
+    }
+  ],
+  "validationState": "NOT_RUN"
+}

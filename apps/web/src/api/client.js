@@ -32,6 +32,8 @@ export function createApiClient({ baseUrl = '', fetchImpl = globalThis.fetch, id
     const devSubject = identity?.() ?? null;
     const response = await fetchImpl(`${baseUrl}${path}`, {
       method,
+      // Bypass existing cached lifecycle responses, including a prior 410.
+      ...(path.includes('/rack/') ? { cache: 'no-store' } : {}),
       headers: {
         accept: 'application/json',
         ...(body ? { 'content-type': 'application/json' } : {}),
@@ -69,13 +71,19 @@ export function createApiClient({ baseUrl = '', fetchImpl = globalThis.fetch, id
 
     getRackCatalog: (projectId, { signal } = {}) =>
       request(`/api/v1/projects/${encodeURIComponent(projectId)}/rack/catalog`, { signal }),
-    listRackPlans: (projectId, { scenarioId, revisionId, cursor, limit = 20, signal } = {}) => {
+    listRackPlans: (projectId, { scenarioId, revisionId, cursor, limit = 20, deleted = false, signal } = {}) => {
       const query = new URLSearchParams({ limit: String(limit) });
       if (scenarioId) query.set('scenario_id', scenarioId);
       if (revisionId) query.set('revision_id', revisionId);
       if (cursor) query.set('cursor', cursor);
+      if (deleted) query.set('deleted', 'true');
       return request(`/api/v1/projects/${encodeURIComponent(projectId)}/rack/plans?${query}`, { signal });
     },
+    manageRackPlan: (projectId, planId, operation, body, { version, idempotencyKey, signal } = {}) =>
+      request(`/api/v1/projects/${encodeURIComponent(projectId)}/rack/plans/${encodeURIComponent(planId)}${operation === 'restore' ? '/restore' : ''}`, {
+        method: operation === 'rename' ? 'PATCH' : operation === 'delete' ? 'DELETE' : 'POST', body, signal,
+        headers: { 'If-Match': `"${version}"`, 'Idempotency-Key': idempotencyKey },
+      }),
     getRackPlan: (projectId, planId, { signal } = {}) =>
       request(`/api/v1/projects/${encodeURIComponent(projectId)}/rack/plans/${encodeURIComponent(planId)}`, { signal }),
     getRackRoomView: (projectId, planId, { signal } = {}) =>
@@ -86,6 +94,8 @@ export function createApiClient({ baseUrl = '', fetchImpl = globalThis.fetch, id
       request(`/api/v1/projects/${encodeURIComponent(projectId)}/rack/plans/${encodeURIComponent(planId)}/layout/check`, {method:'POST',body,signal}),
     generateRackOptions: (projectId, planId, body, { signal } = {}) =>
       request(`/api/v1/projects/${encodeURIComponent(projectId)}/rack/plans/${encodeURIComponent(planId)}/layout/options`, {method:'POST',body,signal}),
+    generateRackDesignOptions: (projectId, planId, body, { signal } = {}) =>
+      request(`/api/v1/projects/${encodeURIComponent(projectId)}/rack/plans/${encodeURIComponent(planId)}/layout/design-options`, {method:'POST',body,signal}),
     generateRackEquipmentOption: (projectId, planId, body, { signal } = {}) =>
       request(`/api/v1/projects/${encodeURIComponent(projectId)}/rack/plans/${encodeURIComponent(planId)}/layout/equipment-options`, {method:'POST',body,signal}),
     saveRackLayout: (projectId, planId, body, { version, idempotencyKey, signal } = {}) =>

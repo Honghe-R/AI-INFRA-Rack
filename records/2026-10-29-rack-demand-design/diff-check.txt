@@ -1,0 +1,13 @@
+warning: in the working copy of 'RACK_LOCAL_SETUP.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/api/src/routes/rack.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/api/src/services/rack-plans.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/api/src/tests/rack-plans.test.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/web/src/rack/RackEditor.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/web/src/rack/RackRoomView.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/web/src/rack/RackSections.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/web/src/rack/RackSurface.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/web/src/rack/RackWorkbench.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/web/src/rack/rack.css', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/web/src/tests/rack-floorplan.test.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/web/src/tests/rack-surface.test.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/web/src/tests/rack-workbench.test.jsx', LF will be replaced by CRLF the next time Git touches it

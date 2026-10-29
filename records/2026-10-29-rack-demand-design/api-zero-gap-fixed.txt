@@ -1,0 +1,47 @@
+TAP version 13
+# Subtest: demand design uses real concave Polygon/holes, is deterministic and read-only, then saves through the ordinary transaction
+not ok 1 - demand design uses real concave Polygon/holes, is deterministic and read-only, then saves through the ordinary transaction
+  ---
+  duration_ms: 1790.9443
+  type: 'test'
+  location: 'C:\\Users\\RHH\\Desktop\\AI-INFRA-Rack\\apps\\api\\src\\tests\\rack-plans.test.js:599:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"error":{"code":"INTERNAL_ERROR","message":"An unexpected error occurred.","details":[]},"meta":{"correlation_id":"6f9f8f03-653b-47a2-a270-3bda6dad6be0"}}
+    
+    500 !== 200
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 200
+  actual: 500
+  operator: 'strictEqual'
+  stack: |-
+    file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:606:10
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async server (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:113:9)
+    async fixture (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/api/src/tests/rack-plans.test.js:69:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: demand planning blocks tenant, changed source, wrong snapshot and malformed catalog/limits without writing
+ok 2 - demand planning blocks tenant, changed source, wrong snapshot and malformed catalog/limits without writing
+  ---
+  duration_ms: 355.8403
+  type: 'test'
+  ...
+# Subtest: demand geometry failures and incomplete device/budget demands cannot stage, and never silently drop inventory
+ok 3 - demand geometry failures and incomplete device/budget demands cannot stage, and never silently drop inventory
+  ---
+  duration_ms: 2150.9141
+  type: 'test'
+  ...
+1..3
+# tests 3
+# suites 0
+# pass 2
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 4545.8662

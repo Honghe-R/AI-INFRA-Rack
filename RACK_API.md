@@ -1,5 +1,35 @@
 # Rack 方案与布局 API v1
 
+## 第二十二轮：按数量生成空方案
+
+`POST /api/v1/projects/:projectId/rack/plans/:planId/layout/design-options`，需要`rack.read`和`facility.read`。只读生成不需要写入幂等键。
+
+body为`{contract_version:1,base_version,snapshot_id,demand}`；demand包含精确目录版本数量groups、rackModelId、maxRacks、显式rackLimits、gapM、sourceReference，可选完整constraints/roomBudget。省略沿用已存约束/预算，显式roomBudget:null关闭本次预算。具体schema和预算见[需求规划规范](doc/tools/rack/demand-planning.md)。
+
+仅接受空的已保存方案、匹配快照/版本和未变Facility；非空409、旧版412、已删410、越权403、非法目录/限值400。输出绑定输入摘要的双策略候选，含柜数/安装数/面积、未安排原因及空间/设备报告，`persisted:false`、整体`NOT_RUN`。候选复核后转共享草稿，再经原PUT布局事务保存，无新增写入捷径或迁移。
+
+## 第二十一轮：方案生命周期
+
+新增迁移 `011_rack_plan_lifecycle.sql`，方案返回 `deletedAt/deletedBy`（活动方案为 null）。
+列表默认只返回活动方案，`GET .../plans?deleted=true` 只返回已删除方案，沿用项目/场景/revision/分页过滤。
+普通 GET 方案详情可读已删除元数据；布局/图面/检查/算法/布局保存均拒绝已删除方案（410/RACK_PLAN_DELETED）。
+
+| 操作 | 请求 | 必需权限 |
+| --- | --- | --- |
+| 重命名 | `PATCH .../plans/:planId`，body `{contract_version:1,name:"名称"}` | rack.write |
+| 删除 | `DELETE .../plans/:planId`，body `{contract_version:1}` | rack.write |
+| 恢复 | `POST .../plans/:planId/restore`，body `{contract_version:1}` | rack.write |
+
+三个写入都要求 `If-Match: "当前整数版本"` 与 `Idempotency-Key: UUID`。成功200，版本+1；重复精确请求返回当前方案，
+meta.replayed=true 和原 applied_version。相同 key 不同请求409；缺请求头428；旧版本412。沿用原方案行锁和命令表事务，
+删除与布局保存并发最多一个成功，不会旧草稿复活已删除方案。重命名/删除/恢复无需更改 Facility，源过期不阻止整理方案，
+恢复后仍受原来源锁约束。创建的幂等重试若原方案已删除，409提示先恢复，不重建。
+
+本轮 Rack HTTP 响应（含错误）设置 Cache-Control:no-store，Web Rack 请求也绕过缓存，避免恢复后仍读取缓存的410。
+受支持的 HALL 边界在创建事务中捕获，不另推进初始 v1；无可用边界仍允许创建空方案，旧手动捕获路径保留。
+删除为可恢复软删除，固定快照、机柜、设备、约束/预算及原命令均保留；没有永久删除API。
+操作见 [RACK_USER_JOURNEY.md](RACK_USER_JOURNEY.md)。
+
 第十八轮：原 equipment 增加可选 roomBudget（ASSUMED 来源、maxPowerKw/maxCoolingKw，null未知、0显式零）。检查报告增加 roomCapacity，跨柜安装总需求超限沿用422/RACK_EQUIPMENT_CONFLICT；设备对象省略已保存预算时保留，显式null才清除。布局候选、自动上架和Assistant容量工具共用；无新端点/迁移，详见 [RACK_ROOM_BUDGET.md](RACK_ROOM_BUDGET.md)。
 
 第十七轮新增 `POST .../plans/:planId/layout/equipment-options`，请求仅含contract_version/base_version/snapshot_id，需rack.read + facility.read；返回只读设备分配候选及原完整报告，允许保留未分配设备的部分结果，详见 [RACK_ALLOCATION.md](RACK_ALLOCATION.md)。原保存端点/事务不变。另在现有Assistant Host注册 [Rack工具](RACK_ASSISTANT.md)，没有聊天写入端点。

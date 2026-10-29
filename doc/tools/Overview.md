@@ -14,6 +14,7 @@ Each tool has its own folder and follows the standard specification bundle:
 ## Available Tools
 
 * [Site and Facility Editor](site-and-facility/Overview.md)
+* [Rack Planner](rack/Overview.md)
 
 Additional tool folders should use the same names and document set wherever the concern applies.
 

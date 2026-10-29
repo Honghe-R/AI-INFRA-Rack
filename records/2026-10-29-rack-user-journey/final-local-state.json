@@ -1,0 +1,15 @@
+{
+  "fixture": {
+    "planId": "481e475a-269c-44fa-a404-d0d1d3ab6c48",
+    "version": 8,
+    "deletedAt": "2026-10-29T08:27:14.321Z"
+  },
+  "activePlans": [
+    {
+      "planId": "4b8f7bf3-9015-455f-8bc8-ef3520f0d748",
+      "name": "完整机房演示 · 32柜 / 多排混合设备",
+      "version": 2
+    }
+  ],
+  "cacheControl": "no-store"
+}

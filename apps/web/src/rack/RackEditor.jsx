@@ -6,6 +6,7 @@ import { RoomFloorplan } from './RackRoomView.jsx';
 import { RackPlanOverview } from './RackSections.jsx';
 import { RackInputs } from './RackInputs.jsx';
 import { RackOptions } from './RackOptions.jsx';
+import { RackDemandDesign } from './RackDemandDesign.jsx';
 import { RackAllocation } from './RackAllocation.jsx';
 import { RackWorkbench } from './RackWorkbench.jsx';
 import {
@@ -182,6 +183,16 @@ export function RackEditor({
     canWrite && snapshot && draft && !busy && !draft.attempt && !stale && !versionConflict,
   );
   const models = layout.models;
+  function removeSelectedRack() {
+    if (!editable || !selected || selectedPositionLocked ||
+        equipment.devices.some(device => device.rackId === selectedId)) return;
+    onDraftChange({
+      ...draft,
+      placements: placements.filter(placement => placement.rackId !== selectedId),
+      equipment: { ...equipment, rackLimits: equipment.rackLimits.filter(limit => limit.rackId !== selectedId) },
+    });
+    setSelectedId(null);
+  }
   function updateRack(id, patch) {
     if (!editable) return;
     if (
@@ -379,6 +390,11 @@ export function RackEditor({
           {section === 'dependencies' && <RackInputs layout={layout} placements={placements} constraints={constraints}
             equipment={equipment} draft={draft} spatialReport={currentReport} equipmentReport={equipmentReport}
             onNavigate={onNavigate} />}
+          <div hidden={section !== 'candidates' && !(section === 'layout' && placements.length === 0 && equipment.devices.length === 0)}>
+            <RackDemandDesign key={`${layout.planId}:${layout.version}`} client={client} layout={layout} catalogState={catalogState} draft={draft}
+              canWrite={canWrite} onDraftChange={value=>{onDraftChange(value);setError(null);setNotice('自动设计已载入共享草稿，请复核并 Save layout。');setFocusRequest({fitRacks:true,nonce:Date.now()});}}
+              onNavigate={onNavigate}/>
+          </div>
           <div hidden={section !== 'candidates'}><RackOptions client={client} layout={layout} draft={draft}
             canWrite={canWrite} onDraftChange={value => {
               onDraftChange(value); setError(null); setNotice('Selected option loaded as an unsaved draft. Review and Save layout to apply.');
@@ -386,13 +402,14 @@ export function RackEditor({
             }} onNavigate={onNavigate} /></div>
           <div hidden={section !== 'equipment'}><RackAllocation client={client} layout={layout} draft={draft} canWrite={canWrite}
             onDraftChange={value => { onDraftChange(value); setError(null); setNotice('Device allocation loaded as an unsaved draft. Review and Save layout to apply.'); }} /></div>
-          {section === 'layout' && <RackWorkbench key={snapshot.snapshotId} snapshot={snapshot}
+          {section === 'layout' && !draft && placements.length === 0 && <div className="rack-card"><p>也可以从空白开始手工布置：</p>{editorActions}</div>}
+          {section === 'layout' && (Boolean(draft) || placements.length > 0) && <RackWorkbench key={snapshot.snapshotId} snapshot={snapshot}
             placements={placements} models={models} constraints={constraints} equipment={equipment}
             report={currentReport} equipmentReport={equipmentReport} selectedId={selectedId}
             onSelect={setSelectedId} editable={editable} onMove={updateRack}
             isPositionLocked={id => placements.some(p => p.rackId === id && p.locked) || layout.placements.some(p => p.rackId === id && p.locked)}
             onUpdate={patch => updateRack(selectedId, patch)} onNavigate={onNavigate} focusRequest={focusRequest}
-            modelId={modelId} onModelChange={setModelId} onAdd={addRack} actions={editorActions}
+            modelId={modelId} onModelChange={setModelId} onAdd={addRack} onRemove={removeSelectedRack} actions={editorActions}
             feedback={error || inputError || (checkState.error ? rackError(checkState.error) :
               checkState.pending || checkState.body !== checkKey ? '正在检查当前布局…' :
               currentReport?.diagnostics.length || equipmentReport?.diagnostics.length ? '存在检查冲突，请调整后再保存。' : notice)} />}
@@ -548,17 +565,7 @@ export function RackEditor({
                         selectedPositionLocked ||
                         equipment.devices.some((d) => d.rackId === selectedId)
                       }
-                      onClick={() => {
-                        onDraftChange({
-                          ...draft,
-                          placements: placements.filter((p) => p.rackId !== selectedId),
-                          equipment: {
-                            ...equipment,
-                            rackLimits: equipment.rackLimits.filter((l) => l.rackId !== selectedId),
-                          },
-                        });
-                        setSelectedId(null);
-                      }}
+                      onClick={removeSelectedRack}
                     >
                       Delete rack
                     </button>
