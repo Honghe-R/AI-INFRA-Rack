@@ -17,3 +17,28 @@
 18:36:38 [vite] (client) hmr update /src/rack/RackDemandDesign.jsx
 18:36:38 [vite] (client) hmr invalidate /src/rack/RackDemandDesign.jsx Could not Fast Refresh ("designDemandBody" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
 18:36:38 [vite] (client) hmr update /src/rack/RackEditor.jsx
+20:10:53 [vite] (client) hmr update /src/App.jsx, /src/shell/WorkspaceShell.jsx, /src/app/providers.jsx, /src/shell/ActiveToolToolbar.jsx, /src/shell/GlobalSidebar.jsx, /src/shell/MainView.jsx, /src/shell/OpenViewTabs.jsx, /src/assistant/AssistantTranscript.jsx
+20:10:53 [vite] (client) hmr update /src/shell/icons.jsx
+20:10:53 [vite] (client) hmr update /src/App.jsx
+20:10:53 [vite] (client) hmr update /src/rack/RackSurface.jsx
+20:10:53 [vite] (client) hmr update /src/shell/icons.jsx
+20:10:53 [vite] (client) hmr update /src/rack/RackEditor.jsx
+20:10:54 [vite] (client) hmr invalidate /src/app/providers.jsx Could not Fast Refresh ("nextTabId" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+20:10:54 [vite] (client) hmr update /src/App.jsx, /src/shell/WorkspaceShell.jsx
+20:10:54 [vite] (client) hmr invalidate /src/shell/icons.jsx Could not Fast Refresh ("GLYPHS" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+20:10:54 [vite] (client) hmr update /src/App.jsx, /src/projects/ProjectListEntry.jsx, /src/map/SiteFacilityCanvas.jsx, /src/shell/WorkspaceShell.jsx, /src/assistant/AssistantComposer.jsx, /src/map/BasemapCanvas.jsx, /src/shell/ActiveToolToolbar.jsx, /src/shell/GlobalSidebar.jsx, /src/shell/MainView.jsx, /src/shell/BottomDrawer.jsx, /src/shell/OpenViewTabs.jsx, /src/map/CanvasSearch.jsx, /src/shell/AccountControl.jsx, /src/assistant/AssistantTranscript.jsx, /src/shell/SettingsMenu.jsx
+20:12:07 [vite] (client) hmr update /src/rack/RackWorkbench.jsx
+20:12:07 [vite] (client) hmr update /src/rack/RackEditor.jsx
+20:13:13 [vite] (client) hmr update /src/rack/rack.css
+20:17:13 [vite] (client) hmr update /src/rack/RackSurface.jsx
+20:17:13 [vite] (client) hmr update /src/rack/RackAddDialog.jsx
+20:18:23 [vite] (client) hmr update /src/rack/RackWorkbench.jsx
+20:18:23 [vite] (client) hmr update /src/rack/RackEditor.jsx
+20:23:54 [vite] (client) hmr update /src/rack/RackSurface.jsx
+20:23:54 [vite] (client) hmr update /src/App.jsx, /src/shell/WorkspaceShell.jsx, /src/app/providers.jsx, /src/shell/ActiveToolToolbar.jsx, /src/shell/GlobalSidebar.jsx, /src/shell/MainView.jsx, /src/shell/OpenViewTabs.jsx, /src/assistant/AssistantTranscript.jsx, /src/rack/RackEditor.jsx, /src/rack/RackAddDialog.jsx
+20:23:54 [vite] (client) hmr update /src/rack/RackAddDialog.jsx
+20:23:54 [vite] (client) hmr invalidate /src/app/providers.jsx Could not Fast Refresh ("nextTabId" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+20:23:54 [vite] (client) hmr update /src/App.jsx, /src/shell/WorkspaceShell.jsx
+21:01:39 [vite] (client) hmr update /src/rack/RackEditor.jsx
+21:01:39 [vite] (client) hmr update /src/rack/RackEditor.jsx
+21:01:39 [vite] (client) hmr update /src/rack/RackEditor.jsx

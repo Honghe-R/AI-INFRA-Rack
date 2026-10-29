@@ -9,6 +9,8 @@ import { RackOptions } from './RackOptions.jsx';
 import { RackDemandDesign } from './RackDemandDesign.jsx';
 import { RackAllocation } from './RackAllocation.jsx';
 import { RackWorkbench } from './RackWorkbench.jsx';
+import { RackAddDialog } from './RackAddDialog.jsx';
+import { RACK_COMMANDS, rackCommandReason, addPlanObject } from './rack-commands.js';
 import {
   beginLayoutDraft,
   layoutCheckBody,
@@ -32,6 +34,8 @@ export function RackEditor({
   onSaved,
   section = 'layout',
   onNavigate = () => {},
+  commandRequest = null,
+  onCommandConsumed = () => {},
 }) {
   const catalogState = useRackCatalog(client, plan.projectId, canReadFacility);
   const [state, setState] = useState({
@@ -55,6 +59,8 @@ export function RackEditor({
     [error, setError] = useState(null),
     [notice, setNotice] = useState(null);
   const [captureAttempt, setCaptureAttempt] = useState(null);
+  const [addKind, setAddKind] = useState(null);
+  const consumedCommand = useRef(null);
   const lifetime = useRef(null),
     sending = useRef(false);
   useEffect(() => {
@@ -99,6 +105,22 @@ export function RackEditor({
   const snapshot = layout?.snapshot;
   const constraints = draft?.constraints ?? layout?.constraints ?? defaultEditorConstraints();
   const equipment = draft?.equipment ?? layout?.equipment ?? defaultEditorEquipment();
+  useEffect(() => {
+    if (!commandRequest || commandRequest.nonce === consumedCommand.current || !layout || state.pending) return;
+    consumedCommand.current = commandRequest.nonce;
+    onCommandConsumed();
+    setAddKind(null);
+    if (commandRequest.planId !== layout.planId) { setError('The selected Plan changed. Choose the command again.'); return; }
+    const reason = rackCommandReason({ layout, draft, canWrite, busy }, commandRequest.id);
+    if (reason) { setError(reason); return; }
+    setError(null);
+    if (['rack_add', 'rack_device', 'rack_zone'].includes(commandRequest.id)) setAddKind(commandRequest.id);
+    else {
+      const command = RACK_COMMANDS.find(c => c.commandId === commandRequest.id);
+      if (['rack_constraints', 'rack_capacity'].includes(commandRequest.id) && !draft) onDraftChange(beginLayoutDraft(layout));
+      onNavigate(command.section);
+    }
+  }, [commandRequest, layout, state.pending, draft, canWrite, busy, onCommandConsumed, onDraftChange, onNavigate]);
   const checkBody = snapshot
     ? layoutCheckBody(
         draft
@@ -340,6 +362,19 @@ export function RackEditor({
   );
   return (
     <section className="rack-editor" aria-label="Rack layout editor">
+      {addKind && <RackAddDialog key={`${layout.planId}:${addKind}`} kind={addKind} layout={layout} draft={draft}
+        catalogState={catalogState} blockedReason={rackCommandReason({ layout, draft, canWrite, busy }, addKind)}
+        onClose={() => setAddKind(null)} onApply={values => {
+          const reason = rackCommandReason({ layout, draft, canWrite, busy }, addKind);
+          if (reason) throw new Error(reason);
+          const result = addPlanObject(layout, draft, addKind, values, catalogState.data);
+          onDraftChange(result.draft);
+          if (addKind === 'rack_add') { setSelectedId(result.selectedId); setFocusRequest({rackId:result.selectedId,showFloor:true,nonce:Date.now()}); }
+          if (addKind === 'rack_zone') { setSelectedObstacleId(result.selectedId); setFocusRequest({obstacleId:result.selectedId,nonce:Date.now()}); }
+          onNavigate(addKind === 'rack_add' ? 'layout' : addKind === 'rack_zone' ? 'constraints' : 'equipment');
+          setNotice('已加入共享草稿。可以继续添加或修改，检查后 Save layout。');
+          setAddKind(null);
+        }}/>}
       {notice && (
         <p className="rack-notice" role="status">
           {notice}
@@ -377,7 +412,7 @@ export function RackEditor({
         </div>
       ) : (
         <>
-          {section !== 'layout' && editorActions}
+          {!['layout','overview'].includes(section) && editorActions}
           {draft && <p className="rack-muted">Layout, equipment, constraints and capacity share this draft and save together.</p>}
           {inputError && <p role="alert" className="rack-error">{inputError}</p>}
           {(checkState.error || (!inputError && currentReport?.diagnostics.length > 0) ||
@@ -402,8 +437,7 @@ export function RackEditor({
             }} onNavigate={onNavigate} /></div>
           <div hidden={section !== 'equipment'}><RackAllocation client={client} layout={layout} draft={draft} canWrite={canWrite}
             onDraftChange={value => { onDraftChange(value); setError(null); setNotice('Device allocation loaded as an unsaved draft. Review and Save layout to apply.'); }} /></div>
-          {section === 'layout' && !draft && placements.length === 0 && <div className="rack-card"><p>也可以从空白开始手工布置：</p>{editorActions}</div>}
-          {section === 'layout' && (Boolean(draft) || placements.length > 0) && <RackWorkbench key={snapshot.snapshotId} snapshot={snapshot}
+          {['layout','overview'].includes(section) && <RackWorkbench key={snapshot.snapshotId} snapshot={snapshot}
             placements={placements} models={models} constraints={constraints} equipment={equipment}
             report={currentReport} equipmentReport={equipmentReport} selectedId={selectedId}
             onSelect={setSelectedId} editable={editable} onMove={updateRack}

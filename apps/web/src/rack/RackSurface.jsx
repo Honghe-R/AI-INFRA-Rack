@@ -47,6 +47,14 @@ function RackWorkspace({ client, context, routeState = {}, onRouteChange, onDirt
   const lifetime = useRef(null);
 
   useEffect(() => {
+    if (!routeState.rackCommand) return;
+    const reason = routeState.rackCommand.planId !== selectedId ? '方案选择已改变，请重新选择操作。' :
+      detail.data?.deletedAt ? '此方案已删除，请先到 Plans 恢复。' :
+      !facilityPending && !canReadFacility ? '需要 Facility 读取权限才能打开此操作。' : null;
+    if (reason) { onRouteChange({rackCommand:null}); setNotice(reason); }
+  }, [routeState.rackCommand, selectedId, detail.data?.deletedAt, facilityPending, canReadFacility, onRouteChange]);
+
+  useEffect(() => {
     const controller = new AbortController();
     lifetime.current = controller;
     return () => controller.abort();
@@ -148,7 +156,7 @@ function RackWorkspace({ client, context, routeState = {}, onRouteChange, onDirt
       : writeUnavailable ? 'Creation permissions could not be checked. Reopen this workspace to retry.'
         : 'Read-only access. Creating plans requires rack.write.'}</p>}
     <p className="rack-scope">Scenario <code>{scenarioId}</code> · Facility revision <code>{revisionId}</code></p>
-    {section.functionId === 'overview' && <RackSectionGuide onNavigate={navigate} />}
+    {section.functionId === 'overview' && !selectedId && <RackSectionGuide onNavigate={navigate} />}
     {section.functionId !== 'plans' && <div className="rack-plan-switcher">
       <label>Active Rack plan<select value={selectedId ?? ''} disabled={Boolean(draft || editDraft || planAttempt) || list.pending}
         onChange={(event) => { setNotice(null); onRouteChange({ rackPlanId: event.target.value || null }); }}>
@@ -224,6 +232,7 @@ function RackWorkspace({ client, context, routeState = {}, onRouteChange, onDirt
             {detail.data.deletedAt&&<p className="rack-warning">此方案已删除。到方案管理中恢复后，才能打开布局或继续编辑。</p>}
             {!draft && !detail.data.deletedAt && <div hidden={section.functionId === 'plans'}><RackEditor key={detail.data.planId} client={client} plan={detail.data} context={context}
               section={section.functionId} onNavigate={navigate}
+              commandRequest={routeState.rackCommand} onCommandConsumed={() => onRouteChange({ rackCommand: null })}
               canWrite={canWrite} canReadFacility={canReadFacility} refresh={refresh} draft={editDraft}
               onDraftChange={value => onRouteChange({ rackEditDraft: value })}
               onSaved={version => { setNotice(`Saved layout loaded · v${version}`); reload(); }} /></div>}

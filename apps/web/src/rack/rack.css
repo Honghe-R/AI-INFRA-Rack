@@ -173,6 +173,35 @@
 
 /* Physical Rack studio: one diagram with an adjacent object inspector. */
 .rack-workbench { margin-top: 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); overflow: hidden; }
+.rack-add-dialog { width: min(600px, calc(100vw - 32px)); max-height: calc(100vh - 48px); overflow: auto; color: var(--text); background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 24px; box-shadow: 0 20px 80px #0004; }
+.rack-add-dialog::backdrop { background: #10182866; }
+.rack-add-dialog header { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+.rack-add-dialog h2 { margin: 0; }
+.rack-add-dialog label { display: grid; gap: 6px; margin: 14px 0; }
+.rack-add-dialog footer { justify-content: flex-end; margin-top: 24px; }
+.rack-view-switch { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; padding: 10px 16px; border-bottom: 1px solid var(--line); }
+.rack-view-switch button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+.rack-view-switch span { margin-left: auto; font-size: 11px; color: var(--text-muted); }
+.rack-physical-view[hidden] { display: none; }
+.rack-elevation-gallery, .rack-capacity-view { padding: 16px; min-height: 440px; max-height: 720px; overflow: auto; background-image: radial-gradient(var(--line-strong) .6px, transparent .6px); background-size: 12px 12px; }
+.rack-view-explainer { margin: 0 0 20px; font-size: 12px; color: var(--text-muted); }
+.rack-elevation-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 20px; align-items: start; }
+.rack-elevation-card { padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+.rack-elevation-card.is-selected { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.rack-surface .rack-elevation-heading { display: grid; gap: 4px; width: 100%; text-align: left; border: 0; padding: 4px 0 12px; background: transparent; color: var(--text); }
+.rack-elevation-heading small { font-size: 10px; color: var(--text-muted); }
+.rack-gallery-cabinet { position: relative; height: 336px; margin: 4px 0 4px 24px; border: 5px solid var(--line-strong); border-radius: 3px; background: repeating-linear-gradient(to top, transparent 0, transparent calc(100% / var(--rack-units) - 1px), var(--line) calc(100% / var(--rack-units) - 1px), var(--line) calc(100% / var(--rack-units))); }
+.rack-gallery-top, .rack-gallery-bottom { position: absolute; left: -30px; font-size: 9px; color: var(--text-muted); }
+.rack-gallery-top { top: -4px; }.rack-gallery-bottom { bottom: -4px; }
+.rack-surface .rack-gallery-cabinet button { position: absolute; left: 0; width: 100%; padding: 0 4px; border: 1px solid #7798c0; border-radius: 2px; background: #e4edf9; color: #24364c; font-size: 10px; line-height: 1; overflow: hidden; text-align: left; white-space: nowrap; }
+.rack-gallery-cabinet button[data-kind="gpu"] { background: #e9e3fa; border-color: #a28bc4; }
+.rack-gallery-cabinet button[data-kind="switch"] { background: #d8f1e8; border-color: #69a990; }
+.rack-gallery-cabinet button[aria-pressed="true"] { outline: 2px solid var(--accent); z-index: 1; }
+.rack-gallery-cabinet small { margin-left: 5px; font-size: 8px; }
+.rack-capacity-view table { border-collapse: collapse; width: 100%; font-size: 12px; background: var(--surface); }
+.rack-capacity-view th, .rack-capacity-view td { padding: 10px; border-bottom: 1px solid var(--line); text-align: left; white-space: nowrap; }
+.rack-capacity-view th small { display: block; color: var(--text-muted); font-weight: normal; margin-top: 4px; }
+.rack-capacity-view tr.is-selected { background: var(--accent-soft); }
 .rack-workbench-title { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 18px 22px; border-bottom: 1px solid var(--line); }
 .rack-workbench-title p { margin: 0 0 6px; font-size: 10px; letter-spacing: .15em; font-weight: 650; color: var(--accent); }
 .rack-workbench-title p span { margin-left: 10px; color: var(--text-muted); letter-spacing: .02em; }

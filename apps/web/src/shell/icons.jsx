@@ -315,6 +315,13 @@ export function toolIcon(toolId) {
 
 /** A toolbar command's icon, or null when the command is text-only. */
 const COMMAND_ICONS = Object.freeze({
+  rack_add: 'server',
+  rack_device: 'plug',
+  rack_zone: 'layout',
+  rack_constraints: 'sliders',
+  rack_capacity: 'chart',
+  rack_design: 'grid',
+  rack_checks: 'shieldCheck',
   add_interface: 'addInterface',
   draw_footprint: 'drawFootprint',
   import: 'importAsset',

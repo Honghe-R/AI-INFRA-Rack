@@ -1,0 +1,32 @@
+
+> @ai-infra/web@0.1.0 test
+> vitest run src/tests/rack- src/tests/tool-registry.test.js src/tests/open-views.test.js src/tests/shell-render.test.jsx src/tests/toolbar-structure.test.jsx
+
+
+ RUN  v2.1.9 C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/web
+
+ ✓ src/tests/tool-registry.test.js (8 tests) 13ms
+ ✓ src/tests/open-views.test.js (14 tests) 13ms
+ ✓ src/tests/rack-equipment.test.jsx (5 tests) 61ms
+ ✓ src/tests/rack-inputs.test.jsx (3 tests) 49ms
+ ✓ src/tests/rack-sections.test.jsx (4 tests) 53ms
+ ✓ src/tests/toolbar-structure.test.jsx (9 tests) 50ms
+ ✓ src/tests/rack-allocation.test.jsx (3 tests) 33ms
+ ✓ src/tests/rack-constraints.test.jsx (5 tests) 50ms
+ ✓ src/tests/rack-floorplan.test.jsx (4 tests) 40ms
+ ✓ src/tests/rack-hall-inventory.test.jsx (3 tests) 83ms
+ ✓ src/tests/rack-editor.test.jsx (4 tests) 35ms
+ ✓ src/tests/rack-options.test.jsx (4 tests) 44ms
+ ✓ src/tests/rack-demand-design.test.jsx (3 tests) 48ms
+ ✓ src/tests/rack-catalog.test.jsx (7 tests) 66ms
+ ✓ src/tests/rack-plan-commands.test.jsx (6 tests) 58ms
+ ✓ src/tests/rack-workbench.test.jsx (7 tests) 188ms
+ ✓ src/tests/rack-surface.test.jsx (5 tests) 35ms
+ ✓ src/tests/rack-room-budget.test.jsx (4 tests) 127ms
+ ✓ src/tests/shell-render.test.jsx (31 tests) 178ms
+
+ Test Files  19 passed (19)
+      Tests  129 passed (129)
+   Start at  20:26:56
+   Duration  6.29s (transform 6.14s, setup 0ms, collect 25.83s, tests 1.22s, environment 11ms, prepare 16.10s)
+

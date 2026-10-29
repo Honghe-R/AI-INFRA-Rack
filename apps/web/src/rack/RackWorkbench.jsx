@@ -4,6 +4,7 @@ import { rackCorners, displayClearanceBands } from './edit-layout-state.js';
 import { CANVAS, boundaryPath, fitRoom, niceMetres, toScreen } from './floorplan-view.js';
 import { rackLoadDisplay } from './floorplan-load.js';
 import { deviceKind, dragPosition, equipmentCamera, pointerPosition } from './workbench-view.js';
+import { RackElevations, RackCapacityTable } from './RackViews.jsx';
 
 const fmt=(v,unit='')=>Number.isFinite(v)?`${Number(v.toFixed(3))}${unit}`:'未知';
 const iconFor={gpu:Cpu,server:Server,switch:Network,other:Box};
@@ -69,6 +70,7 @@ export function RackWorkbench({snapshot, placements, models, constraints, equipm
   const {view,room}=snapshot;
   const [camera,setCamera]=useState(()=>equipmentCamera(placements,models,constraints,view.extentM));
   const [scope,setScope]=useState('equipment'),[mode,setMode]=useState('power');
+  const [viewMode,setViewMode]=useState('floor');
   const [step,setStep]=useState(.1),[bands,setBands]=useState(false),[zones,setZones]=useState(true);
   const [selectedDeviceId,setSelectedDeviceId]=useState(null),[pending,setPending]=useState(false);
   const [preview,setPreview]=useState(null),[dragging,setDragging]=useState(false),[message,setMessage]=useState('');
@@ -77,14 +79,16 @@ export function RackWorkbench({snapshot, placements, models, constraints, equipm
   const [expanded,setExpanded]=useState(false);
   const patternId=`rack-dots-${useId().replace(/:/g,'')}`;
   const selected=placements.find(p=>p.rackId===selectedId);
-  const device=equipment.devices.find(d=>d.deviceId===selectedDeviceId);
+  const selectedDevice=equipment.devices.find(d=>d.deviceId===selectedDeviceId);
+  const device=selectedDevice?.rackId===(selectedId??null)?selectedDevice:undefined;
   const model=models.find(m=>m.modelId===selected?.modelId);
   const displayed=placements.map(p=>preview?.rackId===p.rackId?{...p,...preview}:p);
   const installed=equipment.devices.filter(d=>d.rackId!==null),pendingCount=equipment.devices.length-installed.length;
   const choose=id=>{onSelect(id);setSelectedDeviceId(null);setPending(false);};
   const chooseDevice=id=>{const d=equipment.devices.find(d=>d.deviceId===id);setSelectedDeviceId(id);onSelect(d?.rackId??null);};
   const fit=which=>{setScope(which);setCamera(which==='room'?fitRoom(view.extentM):equipmentCamera(placements,models,constraints,view.extentM));};
-  useEffect(()=>{if(focusRequest) fit('equipment');},[focusRequest]);
+  useEffect(()=>{if(focusRequest) { fit('equipment'); if(focusRequest.showFloor) setViewMode('floor'); }},[focusRequest]);
+  useEffect(()=>{if(selectedDeviceId&&!device)setSelectedDeviceId(null);},[selectedId,selectedDeviceId,device]);
   useEffect(()=>{const changed=()=>setExpanded(document.fullscreenElement===sectionRef.current);
     document.addEventListener('fullscreenchange',changed);return()=>document.removeEventListener('fullscreenchange',changed);},[]);
   async function expand() {try {if(document.fullscreenElement===sectionRef.current)await document.exitFullscreen();
@@ -103,10 +107,14 @@ export function RackWorkbench({snapshot, placements, models, constraints, equipm
   const scaleM=niceMetres(80/camera.scale),roomCamera=fitRoom(view.extentM);
   const pickable=placements.filter(p=>p.name.toLowerCase().includes(query.trim().toLowerCase())).sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true}));
   return <section ref={sectionRef} className="rack-workbench" aria-label="Rack 可视化工作台">
-    <div className="rack-workbench-title"><div><p>RACK STUDIO <span>物理布局</span></p><h3>{room.name}</h3></div>
+    <div className="rack-workbench-title"><div><p>RACK STUDIO <span>{viewMode==='floor'?'物理布局':viewMode==='elevation'?'机柜立面':'容量总览'}</span></p><h3>{room.name}</h3></div>
       <div className="rack-workbench-totals"><span><strong>{placements.length}</strong>机柜</span><span><strong>{installed.length}</strong>已安装设备</span><button onClick={()=>{onSelect(null);setSelectedDeviceId(null);setPending(true);}}><strong>{pendingCount}</strong>待上架 ›</button><button onClick={expand}>{expanded?'退出演示':'展开工作台'}</button></div></div>
     <div className="rack-studio-actions">{actions}{feedback&&<p role="status">{feedback}</p>}</div>
     <div className="rack-workbench-body"><div className="rack-workbench-main">
+      <div className="rack-view-switch" role="group" aria-label="Rack 展示方式">{[['floor','平面布局'],['elevation','机柜立面'],['capacity','容量表']].map(([id,label])=><button key={id} aria-pressed={viewMode===id} onClick={()=>setViewMode(id)}>{label}</button>)}<span>同一方案 · 视图切换保留选择</span></div>
+      {viewMode==='elevation'&&<RackElevations placements={placements} models={models} devices={equipment.devices} selectedId={selectedId} selectedDeviceId={selectedDeviceId} report={equipmentReport} onSelect={choose} onDevice={chooseDevice}/>}
+      {viewMode==='capacity'&&<RackCapacityTable placements={placements} devices={equipment.devices} report={equipmentReport} selectedId={selectedId} onSelect={choose}/>}
+      <div className="rack-physical-view" hidden={viewMode!=='floor'}>
       <div className="rack-studio-toolbar"><div className="rack-segment" aria-label="画布范围"><button aria-pressed={scope==='equipment'} onClick={()=>fit('equipment')}>设备区</button><button aria-pressed={scope==='room'} onClick={()=>fit('room')}>整个房间</button></div>
         <label>着色<select aria-label="机柜着色" value={mode} onChange={e=>setMode(e.target.value)}><option value="layout">布局</option><option value="power">功率</option><option value="u">U 位</option></select></label>
         <label><input type="checkbox" checked={zones} onChange={e=>setZones(e.target.checked)}/>禁放区</label><label><input type="checkbox" checked={bands} onChange={e=>setBands(e.target.checked)}/>维护带</label>
@@ -155,6 +163,7 @@ export function RackWorkbench({snapshot, placements, models, constraints, equipm
         <svg className="rack-studio-minimap" viewBox="0 0 800 440" aria-label="房间位置概览"><path d={boundaryPath(view.boundaryLocalM,roomCamera)} fillRule="evenodd"/>{placements.map(r=>{const m=models.find(m=>m.modelId===r.modelId);return m&&[r.xM,r.yM].every(Number.isFinite)?<polygon key={r.rackId} points={rackCorners(r,m).map(p=>toScreen(p,roomCamera).join(',')).join(' ')}/>:null;})}</svg>
       </div>
       <div className="rack-studio-footer"><span><i className="rack-dot"/>正常 <i className="rack-dot high"/>高用量 <i className="rack-dot issue"/>冲突 <i className="rack-dot unknown"/>未知</span><span>{editable?<><Move size={13}/>拖动未锁定机柜 · 方向键微调</>:<><MousePointer2 size={13}/>点击查看 · 点 Edit layout 开始摆放</>}</span></div>
+      </div>
       <div className="rack-studio-inventory"><div className="rack-studio-inventory-tools"><label><span>机柜清单</span><input aria-label="搜索机柜" placeholder="搜索编号…" value={query} onChange={e=>setQuery(e.target.value)}/></label><div className="rack-actions"><select aria-label="新增机柜型号" value={modelId||models[0]?.modelId} disabled={!editable} onChange={e=>onModelChange(e.target.value)}>{models.map(m=><option key={m.modelId} value={m.modelId}>{m.name}</option>)}</select><button disabled={!editable||placements.length>=256} onClick={onAdd}><Plus size={14}/>添加机柜</button></div></div>
         <div className="rack-studio-rack-list">{pickable.map(r=><button key={r.rackId} aria-pressed={selectedId===r.rackId} onClick={()=>choose(r.rackId)}>{isPositionLocked(r.rackId)?<LockKeyhole size={12}/>:<Server size={12}/>} {r.name}</button>)}</div></div>
       <p role="status" className="rack-studio-status">{message||'物理尺寸保持等比例；点阵是画布背景，吸附间距以米为准。'}</p>

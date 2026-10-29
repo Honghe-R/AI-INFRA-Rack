@@ -8,6 +8,7 @@ import { ProjectListEntry } from './projects/ProjectListEntry.jsx';
 import { openProjectInWorkspace } from './projects/open-project.js';
 import { AssetsSurface } from './assets/AssetsSurface.jsx';
 import { RackSurface } from './rack/RackSurface.jsx';
+import { RACK_COMMANDS } from './rack/rack-commands.js';
 import { CatalogSurface } from './catalog/CatalogSurface.jsx';
 import { FacilityImport } from './facility/FacilityImport.jsx';
 import { FacilityVerification } from './facility/FacilityVerification.jsx';
@@ -354,6 +355,11 @@ function AppBody({ projects, projectsPending, projectsError, projectsNotice, sce
    */
   const handleCommand = useCallback(
     (commandId) => {
+      if (activeTab?.toolId === 'rack' && RACK_COMMANDS.some(c => c.commandId === commandId)) {
+        workspace.setRouteState(activeTab.tabId, { rackCommand: { id: commandId, nonce: crypto.randomUUID(), planId: activeTab.routeState?.rackPlanId },
+          functionId: activeTab.routeState?.functionId === 'plans' ? 'layout' : activeTab.routeState?.functionId });
+        return;
+      }
       if (commandId === 'validate') {
         workspace.selectFunction('validate');
         validateNonceRef.current += 1;
@@ -374,7 +380,7 @@ function AppBody({ projects, projectsPending, projectsError, projectsNotice, sce
       }
       onCommand(commandId);
     },
-    [onCommand, workspace],
+    [onCommand, workspace, activeTab],
   );
 
   if (!context) {
@@ -438,6 +444,10 @@ function AppBody({ projects, projectsPending, projectsError, projectsNotice, sce
         accountLabel={accountLabel}
         assistant={assistant}
         onCommand={handleCommand}
+        toolbarDisabledReasons={activeTab?.toolId === 'rack' ? Object.fromEntries(RACK_COMMANDS.map(c => [c.commandId,
+          !activeTab.routeState?.rackPlanId ? 'Select a saved Plan first.' :
+          activeTab.routeState?.rackDraft || activeTab.routeState?.rackPlanAttempt ? 'Finish the pending Plan action first.' :
+          activeTab.routeState?.rackEditDraft?.attempt ? 'Complete or retry the pending save first.' : null])) : {}}
         devIdentity={devIdentity}
         renderToolSurface={({ tab, contextControls }) => {
           if (!tab) return null;
