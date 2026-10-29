@@ -26,6 +26,7 @@
     "dev:status": "node --env-file-if-exists=.env scripts/dev-stack.mjs status",
     "rack:preview": "node scripts/rack-preview.mjs",
     "rack:demo:catalog": "node --env-file-if-exists=.env scripts/rack-catalog-demo.mjs",
+    "rack:demo:hall": "node --env-file-if-exists=.env scripts/rack-hall-demo.mjs",
     "rack:setup": "node scripts/rack-setup.mjs",
     "ui:shot": "node scripts/ui-shot.mjs"
   },

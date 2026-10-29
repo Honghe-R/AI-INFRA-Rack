@@ -1,0 +1,6 @@
+
+> ai-network-infra-simulator@0.1.0 rack:demo:hall
+> node --env-file-if-exists=.env scripts/rack-hall-demo.mjs 4c11ab8d-5d57-4ad8-ad55-ac08574fba46 e446aafb-1846-4a69-af10-636fd50ba87c
+
+{"name":"完整机房演示 · 32柜 / 多排混合设备","planId":"4b8f7bf3-9015-455f-8bc8-ef3520f0d748","version":2,"retainedExisting":true,"message":"Existing demo retained exactly; no layout or candidate changed."}
+{"unchangedOldPlans":7,"sourceUnchanged":true,"candidatesSaved":false}

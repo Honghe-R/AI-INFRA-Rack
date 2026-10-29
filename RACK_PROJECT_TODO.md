@@ -559,3 +559,5 @@ contract 与限制见 [RACK_API.md](RACK_API.md)。现已增加有上限的方�
 ## 本轮增量：2026-10-29 机房预算
 
 第十八轮已接通本方案全柜安装设备总需求与显式功率/冷却假设预算，原保存、布局候选、自动上架和Assistant共用检查，无迁移。独立3kW预算示例、135领域/66API适配/171Web测试、构建和实际浏览器证据见 [RACK_ROOM_BUDGET.md](RACK_ROOM_BUDGET.md) 与 [PROGRESS.md](PROGRESS.md)。尚无跨方案权威容量预留、连续通道/访问连通、持久化验证历史和规模实验；模型配置继续搁置。
+
+第十九轮：新增 32 柜 / 236 台已安装 / 8 台待上架的多排合成机房演示，以及地图选柜联动的设备概览和 U 位立面。操作、复现和边界见 [RACK_HALL_DEMO.md](RACK_HALL_DEMO.md)，证据见 [PROGRESS.md](PROGRESS.md)。布局扫描不保证比手工方案紧凑，通道连通仍未实现。

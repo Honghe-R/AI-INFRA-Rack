@@ -33,3 +33,5 @@
 第十五轮：按 Rack 业务调整为 Overview / Plans / Inputs & impact / Rack layout / Space rules / Devices & U slots / Capacity / Layout options / Checks。Inputs & impact 可查看实际来源、型号版本、输入关系图及共享草稿变化；节点按钮高亮下游并跳转对应页。它是局部输入追踪，正式依赖历史/事件传播未实现；详见 [RACK_INPUTS.md](RACK_INPUTS.md)。
 
 第十六轮：Layout options 选择保存方案、网格与旋转参数 → Generate layout options → 比较现状/行扫描/大柜优先 → 检查未放置项、报告、逐柜位置变更和预览图 → 勾选复核 → Use selected option as draft → Rack layout 自动聚焦 → Save layout。已有草稿时禁止覆盖，旧版本/来源变化仍由后端阻止。候选仅在页面暂存，详见 [RACK_PLANNER.md](RACK_PLANNER.md)。
+
+第十九轮：新增 32 柜 / 236 台已安装 / 8 台待上架的多排合成机房演示，以及地图选柜联动的设备概览和 U 位立面。操作、复现和边界见 [RACK_HALL_DEMO.md](RACK_HALL_DEMO.md)，证据见 [PROGRESS.md](PROGRESS.md)。布局扫描不保证比手工方案紧凑，通道连通仍未实现。

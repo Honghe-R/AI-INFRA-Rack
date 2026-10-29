@@ -117,6 +117,7 @@ export function RoomFloorplan({
   const sectionRef = useRef(null);
   const [expanded, setExpanded] = useState(false), [expandError, setExpandError] = useState(null);
   const [showObstacles, setShowObstacles] = useState(true), [showMaintenance, setShowMaintenance] = useState(true);
+  const [showRackLabels, setShowRackLabels] = useState(true);
   const [loadMode, setLoadMode] = useState('layout');
   useEffect(() => {
     const changed = () => setExpanded(document.fullscreenElement === sectionRef.current);
@@ -223,6 +224,7 @@ export function RoomFloorplan({
         </select></label>
         <label><input type="checkbox" checked={showObstacles} onChange={(e) => setShowObstacles(e.target.checked)} />Planning obstacles</label>
         <label><input type="checkbox" checked={showMaintenance} onChange={(e) => setShowMaintenance(e.target.checked)} />Maintenance bands</label>
+        <label><input type="checkbox" checked={showRackLabels} onChange={(e) => setShowRackLabels(e.target.checked)} />Rack labels</label>
         <span className="rack-muted">Display controls only; all constraints remain checked.</span>
       </div>
       {loadMode !== 'layout' && <p className="rack-map-legend">Blue: below 80% · Amber: ≥80% · Red: conflict or exceeded · Gray: unknown / not checked. Colors describe the provided inventory and declared assumptions.</p>}
@@ -387,8 +389,9 @@ export function RoomFloorplan({
                   x2={corners[1][0]}
                   y2={corners[1][1]}
                 />
-                {camera.scale * model.widthM > 22 && (
+                {showRackLabels && camera.scale * model.widthM > 10 && (
                   <text
+                    style={{fontSize: camera.scale * model.widthM > 22 ? 12 : 9}}
                     x={center[0]}
                     y={center[1] - (camera.scale * model.depthM) / 2 - 7}
                     textAnchor="middle"

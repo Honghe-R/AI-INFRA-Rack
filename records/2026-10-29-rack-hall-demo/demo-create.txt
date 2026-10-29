@@ -1,0 +1,129 @@
+
+> ai-network-infra-simulator@0.1.0 rack:demo:hall
+> node --env-file-if-exists=.env scripts/rack-hall-demo.mjs 4c11ab8d-5d57-4ad8-ad55-ac08574fba46 e446aafb-1846-4a69-af10-636fd50ba87c
+
+{
+  "name": "完整机房演示 · 32柜 / 多排混合设备",
+  "planId": "4b8f7bf3-9015-455f-8bc8-ef3520f0d748",
+  "version": 2,
+  "racks": 32,
+  "installedDevices": 236,
+  "inventoryDevices": 244,
+  "unassignedDevices": 8,
+  "lockedRacks": 24,
+  "powerKw": 240,
+  "roomLimitKw": 246,
+  "spatialStatus": "INCOMPLETE",
+  "equipmentStatus": "INCOMPLETE",
+  "validationState": "NOT_RUN",
+  "allocation": {
+    "assigned": 2,
+    "remaining": 6,
+    "reasons": [
+      "NO_ELIGIBLE_POSITION",
+      "ROOM_BUDGET_EXCEEDED",
+      "ROOM_BUDGET_EXCEEDED",
+      "ROOM_BUDGET_EXCEEDED",
+      "ROOM_BUDGET_EXCEEDED",
+      "UNKNOWN_DEVICE_RESOURCE"
+    ]
+  },
+  "layoutCandidates": [
+    {
+      "algorithmId": "row-scan-v1",
+      "canStage": true,
+      "movedRacks": 8,
+      "unplaced": 0
+    },
+    {
+      "algorithmId": "largest-first-v1",
+      "canStage": true,
+      "movedRacks": 8,
+      "unplaced": 0
+    }
+  ],
+  "note": "Single local smoke timings, not a scaling benchmark or production capacity claim.",
+  "timings": [
+    {
+      "method": "GET",
+      "endpoint": "/plans/:id/layout",
+      "durationMs": 86.11
+    },
+    {
+      "method": "GET",
+      "endpoint": "/catalog",
+      "durationMs": 42.98
+    },
+    {
+      "method": "GET",
+      "endpoint": "/plans?limit=50&scenario_id=4ee0094b-9f4e-4e45-8c3e-244fe83348d2&revision_id=c5b4b888-e66e-4ffa-bb0e-2dd738ed5f4d",
+      "durationMs": 22.75
+    },
+    {
+      "method": "GET",
+      "endpoint": "/plans/:id/layout",
+      "durationMs": 78.69
+    },
+    {
+      "method": "GET",
+      "endpoint": "/plans/:id/layout",
+      "durationMs": 106.14
+    },
+    {
+      "method": "GET",
+      "endpoint": "/plans/:id/layout",
+      "durationMs": 107.09
+    },
+    {
+      "method": "GET",
+      "endpoint": "/plans/:id/layout",
+      "durationMs": 108.35
+    },
+    {
+      "method": "GET",
+      "endpoint": "/plans/:id/layout",
+      "durationMs": 111.8
+    },
+    {
+      "method": "GET",
+      "endpoint": "/plans/:id/layout",
+      "durationMs": 112.9
+    },
+    {
+      "method": "GET",
+      "endpoint": "/plans/:id/layout",
+      "durationMs": 112.4
+    },
+    {
+      "method": "POST",
+      "endpoint": "/plans",
+      "durationMs": 79.08
+    },
+    {
+      "method": "GET",
+      "endpoint": "/plans/:id/layout",
+      "durationMs": 20.85
+    },
+    {
+      "method": "POST",
+      "endpoint": "/plans/:id/layout/check",
+      "durationMs": 373.62
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/plans/:id/layout",
+      "durationMs": 465.23
+    },
+    {
+      "method": "POST",
+      "endpoint": "/plans/:id/layout/equipment-options",
+      "durationMs": 353.64
+    },
+    {
+      "method": "POST",
+      "endpoint": "/plans/:id/layout/options",
+      "durationMs": 2212.91
+    }
+  ]
+}
+{"unchangedOldPlans":7,"sourceUnchanged":true,"candidatesSaved":false}

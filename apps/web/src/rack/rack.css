@@ -158,3 +158,15 @@
 .rack-option-check { display: flex; align-items: center; gap: var(--space-2); margin: var(--space-4) 0; }
 .rack-options button[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); }
 .rack-options caption { text-align: left; padding: var(--space-3); color: var(--text-muted); }
+.rack-hall-inventory { margin-top: var(--space-4); }
+.rack-hall-kinds { display: flex; flex-wrap: wrap; gap: var(--space-3); padding-left: var(--space-4); }
+.rack-hall-row { margin: var(--space-3) 0; }
+.rack-hall-racks { display: grid; grid-template-columns: repeat(auto-fit, minmax(75px, 1fr)); gap: var(--space-2); margin-top: var(--space-2); }
+.rack-hall-racks button { display: grid; gap: var(--space-1); text-align: center; border-top: 4px solid var(--accent); min-width: 0; }
+.rack-hall-racks button span { font-size: var(--text-sm); }
+.rack-hall-racks button[data-load="high"] { border-top-color: var(--warning); }
+.rack-hall-racks button[data-load="issue"] { border-top-color: var(--error); }
+.rack-hall-racks button[data-load="unknown"] { border-top-color: var(--text-muted); }
+.rack-hall-racks button[aria-pressed="true"] { background: var(--accent-soft); outline: 2px solid var(--accent); }
+.rack-hall-selected { margin-top: var(--space-4); }
+.rack-hall-selected .rack-elevation { max-width: 640px; }

@@ -1,0 +1,18 @@
+
+> ai-network-infra-simulator@0.1.0 rack:demo:hall
+> node --env-file-if-exists=.env scripts/rack-hall-demo.mjs 4c11ab8d-5d57-4ad8-ad55-ac08574fba46 e446aafb-1846-4a69-af10-636fd50ba87c
+
+<anonymous_script>:1
+
+
+SyntaxError: Unexpected end of JSON input
+    at JSON.parse (<anonymous>)
+    at parseJSONFromBytes (node:internal/deps/undici/undici:5852:19)
+    at successSteps (node:internal/deps/undici/undici:5833:27)
+    at fullyReadBody (node:internal/deps/undici/undici:4725:9)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async consumeBody (node:internal/deps/undici/undici:5842:7)
+    at async request (file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/scripts/rack-hall-demo.mjs:22:19)
+    at async file:///C:/Users/RHH/Desktop/AI-INFRA-Rack/scripts/rack-hall-demo.mjs:27:16
+
+Node.js v22.22.1

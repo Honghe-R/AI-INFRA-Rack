@@ -561,3 +561,5 @@ Written screenshots land wherever `--out` points (`ui-shots/` is ignored by git)
 * **Migrations are immutable once applied.** The runner records a checksum per file and fails on drift.
 * **Tenant isolation is enforced twice.** Row-level security in the database, plus `project_id` in every key and reference ([D22](doc/tools/site-and-facility/decisions.md)).
 * **Secrets never reach logs.** Log fields pass through a redactor that strips credential-shaped keys and signed-URL query parameters.
+
+第十九轮：新增 32 柜 / 236 台已安装 / 8 台待上架的多排合成机房演示，以及地图选柜联动的设备概览和 U 位立面。操作、复现和边界见 [RACK_HALL_DEMO.md](RACK_HALL_DEMO.md)，证据见 [PROGRESS.md](PROGRESS.md)。布局扫描不保证比手工方案紧凑，通道连通仍未实现。

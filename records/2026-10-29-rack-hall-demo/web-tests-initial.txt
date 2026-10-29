@@ -1,0 +1,61 @@
+
+> @ai-infra/web@0.1.0 test
+> vitest run src/tests/rack-hall-inventory.test.jsx src/tests/rack-surface.test.jsx src/tests/rack-editor.test.jsx src/tests/rack-sections.test.jsx src/tests/rack-options.test.jsx src/tests/rack-allocation.test.jsx src/tests/rack-inputs.test.jsx src/tests/rack-equipment.test.jsx src/tests/rack-room-budget.test.jsx src/tests/rack-constraints.test.jsx src/tests/rack-catalog.test.jsx src/tests/rack-floorplan.test.jsx
+
+
+ RUN  v2.1.9 C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/web
+
+ ✓ src/tests/rack-inputs.test.jsx (3 tests) 13ms
+ ✓ src/tests/rack-equipment.test.jsx (5 tests) 31ms
+ ✓ src/tests/rack-constraints.test.jsx (5 tests) 20ms
+ ✓ src/tests/rack-floorplan.test.jsx (4 tests) 17ms
+ ✓ src/tests/rack-sections.test.jsx (4 tests) 20ms
+ ✓ src/tests/rack-options.test.jsx (4 tests) 13ms
+ ✓ src/tests/rack-allocation.test.jsx (3 tests) 16ms
+ ✓ src/tests/rack-editor.test.jsx (4 tests) 16ms
+ ❯ src/tests/rack-hall-inventory.test.jsx (3 tests | 1 failed) 35ms
+   × selected rack renders only its read-only elevation and escapes inventory labels 11ms
+     → Expected values to be strictly equal:
+
+43 !== 42
+
+ ✓ src/tests/rack-catalog.test.jsx (7 tests) 26ms
+ ✓ src/tests/rack-surface.test.jsx (4 tests) 12ms
+ ✓ src/tests/rack-room-budget.test.jsx (4 tests) 19ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/tests/rack-hall-inventory.test.jsx > selected rack renders only its read-only elevation and escapes inventory labels
+AssertionError: Expected values to be strictly equal:
+
+43 !== 42
+
+
+- Expected
++ Received
+
+- 42
++ 43
+
+ ❯ src/tests/rack-hall-inventory.test.jsx:24:10
+     22|   const html=render({selectedId:'a'});
+     23|   assert.ok(html.includes('GPU &lt;server&gt;'));assert.ok(!html.inclu…
+     24|   assert.equal((html.match(/class="rack-u-slot/g)||[]).length,42);
+       |          ^
+     25|   assert.ok(html.includes('aria-pressed="true"'));assert.ok(html.inclu…
+     26|   assert.ok(html.includes('管理设备与 U 位'));
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+ Test Files  1 failed | 11 passed (12)
+      Tests  1 failed | 49 passed (50)
+   Start at  14:52:40
+   Duration  1.58s (transform 1.23s, setup 0ms, collect 4.83s, tests 238ms, environment 2ms, prepare 3.72s)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path C:\Users\RHH\Desktop\AI-INFRA-Rack\apps\web
+npm error workspace @ai-infra/web@0.1.0
+npm error location C:\Users\RHH\Desktop\AI-INFRA-Rack\apps\web
+npm error command failed
+npm error command C:\Windows\system32\cmd.exe /d /s /c vitest run src/tests/rack-hall-inventory.test.jsx src/tests/rack-surface.test.jsx src/tests/rack-editor.test.jsx src/tests/rack-sections.test.jsx src/tests/rack-options.test.jsx src/tests/rack-allocation.test.jsx src/tests/rack-inputs.test.jsx src/tests/rack-equipment.test.jsx src/tests/rack-room-budget.test.jsx src/tests/rack-constraints.test.jsx src/tests/rack-catalog.test.jsx src/tests/rack-floorplan.test.jsx

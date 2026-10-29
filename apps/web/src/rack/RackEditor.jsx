@@ -7,6 +7,7 @@ import { RackPlanOverview } from './RackSections.jsx';
 import { RackInputs } from './RackInputs.jsx';
 import { RackOptions } from './RackOptions.jsx';
 import { RackAllocation } from './RackAllocation.jsx';
+import { RackHallInventory } from './RackHallInventory.jsx';
 import {
   beginLayoutDraft,
   layoutCheckBody,
@@ -400,6 +401,10 @@ export function RackEditor({
             equipmentReport={equipmentReport}
             focusRequest={focusRequest}
           />
+          {section === 'layout' && <RackHallInventory placements={placements} models={models} equipment={equipment}
+            report={equipmentReport} selectedId={selectedId} onSelect={id => {
+              setSelectedId(id); setFocusRequest({rackId:id,nonce:Date.now()});
+            }} onNavigate={onNavigate} />}
           </div>
           <div hidden={section !== 'layout'} className="rack-editor-columns" data-rack-panel="rack-properties">
             <section className="rack-card" aria-label="Rack inventory">
