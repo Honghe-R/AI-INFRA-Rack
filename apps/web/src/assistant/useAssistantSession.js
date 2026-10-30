@@ -36,9 +36,7 @@ export function useAssistantSession({
   attachmentPolicy = DEFAULT_ATTACHMENT_POLICY,
   contextToken = null,
 }) {
-  const transport = useMemo(() => createAssistantTransport(client), [client]);
   const effectiveAttachmentPolicy = toolId === 'rack' ? RACK_ATTACHMENT_POLICY : attachmentPolicy;
-  const key = assistantSessionKey(workspaceContext, toolId, toolRouteState);
 
   const effectsRef = useRef(effects);
   effectsRef.current = effects;
@@ -49,6 +47,11 @@ export function useAssistantSession({
   const [uiActionNotices, setUiActionNotices] = useState([]);
   const [provider, setProvider] = useState(null);
   const [model, setModel] = useState(readStoredModel);
+  const [connectionPending, setConnectionPending] = useState(Boolean(client?.getAssistantProvider));
+  const [connectionError, setConnectionError] = useState(null);
+  const [connectionNonce, setConnectionNonce] = useState(0);
+  const transport = useMemo(() => createAssistantTransport(client, provider), [client, provider?.connectionId, provider?.version]);
+  const key = connectionSessionKey(assistantSessionKey(workspaceContext, toolId, toolRouteState), provider, model);
   // True while a picked file is being stored. The composer blocks Send on it, so this is
   // state the user can see the effect of, not an internal detail.
   const [uploading, setUploading] = useState(false);
@@ -131,6 +134,7 @@ export function useAssistantSession({
   const sessionRef = useRef(null);
   modelRef.current = model;
   const onModelChange = useCallback((next) => {
+    sessionRef.current?.stop();
     setModel(next || null);
     storeModel(next || null);
   }, []);
@@ -149,6 +153,8 @@ export function useAssistantSession({
   useEffect(() => {
     if (!client?.getAssistantProvider) return undefined;
     let cancelled = false;
+    setConnectionPending(true);
+    setConnectionError(null);
     client
       .getAssistantProvider()
       .then(({ data }) => {
@@ -166,11 +172,20 @@ export function useAssistantSession({
           return current;
         });
       })
-      .catch(() => {});
+      .catch((error) => { if (!cancelled) setConnectionError(error.message ?? '无法读取模型连接。'); })
+      .finally(() => { if (!cancelled) setConnectionPending(false); });
     return () => {
       cancelled = true;
     };
-  }, [client]);
+  }, [client, connectionNonce]);
+
+  const onConnectionChange = useCallback(() => {
+    sessionRef.current?.stop();
+    setModel(null);
+    storeModel(null);
+    setConnectionPending(true);
+    setConnectionNonce((current) => current + 1);
+  }, []);
 
   // The effects handle is rebuilt by the canvas on every render, so the dispatcher
   // holds a stable proxy and reads the current handle when it runs.
@@ -277,13 +292,19 @@ export function useAssistantSession({
     models: provider?.models ?? [],
     model,
     onModelChange,
+    connectionClient: client?.getAssistantConnection ? client : null,
+    connectionPending,
+    connectionError,
+    onConnectionChange,
     uiActionNotices,
     onEntitySelect,
     onEntityHover,
     onEntityLeave,
     uiActionHandler,
     onDraftChange: (value) => sessionRef.current?.setDraft(value),
-    onSend: () => sessionRef.current?.send(),
+    onSend: () => {
+      if (!connectionPending && !connectionError && provider?.configured !== false) sessionRef.current?.send();
+    },
     onStop: () => sessionRef.current?.stop(),
     onNewSession: () => {
       setUiActionNotices([]);
@@ -363,7 +384,7 @@ function storeModel(model, storage = typeof window !== 'undefined' ? window.loca
 }
 
 /** The browser end of the assistant wire contract. */
-export function createAssistantTransport(client) {
+export function createAssistantTransport(client, connection = null) {
   if (!client?.sendAssistantTurn) return null;
   return {
     async sendTurn({ messages, contextKey, sessionId, context, model, signal, onEvent, confirmations = null, confirmedCalls = null, deniedCalls = null }) {
@@ -375,6 +396,7 @@ export function createAssistantTransport(client) {
         // Omitted rather than null when unset: an absent key asks the server for its own
         // configured model, which is what a deployment with no menu should always get.
         ...(model ? { model } : {}),
+        ...(connection?.connectionId ? { connection_id: connection.connectionId, connection_version: connection.version } : {}),
         // The user's decision about a proposal the server gated. Omitted when there is none, so
         // an ordinary turn does not carry an empty list.
         ...(confirmations && confirmations.length > 0 ? { confirmations } : {}),
@@ -488,4 +510,9 @@ export function assistantSessionKey(context, toolId = 'site_facility', route = n
   if (!context) return null;
   const base = workspaceContextKey(context);
   return toolId === 'rack' ? `${base}|rack|${route?.rackPlanId ?? 'unselected'}` : base;
+}
+
+export function connectionSessionKey(base, connection, model) {
+  if (!base || !connection?.connectionId) return base;
+  return `${base}|connection:${connection.connectionId}:${connection.version}|model:${encodeURIComponent(model ?? connection.model)}`;
 }

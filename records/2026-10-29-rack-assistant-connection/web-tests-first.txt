@@ -1,0 +1,20 @@
+
+> @ai-infra/web@0.1.0 test
+> vitest run src/tests/assistant-connection.test.jsx src/tests/assistant-render.test.jsx src/tests/assistant-session.test.js src/tests/assistant-state.test.js src/tests/api-client.test.js src/tests/shell-render.test.jsx src/tests/assistant-tool-surface-render.test.jsx
+
+
+ RUN  v2.1.9 C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/web
+
+ ✓ src/tests/api-client.test.js (12 tests) 6ms
+ ✓ src/tests/assistant-state.test.js (14 tests) 48ms
+ ✓ src/tests/assistant-session.test.js (41 tests) 42ms
+ ✓ src/tests/assistant-connection.test.jsx (4 tests) 12ms
+ ✓ src/tests/assistant-render.test.jsx (50 tests) 54ms
+ ✓ src/tests/assistant-tool-surface-render.test.jsx (19 tests) 25ms
+ ✓ src/tests/shell-render.test.jsx (31 tests) 155ms
+
+ Test Files  7 passed (7)
+      Tests  171 passed (171)
+   Start at  21:54:07
+   Duration  2.39s (transform 933ms, setup 0ms, collect 4.03s, tests 341ms, environment 1ms, prepare 1.51s)
+

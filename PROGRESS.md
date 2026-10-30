@@ -882,6 +882,64 @@ Docker 可能保留已下载的镜像缓存，本轮没有清理全局 Docker �
 - 运行中的上一轮日志由原进程自动追加。本轮未重启，因此上一轮最终算法排序/零间距修复的浏览器运行版本限制仍保留；本轮只验证新UI与既有检查/草稿流程。
 - 下一步按实际使用反馈补交互；若继续算法/验证工作，先正常重启加载上一轮最终API，再做正式版本绑定验证记录与通道连通。模型继续搁置，所有提交留用户完成。
 
+## 2026-10-29：第二十四轮，AI Agent 与个人 API 接入调研
+
+### 范围与实际产出
+
+- 根据用户要求调研 DrClaw 等项目如何管理 Agent、让用户接入自己的 API。本轮起始 HEAD 0799add、工作区干净；只在 AI-INFRA-Rack 副本工作，无 commit/push、remote 或老师原目录/平台修改。
+- 新增根目录 [RACK_ASSISTANT_RESEARCH.md](RACK_ASSISTANT_RESEARCH.md)：区分模型连接、Agent、会话/运行；整理 DrClaw 固定版本源码及 Open WebUI 官方连接文档，给出用户操作流程、建议架构、接口草案、现有缺口、实施次序与验收要求。
+- 更新 [RACK_ASSISTANT.md](RACK_ASSISTANT.md) 调研入口，明确新增内容是设计，个人连接页面尚未上线；原部署级 Assistant 与 5 个 Rack 工具保持不变。
+
+### 结论与证据边界
+
+- DrClaw 核查 main commit 4f96df0d9df0eae24a992afabe08edec5fc575f0：providers/active_provider 管理连接，配置有 Key/Base/Model，LiteLLM 适配调用，Web 保存要求重启。所读本地配置路径会明文保存及回填 Key，不能直接照搬成多人 Rack 的个人密钥接口；没有认定每 Agent 独立 Key 或设置页已有连接测试。
+- Open WebUI 区分管理员后端连接与实验性浏览器 Direct Connections；后者 Key 在浏览器 localStorage，依赖 CORS。模型发现失败不等于聊天失败，tools 兼容性需单独测试。LibreChat 仅引用配置示例的 schema/自定义地址校验，不声称已核实其个人凭证实现。
+- Rack 推荐个人连接 + 现有固定 Rack Agent + 后端工具；数据库只放连接元数据/secretRef，凭证独立存储，遵循现有 secrets 规范。聊天只引用获授权连接 ID，后端按请求解析 provider；不能通过修改全局 provider 切换用户。
+- 本地已核查 provider、Host、路由、config、secrets、Web session 和 Rack 工具。缺口为个人连接 CRUD/测试、可写凭证存储、请求级 provider/脱敏/缓存隔离、设置页面与会话连接身份；按数量自动设计仍未投影为 Assistant 工具。
+- 原蓝图部署级配置限制需要作为扩展规范明确调整：管理接口一次性收凭证，chat 不收 Key/任意地址/provider 实现。本轮未改动该规范或运行逻辑。
+
+### 验证与下一步
+
+- 文档检查：`git diff --check` 通过，新增研究文档另经 `git diff --no-index --check` 检查通过（新文件未暂存）。未运行测试/构建，因为只有 Markdown 文档变更；不声明真实模型或新设置页面已验证。
+- 本轮仅只读调研，无第三方代码克隆/安装、迁移、服务重启、端口/环境配置、真实 Key 读取/保存或模型调用。没有浏览器操作或数据库变更；前轮运行版本限制保持原记录。
+- 下一步按文档先完善连接/Secret Store 扩展规范和最小后端，再做用户设置页及 Assistant 连接选择。此时可用假 provider 验证，不需用户发送 API Key；真实服务验收放在本地安全配置完成后。
+
+## 2026-10-29：第二十五轮，Ask about Rack 首次配置与持久连接
+
+### 实际范围与修改
+
+- 用户要求首次配置后直接在下方 Ask about Rack 使用，并询问老师平台连接方式。本轮起始 HEAD0799add，保留第二十四轮未提交文档；仅修改 AI-INFRA-Rack，无 commit/push、remote 或老师原目录/平台写入。
+- 用户随后明确只处理我们的平台；之后没有继续查看或操作老师平台。此前仅只读打开老师 Ask about Power，看到 api.deepseek.com、deepseek-flash/ deepseek-v4-pro，未发送消息/换模型/修改业务或配置。页面不能证明 Key 保存位置和计费账号。
+- 先新增根 [连接契约](RACK_ASSISTANT_CONNECTION.md)，再实施每认证用户一条默认连接。Ask about Rack 内首次自动展示配置，保存后自动使用；支持修改、Key 留空保留/替换、独立测试、删除确认。浏览器不保存或回填 Key，保存不请求模型。
+- 新增 [assistant-connections.js](apps/api/src/services/assistant-connections.js) 与 [地址传输](apps/api/src/services/assistant-endpoint.js)：应用外文件元数据、独立目录主密钥、AES-256-GCM 凭证、认证用户隔离、乐观版本、原子替换和失败清理、主密钥遗失保护、轮换/删除取消在途请求。首版单 API 实例本地适配器，不是多实例 Secret Manager。
+- 默认 HTTPS 公网/全部 DNS 结果检查/实际 socket 绑定已检查 IP/禁止重定向、限制响应大小与取消。管理员精确 origin 允许校园内网/本地网关；用户表单不能自行放开内网。测试用合成 ping 工具区分普通响应和工具往返，限并发/冷却且错误不回显上游 body/Key。
+- Host 改为按获授权个人连接构建本轮 provider/脱敏器，保留原 Rack/Facility 权限、工具、限额、审计；无部署模型也可进入个人设置。chat 只收连接ID/版本，连接/版本/模型绑定会话；修改时取消旧请求，不全局切 provider，不静默回退。
+- 新增连接管理 API、个人 provider metadata、Assistant no-store；Web 接入 [设置表单](apps/web/src/assistant/AssistantConnection.jsx)、原 hook/transport/Composer，复用现有消息入口。更新原蓝图扩展、Assistant/基础/本地启动说明和环境模板（非真实.env）。
+
+### 验证与运行状态
+
+证据：[本轮命令](records/2026-10-29-rack-assistant-connection/commands.md)、[浏览器链条](records/2026-10-29-rack-assistant-connection/browser-checks.md)。
+
+| 范围 | 最终结果 |
+| --- | --- |
+| 连接服务/API/地址传输与原工具投影 | 30/30通过，0跳过；含重建实例持久化、并发更新、跨用户隔离、密文篡改/主密钥丢失、取消、工具往返、DNS/重定向/大小限制 |
+| Assistant包 | 84/84通过，0跳过 |
+| 真实DB/HTTP | 64/64通过，0跳过；新个人连接真实组装Host调用Rack容量工具，不改方案且拒绝外项目/他人连接 |
+| Web定向 | 7文件171/171通过；构建成功，既有bundle/esbuild/oxc提示保留 |
+| 浏览器 | 首次配置→保存→刷新自动恢复→Key留空修改→确认删除；合成连接已清理，最终空白设置页 |
+
+- 首次 DB 新夹具未填真实默认预算造成63/64，修正为 loadConfig({}) 后定向1/1、完整64/64，无放宽业务断言。HMR因hook数量变化出现旧页面错误，正常刷新后全部流程通过；原日志保留，不隐瞒初次失败。
+- 只重启经核实的本机Rack API8797，最终进程27024；Web5193/DB55532保留，无迁移、seed、reset、删卷、端口/真实.env/认证变更。前轮算法源码随正常重启加载，但本轮未重新验收算法效果。
+- 本机浏览器使用无效域名和合成Key，仅保存/刷新/修改/删除，没有点击付费测试或请求外部模型。临时单元/HTTP夹具用假provider，本机网关传输测试只连接临时localhost。没有读取/输出真实Key。
+- 源码/文档定向 diff whitespace 检查通过；旧轮进程自动追加的原始运行日志保留，含HMR堆栈行末空格，全量diff检查不作为源码检查通过。新文件另做未暂存检查。未运行全仓，不声明整个平台所有测试通过。
+
+### 边界与下一步
+
+- 真实模型问答质量、真实服务tools兼容性、真实额度/限流仍待用户在本地表单自行配置后验收。当前不向用户索取聊天中的API Key。
+- 首版每用户仅一条个人连接，单API实例文件存储；Windows依赖运行账户目录ACL，非云KMS。多连接/共享连接、多实例集中存储以后另做；容器需持久挂载数据与主密钥目录，组员各自配置、不随Git传凭证。
+- 现有5个Rack工具未扩大，按数量自动设计的Assistant投影仍待下一小步；聊天没有保存/删除工具。既有正式Validation Run、连续通道和工程验证缺口保留。
+- 所有修改留本地，由用户提交。
+
 ## 后续记录格式（第十七轮后沿用）
 
 每轮追加一个日期标题，至少写清：

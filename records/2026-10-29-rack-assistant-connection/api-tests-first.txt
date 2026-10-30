@@ -1,0 +1,184 @@
+TAP version 13
+# Subtest: personal configuration survives a new service instance; no plaintext credential on disk or in metadata
+ok 1 - personal configuration survives a new service instance; no plaintext credential on disk or in metadata
+  ---
+  duration_ms: 46.4246
+  type: 'test'
+  ...
+# Subtest: keeping a key, rotation, optimistic concurrency, cancellation and deletion do not cross users
+ok 2 - keeping a key, rotation, optimistic concurrency, cancellation and deletion do not cross users
+  ---
+  duration_ms: 67.699
+  type: 'test'
+  ...
+# Subtest: missing master key never regenerates over another user encrypted credentials
+ok 3 - missing master key never regenerates over another user encrypted credentials
+  ---
+  duration_ms: 22.4984
+  type: 'test'
+  ...
+# Subtest: authenticated encryption rejects altered ciphertext without revealing provider details
+ok 4 - authenticated encryption rejects altered ciphertext without revealing provider details
+  ---
+  duration_ms: 30.8168
+  type: 'test'
+  ...
+# Subtest: invalid input cannot save partial configuration or change provider implementation
+ok 5 - invalid input cannot save partial configuration or change provider implementation
+  ---
+  duration_ms: 4.7003
+  type: 'test'
+  ...
+# Subtest: synthetic test proves tool-call round trip and preserves configured connection
+ok 6 - synthetic test proves tool-call round trip and preserves configured connection
+  ---
+  duration_ms: 25.3415
+  type: 'test'
+  ...
+# Subtest: ordinary chat response is not reported as successful agent tool compatibility
+ok 7 - ordinary chat response is not reported as successful agent tool compatibility
+  ---
+  duration_ms: 34.1415
+  type: 'test'
+  ...
+# Subtest: untrusted provider errors during testing never echo key or response body
+ok 8 - untrusted provider errors during testing never echo key or response body
+  ---
+  duration_ms: 30.6039
+  type: 'test'
+  ...
+# Subtest: endpoint normalization rejects credential URLs, private IPs, alternate schemes and duplicate suffixes
+ok 9 - endpoint normalization rejects credential URLs, private IPs, alternate schemes and duplicate suffixes
+  ---
+  duration_ms: 0.495
+  type: 'test'
+  ...
+# Subtest: DNS with any private result and lookup cancellation fail before opening a socket
+ok 10 - DNS with any private result and lookup cancellation fail before opening a socket
+  ---
+  duration_ms: 0.6706
+  type: 'test'
+  ...
+# Subtest: administrator origin allowlist permits a local gateway; redirects and oversized responses are blocked
+ok 11 - administrator origin allowlist permits a local gateway; redirects and oversized responses are blocked
+  ---
+  duration_ms: 15.4095
+  type: 'test'
+  ...
+# Subtest: unconfigured deployment still builds a host when personal setup is enabled
+ok 12 - unconfigured deployment still builds a host when personal setup is enabled
+  ---
+  duration_ms: 2.5316
+  type: 'test'
+  ...
+# Subtest: authenticated routes use persisted owner connection, enforce session binding and redact real orchestrator output
+ok 13 - authenticated routes use persisted owner connection, enforce session binding and redact real orchestrator output
+  ---
+  duration_ms: 68.7749
+  type: 'test'
+  ...
+# Subtest: the assembled host declares the facility projection: 22 capabilities and 6 UI actions
+ok 14 - the assembled host declares the facility projection: 22 capabilities and 6 UI actions
+  ---
+  duration_ms: 22.4536
+  type: 'test'
+  ...
+# Subtest: a deployment with no tool surface still resolves a context but exposes no tools
+ok 15 - a deployment with no tool surface still resolves a context but exposes no tools
+  ---
+  duration_ms: 0.3417
+  type: 'test'
+  ...
+# Subtest: API host registers the Rack surface and five namespaced tools alongside Facility
+ok 16 - API host registers the Rack surface and five namespaced tools alongside Facility
+  ---
+  duration_ms: 22.2862
+  type: 'test'
+  ...
+# Subtest: an unconfigured provider is explicitly unavailable and never replaced by a fake answer
+ok 17 - an unconfigured provider is explicitly unavailable and never replaced by a fake answer
+  ---
+  duration_ms: 0.4379
+  type: 'test'
+  ...
+# Subtest: Rack tools are read-only and selection cannot expose Facility mutation capabilities
+ok 18 - Rack tools are read-only and selection cannot expose Facility mutation capabilities
+  ---
+  duration_ms: 0.8329
+  type: 'test'
+  ...
+# Subtest: capacity uses the shared checker and distinguishes known power from unknown weight
+ok 19 - capacity uses the shared checker and distinguishes known power from unknown weight
+  ---
+  duration_ms: 1.527
+  type: 'test'
+  ...
+# Subtest: capacity reports plan-wide room totals even when filtered to one rack, bounding diagnostic device identities
+ok 20 - capacity reports plan-wide room totals even when filtered to one rack, bounding diagnostic device identities
+  ---
+  duration_ms: 1.2316
+  type: 'test'
+  ...
+# Subtest: every call reauthorizes both permissions before any service read
+ok 21 - every call reauthorizes both permissions before any service read
+  ---
+  duration_ms: 0.2247
+  type: 'test'
+  ...
+# Subtest: strict schemas reject forged plan/scope arguments, invalid pagination and invalid planner parameters
+ok 22 - strict schemas reject forged plan/scope arguments, invalid pagination and invalid planner parameters
+  ---
+  duration_ms: 0.9216
+  type: 'test'
+  ...
+# Subtest: tools require a selected plan, and refuse mismatched scenario/revision or advanced version
+ok 23 - tools require a selected plan, and refuse mismatched scenario/revision or advanced version
+  ---
+  duration_ms: 0.4162
+  type: 'test'
+  ...
+# Subtest: inventory pages do not silently pretend to be complete and duplicate rack names are refused
+ok 24 - inventory pages do not silently pretend to be complete and duplicate rack names are refused
+  ---
+  duration_ms: 0.7757
+  type: 'test'
+  ...
+# Subtest: checks send only saved content through the original checker and limit diagnostic output
+ok 25 - checks send only saved content through the original checker and limit diagnostic output
+  ---
+  duration_ms: 0.8075
+  type: 'test'
+  ...
+# Subtest: candidate generation is bounded, summary-only and uses exact saved version and snapshot
+ok 26 - candidate generation is bounded, summary-only and uses exact saved version and snapshot
+  ---
+  duration_ms: 0.4644
+  type: 'test'
+  ...
+# Subtest: generation refuses local dirty drafts and stale UI versions without invoking the planner
+ok 27 - generation refuses local dirty drafts and stale UI versions without invoking the planner
+  ---
+  duration_ms: 0.4192
+  type: 'test'
+  ...
+# Subtest: ten total calls cap a provider that emits many calls per iteration
+ok 28 - ten total calls cap a provider that emits many calls per iteration
+  ---
+  duration_ms: 0.4554
+  type: 'test'
+  ...
+# Subtest: scripted provider drives the real orchestrator through Rack read, capacity, checks and options
+ok 29 - scripted provider drives the real orchestrator through Rack read, capacity, checks and options
+  ---
+  duration_ms: 4.9998
+  type: 'test'
+  ...
+1..29
+# tests 29
+# suites 0
+# pass 29
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2836.3913

@@ -16,7 +16,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
  * `uiActions`, `entities`, `usage`, `trace` — and `status` distinguishes a
  * completed turn from one that stopped at a confirmation gate.
  */
-export function registerAssistantRoutes(router, { orchestrator, sessionService = null, usageService = null, provider = null, models = [], redact = (value) => value }) {
+export function registerAssistantRoutes(router, { orchestrator, sessionService = null, usageService = null, provider = null, models = [], redact = (value) => value, connections = null, resolveTurn = null }) {
   if (!orchestrator) throw new Error('registerAssistantRoutes requires an assistant orchestrator.');
 
   /**
@@ -28,20 +28,42 @@ export function registerAssistantRoutes(router, { orchestrator, sessionService =
    * would be wrong the moment the gateway or model changed, which is exactly the sort of
    * thing a demo is expected to change.
    */
-  router.get('/api/v1/assistant/provider', async () => ({
-    data: {
+  router.get('/api/v1/assistant/provider', async ({ user }) => {
+    const personal = connections ? await connections.get(user.userId) : null;
+    return { data: personal ?? {
       provider: provider?.name ?? null,
       model: provider?.model ?? null,
       host: provider?.host ?? null,
       // The choices this deployment offers, so the composer can render a menu rather than
       // a text box. The client picks from this list and the route below re-checks it.
       models,
-    },
-  }));
+      ...(connections ? { configured: Boolean(provider?.host && provider?.model), personalSetup: true } : {}),
+    } };
+  });
+
+  if (connections) {
+    router.get('/api/v1/assistant/connection', async ({ user }) => ({ data: { connection: await connections.get(user.userId) } }));
+    router.put('/api/v1/assistant/connection', async ({ user, json }) => ({ data: { connection: await connections.save(user.userId, await json()) } }));
+    router.delete('/api/v1/assistant/connection', async ({ user, json }) => {
+      await connections.remove(user.userId, (await json()).version);
+      return { data: { deleted: true } };
+    });
+    router.post('/api/v1/assistant/connection/test', async ({ user, json, response }) => {
+      const controller = new AbortController();
+      const onClose = () => { if (!response.writableEnded) controller.abort(); };
+      response.on('close', onClose);
+      try { return { data: await connections.test(user.userId, await json(), controller.signal) }; }
+      finally { response.off('close', onClose); }
+    });
+  }
 
   router.post('/api/v1/assistant/chat', async (ctx) => {
     const { json, user, correlationId, response, query } = ctx;
     const body = await json();
+    // Credentials and arbitrary provider URLs belong only to connection management.
+    if (['apiKey', 'api_key', 'endpoint', 'provider', 'baseURL'].some((key) => Object.hasOwn(body, key))) {
+      throw new ApiError('ASSISTANT_CHAT_INVALID', '聊天请求只能引用已保存的模型连接。', { status: 400 });
+    }
 
     // A caller never supplies its own identity: the authenticated user is stamped
     // over anything the payload claims.
@@ -79,6 +101,7 @@ export function registerAssistantRoutes(router, { orchestrator, sessionService =
      */
     const streaming = query?.stream === '1';
 
+    let turnHost = null;
     if (streaming) {
       response.writeHead(200, {
         'content-type': 'application/x-ndjson; charset=utf-8',
@@ -98,10 +121,20 @@ export function registerAssistantRoutes(router, { orchestrator, sessionService =
     };
 
     try {
-      const result = await orchestrator.runTurn({
+      turnHost = resolveTurn ? await resolveTurn({ userId: user.userId, connectionId: body.connection_id ?? null,
+        connectionVersion: body.connection_version ?? null }) : null;
+      const selectedModel = requestedModel(body.model, turnHost?.models ?? models);
+      let turnContextKey = body.context_key ?? body.contextKey;
+      if (turnHost?.connectionId) {
+        const suffix = `|connection:${turnHost.connectionId}:${turnHost.connectionVersion}|model:${encodeURIComponent(selectedModel ?? turnHost.model)}`;
+        if (typeof turnContextKey !== 'string' || !turnContextKey.endsWith(suffix)) {
+          throw new ApiError('ASSISTANT_CONNECTION_CONTEXT_INVALID', '会话与模型连接不匹配，请刷新后开启新会话。', { status: 400 });
+        }
+      }
+      const result = await (turnHost?.orchestrator ?? orchestrator).runTurn({
         messages: body.messages,
-        model: requestedModel(body.model, models),
-        contextKey: body.context_key ?? body.contextKey,
+        model: selectedModel,
+        contextKey: turnContextKey,
         sessionId: body.session_id ?? body.sessionId ?? null,
         context,
         confirmations: Array.isArray(body.confirmations) ? body.confirmations : [],
@@ -112,7 +145,7 @@ export function registerAssistantRoutes(router, { orchestrator, sessionService =
         deniedCalls: Array.isArray(body.denied_calls) ? body.denied_calls : [],
         userRole: body.user_role ?? body.userRole ?? null,
         requestId: correlationId,
-        signal: controller.signal,
+        signal: turnHost?.signal ? AbortSignal.any([controller.signal, turnHost.signal]) : controller.signal,
         onEvent: write,
       });
       // An attachment list needs no server work: the client has already written the
@@ -125,7 +158,7 @@ export function registerAssistantRoutes(router, { orchestrator, sessionService =
       }
       return { data: result };
     } catch (error) {
-      const apiError = toApiError(error, redact);
+      const apiError = toApiError(error, turnHost?.redact ?? redact);
       // Once the headers are out a status cannot be revised, so a failure that happens
       // mid-stream is reported as the event the client is already reading. This is what
       // makes a timeout visible rather than empty: the rounds that did complete have
@@ -137,6 +170,7 @@ export function registerAssistantRoutes(router, { orchestrator, sessionService =
       }
       throw apiError;
     } finally {
+      turnHost?.release();
       response.off('close', onClose);
     }
   });

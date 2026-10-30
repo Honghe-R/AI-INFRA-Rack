@@ -33,7 +33,7 @@ export function createApiClient({ baseUrl = '', fetchImpl = globalThis.fetch, id
     const response = await fetchImpl(`${baseUrl}${path}`, {
       method,
       // Bypass existing cached lifecycle responses, including a prior 410.
-      ...(path.includes('/rack/') ? { cache: 'no-store' } : {}),
+      ...(path.includes('/rack/') || path.includes('/assistant/') ? { cache: 'no-store' } : {}),
       headers: {
         accept: 'application/json',
         ...(body ? { 'content-type': 'application/json' } : {}),
@@ -246,6 +246,10 @@ export function createApiClient({ baseUrl = '', fetchImpl = globalThis.fetch, id
      * is answering without any credential reaching the browser.
      */
     getAssistantProvider: () => request('/api/v1/assistant/provider'),
+    getAssistantConnection: ({ signal } = {}) => request('/api/v1/assistant/connection', { signal }),
+    saveAssistantConnection: (body, { signal } = {}) => request('/api/v1/assistant/connection', { method: 'PUT', body, signal }),
+    deleteAssistantConnection: (version, { signal } = {}) => request('/api/v1/assistant/connection', { method: 'DELETE', body: { version }, signal }),
+    testAssistantConnection: (connectionId, version, { signal } = {}) => request('/api/v1/assistant/connection/test', { method: 'POST', body: { connectionId, version }, signal }),
 
     /**
      * The normalized facility graph for one revision: design scope, containers,

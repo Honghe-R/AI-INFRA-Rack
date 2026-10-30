@@ -26,6 +26,7 @@ import { registerMapRoutes } from './routes/map.js';
 import { registerProjectRoutes } from './routes/projects.js';
 import { registerSelfRoutes } from './routes/me.js';
 import { registerRackRoutes } from './routes/rack.js';
+import { assistantConnectionDirectories, createAssistantConnections } from './services/assistant-connections.js';
 
 const config = loadConfig();
 const logger = createLogger({
@@ -130,7 +131,10 @@ if (pool) {
   // the rest of the platform, and the router says why the chat is unavailable.
   let assistant = null;
   try {
-    assistant = await createAssistantHostFor({ config, pool, secrets, guard, logger, toolSurface });
+    const connections = createAssistantConnections({ ...assistantConnectionDirectories(),
+      allowedOrigins: (process.env.ASSISTANT_ALLOWED_ORIGINS ?? '').split(',').map((value) => value.trim()).filter(Boolean),
+      timeoutMs: config.llmTimeoutMs });
+    assistant = await createAssistantHostFor({ config, pool, secrets, guard, logger, toolSurface, connections });
     assistantAvailable = true;
     registerAssistantRoutes(router, assistant);
   } catch (error) {

@@ -3613,3 +3613,13 @@ body {
 }
 .turn__rounds-request { font-family: var(--font-mono); }
 .turn__rounds-notice { color: var(--warning); }
+
+.assistant-connection { padding: 8px 16px; border-bottom: 1px solid var(--line); overflow-y: auto; max-height: 55vh; flex-shrink: 0; }
+.assistant-connection__body { font-size: 12px; color: var(--text-muted); }
+.assistant-connection fieldset { border: 0; padding: 0; margin: 8px 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.assistant-connection label { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.assistant-connection input { width: 100%; box-sizing: border-box; padding: 7px 8px; border: 1px solid var(--line); border-radius: 5px; background: var(--surface); color: var(--text); }
+.assistant-connection__actions { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; }
+.assistant-connection button:not(.assistant__new) { padding: 5px 9px; cursor: pointer; }
+.assistant-connection button:disabled { cursor: default; opacity: .55; }
+@media (max-width: 600px) { .assistant-connection fieldset { grid-template-columns: 1fr; } }

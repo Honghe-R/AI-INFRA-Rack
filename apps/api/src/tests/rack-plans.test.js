@@ -2,7 +2,7 @@ import test, { before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { createServer } from 'node:http';
-import { createLogger, errors } from '@ai-infra/core';
+import { createLogger, errors, loadConfig } from '@ai-infra/core';
 import { createPool } from '@ai-infra/db';
 import { createEvaluator, createPermissionGuard, createRbacRepository } from '@ai-infra/rbac';
 import { createApp } from '../app.js';
@@ -14,7 +14,10 @@ import { getRackCatalog } from '@ai-infra/rack';
 import { plannerGeometry, normalizeEditableLayout } from '@ai-infra/rack';
 import { pickRackPosition } from '../services/rack-planner-geometry.js';
 import { createRackAssistantSurface } from '../services/rack-assistant.js';
-import { createAssistantScopeResolver, createPermissionAuthorizer } from '../assistant-host.js';
+import { createAssistantHostFor, createAssistantScopeResolver, createPermissionAuthorizer } from '../assistant-host.js';
+import { createAssistantConnections } from '../services/assistant-connections.js';
+import { mkdtemp, mkdir, rm } from 'node:fs/promises';
+import { join, resolve, sep } from 'node:path';
 import { createAssistantHost } from '@ai-infra/assistant';
 import { registerAssistantRoutes } from '../routes/assistant.js';
 
@@ -1127,6 +1130,48 @@ function rackAssistantRig() {
     resolveScope: createAssistantScopeResolver({ pool, authorize }), authorize });
   return { host, providerCalls, surface, authorize };
 }
+
+test('personal model connection drives the assembled Rack Host and real capacity tool with tenant checks', {skip}, async()=>fixture(async f=>{
+  const base = resolve('.local-runtime');
+  await mkdir(base,{recursive:true});
+  const root = await mkdtemp(join(base,'rack-connection-test-'));
+  let calls = 0;
+  const connections = createAssistantConnections({directory:join(root,'connections'),keyDirectory:join(root,'keys'),fetchImpl:async (_url,options)=>{
+    calls++;
+    assert.equal(options.headers.authorization,'Bearer synthetic-rack-integration-key');
+    const body=JSON.parse(options.body);
+    assert.ok(body.tools.every(tool=>tool.function.name.startsWith('rack_')));
+    const last=body.messages.at(-1);
+    const message=last.role==='tool' ? {role:'assistant',content:JSON.stringify({type:'message',payload:last.content,uiActions:[]})}
+      : {role:'assistant',content:null,tool_calls:[{id:randomUUID(),type:'function',function:{name:'rack_query_capacity',arguments:'{}'}}]};
+    return {ok:true,status:200,json:async()=>({choices:[{message}],usage:{prompt_tokens:1,completion_tokens:1,total_tokens:2}})};
+  }});
+  try {
+    const connection=await connections.save(f.people.viewer.userId,{name:'Viewer private connection',endpoint:'https://rack-fixture.invalid/v1',model:'synthetic',apiKey:'synthetic-rack-integration-key',version:null});
+    const guard=createPermissionGuard({evaluator:createEvaluator({repository}),repository});
+    const host=await createAssistantHostFor({config:loadConfig({}),pool,secrets:null,guard,connections});
+    await server(f.people,async request=>{
+      const {url,layout}=await prepared(f,request);
+      assert.equal((await request(url,{method:'PUT',version:1,body:layoutBody(layout,[rack()])})).status,200);
+      const wire={messages:[{role:'user',content:'查询容量'}],connection_id:connection.connectionId,connection_version:connection.version,
+        context_key:`${f.a.projectId}|rack|${layout.planId}|connection:${connection.connectionId}:1|model:synthetic`,
+        context:{surface:'rack',projectId:f.a.projectId,scenarioId:f.a.scenarioId,revisionId:f.a.revisionId,rack_context:{planId:layout.planId,clientVersion:2}}};
+      const result=await request('/api/v1/assistant/chat',{user:'viewer',body:wire});
+      assert.equal(result.status,200,JSON.stringify(result));
+      assert.match(result.body.data.choices[0].message.content,/freeU/);
+      assert.equal(calls,2);
+      assert.equal((await request('/api/v1/assistant/chat',{user:'outsider',body:wire})).status,412);
+      // A connection does not grant access to a foreign project.
+      const foreign={...wire,context:{...wire.context,projectId:f.b.projectId,scenarioId:f.b.scenarioId,revisionId:f.b.revisionId}};
+      assert.equal((await request('/api/v1/assistant/chat',{user:'viewer',body:foreign})).status,403);
+      assert.equal(calls,2,'all scope refusals happen before provider requests');
+      assert.equal((await request(url)).body.data.version,2,'chat does not save the plan');
+    },{assistant:host});
+  } finally {
+    assert.ok(resolve(root).startsWith(`${base}${sep}rack-connection-test-`));
+    await rm(root,{recursive:true,force:true});
+  }
+}));
 
 const assumedRoomBudget = (patch = {}) => ({ maxPowerKw: 3, maxCoolingKw: 3,
   source: { kind: 'ASSUMED', reference: 'Synthetic HTTP fixture room budget' }, ...patch });

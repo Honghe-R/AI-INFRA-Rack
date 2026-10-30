@@ -24,8 +24,9 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
  * the provider loop, bounding, entity references, prompt composition, session and
  * usage persistence — belongs to `@ai-infra/assistant`.
  */
-export async function createAssistantHostFor({ config, pool, secrets, guard, logger = null, toolSurface = null }) {
-  const factory = createProviderFromConfig({ config, secrets });
+export async function createAssistantHostFor({ config, pool, secrets, guard, logger = null, toolSurface = null, connections = null }) {
+  // Personal setup remains available without a deployment-wide model.
+  const factory = connections && !config.llmEndpoint ? null : createProviderFromConfig({ config, secrets });
   const redact = createRedactor([await resolveCredentialValue(config, secrets)]);
 
   // The facility surface is the tool's own declaration of what the model may call.
@@ -47,8 +48,8 @@ export async function createAssistantHostFor({ config, pool, secrets, guard, log
   }
   const storage = createStorageOrNull(config, logger);
 
-  const host = createAssistantHost({
-    provider: lazyProvider(factory, config),
+  const assemble = (provider, connectionRedact) => createAssistantHost({
+    provider,
     pool,
     storage,
     surfaces: catalog.surfaces,
@@ -73,8 +74,12 @@ export async function createAssistantHostFor({ config, pool, secrets, guard, log
       },
     },
     logger,
-    redact,
+    redact: connectionRedact,
   });
+  const host = assemble(factory ? lazyProvider(factory, config) : {
+    name: 'openai-compatible', model: null,
+    async complete() { throw new LlmError('ASSISTANT_SETUP_REQUIRED', '请先在模型连接中完成首次配置。', { status: 503 }); },
+  }, redact);
 
   // What the composer labels itself with. Read from the same factory the turn uses, so
   // the label cannot drift from the provider that actually answers: a deployment that
@@ -86,10 +91,26 @@ export async function createAssistantHostFor({ config, pool, secrets, guard, log
   return {
     ...host,
     redact,
+    connections,
+    ...(connections ? {
+      async resolveTurn({ userId, connectionId, connectionVersion }) {
+        const personal = await connections.get(userId);
+        if (!personal) {
+          if (connectionId != null) throw new ApiError('ASSISTANT_CONNECTION_CHANGED', '个人模型连接已删除，请刷新连接配置。', { status: 412 });
+          return { orchestrator: host.orchestrator, models: config.llmModels ?? [], redact, release() {} };
+        }
+        const connection = await connections.open(userId, connectionId, connectionVersion);
+        try {
+          return { ...assemble(connection.provider, connection.redact), models: connection.models,
+            redact: connection.redact, signal: connection.signal, connectionId: connection.connectionId,
+            connectionVersion: connection.version, model: connection.model, release: connection.release };
+        } catch (error) { connection.release(); throw error; }
+      },
+    } : {}),
     // The menu the route validates against. Empty means the deployment offers no choice.
     models: config.llmModels ?? [],
     provider: {
-      name: factory.providerName ?? config.llmProvider ?? null,
+      name: factory?.providerName ?? config.llmProvider ?? null,
       model: config.llmModel ?? null,
       host: endpointHost(config.llmEndpoint),
     },

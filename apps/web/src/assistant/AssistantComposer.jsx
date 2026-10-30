@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Icon } from '../shell/icons.jsx';
 import { Watermark } from '../shell/Watermark.jsx';
 import { AssistantTranscript } from './AssistantTranscript.jsx';
+import { AssistantConnection } from './AssistantConnection.jsx';
 import { ASSISTANT_MAX_PX, ASSISTANT_MIN_PX } from '../state/ui-context.js';
 import { clampOffset, dragDelta, isDrag, nudgeOffset, readStoredOffset, storeOffset } from './launcher-position.js';
 import {
@@ -48,6 +49,10 @@ export function AssistantComposer({
   models = [],
   model = null,
   onModelChange = null,
+  connectionClient = null,
+  connectionPending = false,
+  connectionError = null,
+  onConnectionChange = () => {},
   width = null,
   onResize = () => {},
   turns = [],
@@ -70,7 +75,8 @@ export function AssistantComposer({
   const textareaRef = useRef(null);
   const usageButtonRef = useRef(null);
   const hint = budgetHint(draft.length, maxChars);
-  const sendable = canSend({ draft, attachments, streaming, uploading });
+  const setupBlocked = connectionPending || Boolean(connectionError) || provider?.configured === false;
+  const sendable = !setupBlocked && canSend({ draft, attachments, streaming, uploading });
 
   /**
    * Where the collapsed launcher has been dragged to.
@@ -436,6 +442,11 @@ export function AssistantComposer({
           </div>
         </header>
 
+        {connectionClient ? <AssistantConnection client={connectionClient} forceSetup={!connectionPending && provider?.configured === false}
+          onChanged={onConnectionChange} disabled={streaming} /> : null}
+        {connectionPending ? <p className="assistant__notices" role="status">正在读取模型连接…</p> : null}
+        {connectionError ? <p className="assistant__notices" role="alert">{connectionError} <button type="button" onClick={onConnectionChange}>重试连接信息</button></p> : null}
+
         <AssistantTranscript
           turns={turns}
           restoring={restoring}
@@ -576,7 +587,7 @@ export function AssistantComposer({
                 type="button"
                 className="assistant__send"
                 disabled={!sendable}
-                title={sendable ? undefined : 'Enter a message or attach a file to send'}
+                title={setupBlocked ? '请先完成模型连接配置' : sendable ? undefined : 'Enter a message or attach a file to send'}
                 onClick={() => onSend()}
               >
                 Send

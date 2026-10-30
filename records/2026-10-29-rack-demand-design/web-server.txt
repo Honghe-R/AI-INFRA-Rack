@@ -42,3 +42,9 @@
 21:01:39 [vite] (client) hmr update /src/rack/RackEditor.jsx
 21:01:39 [vite] (client) hmr update /src/rack/RackEditor.jsx
 21:01:39 [vite] (client) hmr update /src/rack/RackEditor.jsx
+21:45:19 [vite] (client) hmr update /src/app/PlatformApp.jsx
+21:47:29 [vite] (client) hmr update /src/App.jsx
+21:47:29 [vite] (client) hmr update /src/styles.css
+21:47:29 [vite] (client) hmr update /src/assistant/AssistantComposer.jsx
+21:51:39 [vite] (client) hmr update /src/styles.css
+22:24:01 [vite] (client) hmr update /src/assistant/AssistantConnection.jsx

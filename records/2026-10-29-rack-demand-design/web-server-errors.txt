@@ -1,1 +1,55 @@
 Both esbuild and oxc options were set. oxc options will be used and esbuild options will be ignored. The following esbuild options were set: `{ jsx: 'automatic', jsxImportSource: 'react' }`
+21:47:29 [vite] (client) [console.error] React has detected a change in the order of Hooks called by AppBody. This will lead to bugs and errors if not fixed. For more information, read the Rules of Hooks: https://react.dev/link/rules-of-hooks
+
+   Previous render            Next render
+   ------------------------------------------------------
+1. useContext                 useContext
+2. useContext                 useContext
+3. useState                   useState
+4. useState                   useState
+5. useState                   useState
+6. useState                   useState
+7. useState                   useState
+8. useState                   useState
+9. useState                   useState
+10. useRef                    useRef
+11. useRef                    useRef
+12. useState                  useState
+13. useState                  useState
+14. useEffect                 useEffect
+15. useState                  useState
+16. useCallback               useCallback
+17. useEffect                 useEffect
+18. useRef                    useRef
+19. useState                  useState
+20. useState                  useState
+21. useState                  useState
+22. useRef                    useRef
+23. useRef                    useRef
+24. useMemo                   useMemo
+25. useMemo                   useRef
+   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+21:47:30 [vite] (client) [Unhandled error] Error: Should have a queue. You are likely calling Hooks conditionally, which is not allowed. (https://react.dev/link/invalid-hook-call)
+ > updateReducerImpl ../../node_modules/react-dom/cjs/react-dom-client.development.js:7973:14
+ > updateReducer ../../node_modules/react-dom/cjs/react-dom-client.development.js:7968:13
+ > Object.useState ../../node_modules/react-dom/cjs/react-dom-client.development.js:26511:17
+ > exports.useState ../../node_modules/react/cjs/react.development.js:1263:33
+ > useAssistantSession src/assistant/useAssistantSession.js:46:28
+    44 |    latest.current = { workspaceContext, routeFunctionId, attachmentPolicy: effectiveAttachmentPolicy, contextToken, to...
+    45 |  
+    46 |    const [state, setState] = useState(null);
+       |                              ^
+    47 |    const [uiActionNotices, setUiActionNotices] = useState([]);
+    48 |    const [provider, setProvider] = useState(null);
+ > AppBody src/App.jsx:154:20
+ > Object.react_stack_bottom_frame ../../node_modules/react-dom/cjs/react-dom-client.development.js:25904:19
+ > renderWithHooks ../../node_modules/react-dom/cjs/react-dom-client.development.js:7662:21
+ > updateFunctionComponent ../../node_modules/react-dom/cjs/react-dom-client.development.js:10166:18
+ > beginWork ../../node_modules/react-dom/cjs/react-dom-client.development.js:11778:17
+
+21:47:30 [vite] (client) [console.warn] An error occurred in the <AppBody> component.
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
+

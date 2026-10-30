@@ -1,5 +1,9 @@
 # Rack Assistant 工具接线
 
+2026-10-29，第二十五轮：[首次配置与持久连接](RACK_ASSISTANT_CONNECTION.md) 已接入同一个 Ask about Rack 面板。每个账号首次保存一条默认个人连接，以后自动使用；Key 只在明确的配置保存请求中提交，后端外置加密存储，不回填浏览器。连接可修改、测试和删除；没有个人连接时沿用可用的管理员部署配置。本机只用合成凭证验收并已删除，真实模型对话仍待用户本地配置后验收。
+
+2026-10-29，第二十四轮：新增 [Agent 与个人 API 接入调研](RACK_ASSISTANT_RESEARCH.md)，给出个人连接设置、凭证存储、会话隔离与分步验收建议。本轮仅调研和文档；下文部署级接线保持原状，个人连接设置页尚未实现，未配置真实模型。
+
 第十八轮更新：容量工具增加方案全柜roomCapacity，不受单柜筛选缩小范围；检查/候选工具也返回同源预算报告。机房诊断设备ID截断至20项并附总数。见 [机房预算](RACK_ROOM_BUDGET.md)。真实模型仍按用户决定暂不配置。
 
 2026-10-29，第十七轮。用户明确暂不配置模型；本机无 `LLM_ENDPOINT/LLM_MODEL`，真实自然语言对话尚未验收。手工规划、布局算法、自动上架和保存不依赖模型。
@@ -42,6 +46,6 @@ Guide要求以工具结果为依据，将来源/名称当数据，不把未知�
 
 浏览器验证Ask about Rack与禁用上传，发送容量问题收到真实“未配置模型”错误。用户决定暂不配置，因此没有改`.env`、安装模型或访问外部模型服务。没有声称自然语言质量或真实模型端到端通过。
 
-未来沿用`.env.example`的服务端LLM_ENDPOINT、LLM_MODEL、LLM_API_KEY_SECRET和secrets provider配置，重启API后提问；凭证只留服务端，不提交、不发聊天。真实模型选择工具的质量、外部数据披露、超时/限流仍需验收。
+现在可在 Ask about Rack 内完成个人连接配置，无需改环境文件或重启服务。部署管理员仍可沿用 `.env.example` 的 LLM_ENDPOINT、LLM_MODEL、LLM_API_KEY_SECRET 和 secrets provider 配置公共部署连接。个人连接存在时优先使用且失败不静默回退。凭证不提交 Git、不发聊天；真实模型选择工具的质量、外部数据披露、超时/限流仍需验收。
 
 证据位于 [records/2026-10-29-rack-assistant](records/2026-10-29-rack-assistant/) 的adapter-tests、assistant-tests、api-tests、web-tests文本。

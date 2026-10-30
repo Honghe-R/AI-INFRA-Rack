@@ -3,6 +3,8 @@
 已于 2026-10-28 接通原平台数据库与对象存储；这是开发环境，不是生产部署。
 只在 `C:\Users\RHH\Desktop\AI-INFRA-Rack` 执行以下命令。
 
+AI Assistant 现在可直接在 Ask about Rack 内首次填写接口地址、模型 ID 和 API Key，保存后自动使用，无需为个人连接改环境文件或重启。凭证在操作系统用户数据目录的 AI-INFRA-Rack 下加密持久化，不随 Git 同步；备份时要同时保留连接目录和分开的主密钥目录。多人/多实例部署限制及内网网关配置见 [连接说明](RACK_ASSISTANT_CONNECTION.md)。
+
 ## 第一次初始化
 
 需要 Node >= 22.9、npm 和已运行的 Docker Desktop（Linux containers）。

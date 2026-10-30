@@ -1,0 +1,16 @@
+TAP version 13
+# Subtest: personal model connection drives the assembled Rack Host and real capacity tool with tenant checks
+ok 1 - personal model connection drives the assembled Rack Host and real capacity tool with tenant checks
+  ---
+  duration_ms: 1203.6932
+  type: 'test'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1581.0238

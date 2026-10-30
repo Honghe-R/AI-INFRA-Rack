@@ -215,6 +215,17 @@ verify that the session belongs to the caller *and* matches the requested contex
 
 ### 4.2 Provider abstraction
 
+**2026-10-29 Rack local extension:** [Personal connection contract](../../RACK_ASSISTANT_CONNECTION.md)
+adds an authenticated, owner-scoped connection-management API that accepts a user-entered
+key only on explicit save. Chat requests still never carry a key, arbitrary endpoint or
+provider implementation: they reference a server-registered connection id and version.
+The server authorizes that reference, resolves its external secret store, and constructs
+a request-local provider and redactor. No credential value is returned to the browser.
+Connection/version/model are bound into session identity; rotation/deletion cancels old
+runs. The local adapter supports one connection per user in external files; multi-instance
+storage and shared connections are deferred. The deployment-only rules below remain the
+baseline for deployments without this extension.
+
 The server owns provider selection. **A request payload must never be able to choose a
 provider implementation.**
 

@@ -1,0 +1,518 @@
+
+> @ai-infra/assistant@0.1.0 test
+> node --env-file-if-exists=../../.env --test src/tests/**/*.test.js
+
+TAP version 13
+# Subtest: sanitize survives cycles, exotic types, and hostile getters
+ok 1 - sanitize survives cycles, exotic types, and hostile getters
+  ---
+  duration_ms: 4.6411
+  type: 'test'
+  ...
+# Subtest: a result within budget is untouched
+ok 2 - a result within budget is untouched
+  ---
+  duration_ms: 0.4117
+  type: 'test'
+  ...
+# Subtest: an over-budget result shrinks into a self-describing envelope
+ok 3 - an over-budget result shrinks into a self-describing envelope
+  ---
+  duration_ms: 3.756
+  type: 'test'
+  ...
+# Subtest: the final hard clamp guarantees the limit even for an enormous digest
+ok 4 - the final hard clamp guarantees the limit even for an enormous digest
+  ---
+  duration_ms: 0.2512
+  type: 'test'
+  ...
+# Subtest: entities are collected structurally from raw tool results
+ok 5 - entities are collected structurally from raw tool results
+  ---
+  duration_ms: 1.7928
+  type: 'test'
+  ...
+# Subtest: a container links to its own entity, never to the phase it belongs to
+ok 6 - a container links to its own entity, never to the phase it belongs to
+  ---
+  duration_ms: 0.2013
+  type: 'test'
+  ...
+# Subtest: a utility interface links to itself and to its source, not the source id under the interface name
+ok 7 - a utility interface links to itself and to its source, not the source id under the interface name
+  ---
+  duration_ms: 0.128
+  type: 'test'
+  ...
+# Subtest: labels that are ambiguous, too short, or just an id are not links
+ok 8 - labels that are ambiguous, too short, or just an id are not links
+  ---
+  duration_ms: 0.574
+  type: 'test'
+  ...
+# Subtest: prose is rewritten, longest label first, while code and links are protected
+ok 9 - prose is rewritten, longest label first, while code and links are protected
+  ---
+  duration_ms: 0.4244
+  type: 'test'
+  ...
+# Subtest: a link the model wrote with an invented id is retargeted to the collected one
+ok 10 - a link the model wrote with an invented id is retargeted to the collected one
+  ---
+  duration_ms: 0.198
+  type: 'test'
+  ...
+# Subtest: a link whose label names nothing collected is left alone
+ok 11 - a link whose label names nothing collected is left alone
+  ---
+  duration_ms: 0.1324
+  type: 'test'
+  ...
+# Subtest: a correct link is not rewritten, and emphasis in the label still matches
+ok 12 - a correct link is not rewritten, and emphasis in the label still matches
+  ---
+  duration_ms: 0.0929
+  type: 'test'
+  ...
+# Subtest: a JSON envelope stays valid JSON with only human-readable fields rewritten
+ok 13 - a JSON envelope stays valid JSON with only human-readable fields rewritten
+  ---
+  duration_ms: 0.3738
+  type: 'test'
+  ...
+# Subtest: the system prompt states the resolved scope so a tool call can name it
+ok 14 - the system prompt states the resolved scope so a tool call can name it
+  ---
+  duration_ms: 11.0148
+  type: 'test'
+  ...
+# Subtest: a turn runs a tool, links an entity, and reports usage and a trace
+ok 15 - a turn runs a tool, links an entity, and reports usage and a trace
+  ---
+  duration_ms: 2.2473
+  type: 'test'
+  ...
+# Subtest: a write tool stops at the confirmation gate and runs once confirmed
+ok 16 - a write tool stops at the confirmation gate and runs once confirmed
+  ---
+  duration_ms: 0.9866
+  type: 'test'
+  ...
+# Subtest: a confirmed call is executed as it was shown, not re-proposed by the model
+ok 17 - a confirmed call is executed as it was shown, not re-proposed by the model
+  ---
+  duration_ms: 0.5127
+  type: 'test'
+  ...
+# Subtest: a turn that only read does not claim to have changed the draft
+ok 18 - a turn that only read does not claim to have changed the draft
+  ---
+  duration_ms: 0.6083
+  type: 'test'
+  ...
+# Subtest: a UI action named the way the prompt named it reaches the client instead of a notice
+ok 19 - a UI action named the way the prompt named it reaches the client instead of a notice
+  ---
+  duration_ms: 0.8359
+  type: 'test'
+  ...
+# Subtest: a UI action that is genuinely unknown is named without a version it never had
+ok 20 - a UI action that is genuinely unknown is named without a version it never had
+  ---
+  duration_ms: 0.541
+  type: 'test'
+  ...
+# Subtest: a missing payload field says what the action received instead
+ok 21 - a missing payload field says what the action received instead
+  ---
+  duration_ms: 0.6348
+  type: 'test'
+  ...
+# Subtest: a reply envelope with a raw newline in its payload still yields its UI actions
+ok 22 - a reply envelope with a raw newline in its payload still yields its UI actions
+  ---
+  duration_ms: 0.6321
+  type: 'test'
+  ...
+# Subtest: actions are read from an envelope the model wrapped in prose
+ok 23 - actions are read from an envelope the model wrapped in prose
+  ---
+  duration_ms: 0.5231
+  type: 'test'
+  ...
+# Subtest: a JSON snippet the model shows the reader is not mistaken for its envelope
+ok 24 - a JSON snippet the model shows the reader is not mistaken for its envelope
+  ---
+  duration_ms: 0.3586
+  type: 'test'
+  ...
+# Subtest: an action the model prints instead of requesting is still a request
+ok 25 - an action the model prints instead of requesting is still a request
+  ---
+  duration_ms: 0.3873
+  type: 'test'
+  ...
+# Subtest: a late envelope is replaced by the answer it carried, not shown as an object
+ok 26 - a late envelope is replaced by the answer it carried, not shown as an object
+  ---
+  duration_ms: 0.2426
+  type: 'test'
+  ...
+# Subtest: JSON the model wrote for the reader is left alone
+ok 27 - JSON the model wrote for the reader is left alone
+  ---
+  duration_ms: 0.1832
+  type: 'test'
+  ...
+# Subtest: an action the surface does not declare is not read out of a code block
+ok 28 - an action the surface does not declare is not read out of a code block
+  ---
+  duration_ms: 0.166
+  type: 'test'
+  ...
+# Subtest: a round records what the model said while it worked, not only what it called
+ok 29 - a round records what the model said while it worked, not only what it called
+  ---
+  duration_ms: 0.5082
+  type: 'test'
+  ...
+# Subtest: a round that said nothing records nothing, and a thinking channel rides along
+ok 30 - a round that said nothing records nothing, and a thinking channel rides along
+  ---
+  duration_ms: 1.0252
+  type: 'test'
+  ...
+# Subtest: a real reasoning trace is kept whole, and only a pathological round is cut
+ok 31 - a real reasoning trace is kept whole, and only a pathological round is cut
+  ---
+  duration_ms: 0.7758
+  type: 'test'
+  ...
+# Subtest: a confirmed call that fails is answered in the transcript, so the model reports the failure
+ok 32 - a confirmed call that fails is answered in the transcript, so the model reports the failure
+  ---
+  duration_ms: 0.4768
+  type: 'test'
+  ...
+# Subtest: a read-only scope refuses a write tool even when the model asks for it, and the turn continues
+ok 33 - a read-only scope refuses a write tool even when the model asks for it, and the turn continues
+  ---
+  duration_ms: 0.3186
+  type: 'test'
+  ...
+# Subtest: a UI action called as a tool is named as one, so the model can use the channel it was given
+ok 34 - a UI action called as a tool is named as one, so the model can use the channel it was given
+  ---
+  duration_ms: 0.317
+  type: 'test'
+  ...
+# Subtest: an unknown tool name is answered in the transcript rather than ending the turn
+ok 35 - an unknown tool name is answered in the transcript rather than ending the turn
+  ---
+  duration_ms: 0.4316
+  type: 'test'
+  ...
+# Subtest: a name that is both a tool and a UI action is not explained as the wrong one
+ok 36 - a name that is both a tool and a UI action is not explained as the wrong one
+  ---
+  duration_ms: 0.3317
+  type: 'test'
+  ...
+# Subtest: a tool refused for its arguments is answered in the transcript, so the model gets another round
+ok 37 - a tool refused for its arguments is answered in the transcript, so the model gets another round
+  ---
+  duration_ms: 0.3434
+  type: 'test'
+  ...
+# Subtest: a tool that breaks for a reason the model cannot fix is answered in the transcript too
+ok 38 - a tool that breaks for a reason the model cannot fix is answered in the transcript too
+  ---
+  duration_ms: 0.2944
+  type: 'test'
+  ...
+# Subtest: tool arguments that are not parseable JSON are answered, not unwound
+ok 39 - tool arguments that are not parseable JSON are answered, not unwound
+  ---
+  duration_ms: 0.3163
+  type: 'test'
+  ...
+# Subtest: a confirmation is spent by the call it authorised, so a retry cannot ride on it
+ok 40 - a confirmation is spent by the call it authorised, so a retry cannot ride on it
+  ---
+  duration_ms: 0.327
+  type: 'test'
+  ...
+# Subtest: a write refused for its argument shape is answered in the transcript, so the model can repair
+ok 41 - a write refused for its argument shape is answered in the transcript, so the model can repair
+  ---
+  duration_ms: 0.3625
+  type: 'test'
+  ...
+# Subtest: a denied entry permission refuses the turn before any provider call
+ok 42 - a denied entry permission refuses the turn before any provider call
+  ---
+  duration_ms: 0.5874
+  type: 'test'
+  ...
+# Subtest: an over-budget tool result is bounded with a notice instead of failing the turn
+ok 43 - an over-budget tool result is bounded with a notice instead of failing the turn
+  ---
+  duration_ms: 5.4019
+  type: 'test'
+  ...
+# Subtest: an over-budget digest degrades to a truncated snapshot, not a failure
+ok 44 - an over-budget digest degrades to a truncated snapshot, not a failure
+  ---
+  duration_ms: 1.2311
+  type: 'test'
+  ...
+# Subtest: exceeding the iteration budget is an explicit error that says what it did
+ok 45 - exceeding the iteration budget is an explicit error that says what it did
+  ---
+  duration_ms: 0.5241
+  type: 'test'
+  ...
+# Subtest: a call the reader declined is answered as their refusal, and the turn goes on
+ok 46 - a call the reader declined is answered as their refusal, and the turn goes on
+  ---
+  duration_ms: 0.3727
+  type: 'test'
+  ...
+# Subtest: a declined call leaves the transcript's other work alone
+ok 47 - a declined call leaves the transcript's other work alone
+  ---
+  duration_ms: 0.342
+  type: 'test'
+  ...
+# Subtest: a missing message list and an oversized input are refused before any provider call
+ok 48 - a missing message list and an oversized input are refused before any provider call
+  ---
+  duration_ms: 0.9095
+  type: 'test'
+  ...
+# Subtest: a turn that dies mid-loop is persisted, with the rounds it managed
+ok 49 - a turn that dies mid-loop is persisted, with the rounds it managed
+  ---
+  duration_ms: 1.3126
+  type: 'test'
+  ...
+# Subtest: an over-budget turn is written once, and its usage counted once
+ok 50 - an over-budget turn is written once, and its usage counted once
+  ---
+  duration_ms: 0.5088
+  type: 'test'
+  ...
+# Subtest: a transcript over the message budget is persisted rather than vanishing
+ok 51 - a transcript over the message budget is persisted rather than vanishing
+  ---
+  duration_ms: 0.2729
+  type: 'test'
+  ...
+# Subtest: a turn refused before a session exists writes no turn, and does not fail on the way out
+ok 52 - a turn refused before a session exists writes no turn, and does not fail on the way out
+  ---
+  duration_ms: 0.1479
+  type: 'test'
+  ...
+# Subtest: a turn whose session cannot be established is not claimed as a written turn
+ok 53 - a turn whose session cannot be established is not claimed as a written turn
+  ---
+  duration_ms: 0.238
+  type: 'test'
+  ...
+# Subtest: a refused call records why, so a stored turn can be read
+ok 54 - a refused call records why, so a stored turn can be read
+  ---
+  duration_ms: 0.2928
+  type: 'test'
+  ...
+# Subtest: a refusal that is not the tool's own also names its code
+ok 55 - a refusal that is not the tool's own also names its code
+  ---
+  duration_ms: 0.3595
+  type: 'test'
+  ...
+# Subtest: the resolved scenario, revision, and write preconditions ride the execution context into a tool
+ok 56 - the resolved scenario, revision, and write preconditions ride the execution context into a tool
+  ---
+  duration_ms: 0.2498
+  type: 'test'
+  ...
+# Subtest: a configured secret is redacted from the returned content
+ok 57 - a configured secret is redacted from the returned content
+  ---
+  duration_ms: 0.7917
+  type: 'test'
+  ...
+# Subtest: one audit record per tool call carries a digest, never an argument value
+ok 58 - one audit record per tool call carries a digest, never an argument value
+  ---
+  duration_ms: 0.6733
+  type: 'test'
+  ...
+# Subtest: a session is ensured, a turn is appended, and a retry is deduplicated
+ok 59 - a session is ensured, a turn is appended, and a retry is deduplicated
+  ---
+  duration_ms: 349.1905
+  type: 'test'
+  ...
+# Subtest: another owner sees an empty history, not an error
+ok 60 - another owner sees an empty history, not an error
+  ---
+  duration_ms: 45.8591
+  type: 'test'
+  ...
+# Subtest: the usage log is append-only and re-aggregates per scope
+ok 61 - the usage log is append-only and re-aggregates per scope
+  ---
+  duration_ms: 68.9586
+  type: 'test'
+  ...
+# Subtest: the resolved scope is stated, with only the identifiers that resolved
+ok 62 - the resolved scope is stated, with only the identifiers that resolved
+  ---
+  duration_ms: 0.8872
+  type: 'test'
+  ...
+# Subtest: a null identifier is omitted rather than shown as an empty value
+ok 63 - a null identifier is omitted rather than shown as an empty value
+  ---
+  duration_ms: 0.135
+  type: 'test'
+  ...
+# Subtest: no scope means no scope section, and no empty heading
+ok 64 - no scope means no scope section, and no empty heading
+  ---
+  duration_ms: 0.928
+  type: 'test'
+  ...
+# Subtest: the scope block sits beside the other owned parts without replacing them
+ok 65 - the scope block sits beside the other owned parts without replacing them
+  ---
+  duration_ms: 0.3224
+  type: 'test'
+  ...
+# Subtest: a malformed provider response is normalized, never passed through
+ok 66 - a malformed provider response is normalized, never passed through
+  ---
+  duration_ms: 1.544
+  type: 'test'
+  ...
+# Subtest: only allow-listed model options are forwarded
+ok 67 - only allow-listed model options are forwarded
+  ---
+  duration_ms: 0.6942
+  type: 'test'
+  ...
+# Subtest: a connection failure is retried, a provider response is not
+ok 68 - a connection failure is retried, a provider response is not
+  ---
+  duration_ms: 294.5462
+  type: 'test'
+  ...
+# Subtest: provider errors map to codes, including cancellation and timeout
+ok 69 - provider errors map to codes, including cancellation and timeout
+  ---
+  duration_ms: 0.3433
+  type: 'test'
+  ...
+# Subtest: a connection failure wrapped by fetch is still recognized as retryable
+ok 70 - a connection failure wrapped by fetch is still recognized as retryable
+  ---
+  duration_ms: 0.1286
+  type: 'test'
+  ...
+# Subtest: a 429 keeps what the gateway said, including the interval it named
+ok 71 - a 429 keeps what the gateway said, including the interval it named
+  ---
+  duration_ms: 0.2553
+  type: 'test'
+  ...
+# Subtest: a 429 with no usable body still normalizes, and names no interval
+ok 72 - a 429 with no usable body still normalizes, and names no interval
+  ---
+  duration_ms: 0.1956
+  type: 'test'
+  ...
+# Subtest: credentials are redacted from values and nested structures
+ok 73 - credentials are redacted from values and nested structures
+  ---
+  duration_ms: 0.1817
+  type: 'test'
+  ...
+# Subtest: the OpenAI-compatible adapter shapes the request and parses the response
+ok 74 - the OpenAI-compatible adapter shapes the request and parses the response
+  ---
+  duration_ms: 0.4393
+  type: 'test'
+  ...
+# Subtest: a per-call model overrides the configured one
+ok 75 - a per-call model overrides the configured one
+  ---
+  duration_ms: 0.4624
+  type: 'test'
+  ...
+# Subtest: an upstream HTTP failure becomes a normalized error with a status
+ok 76 - an upstream HTTP failure becomes a normalized error with a status
+  ---
+  duration_ms: 0.3113
+  type: 'test'
+  ...
+# Subtest: provider construction refuses an unknown or unconfigured provider
+ok 77 - provider construction refuses an unknown or unconfigured provider
+  ---
+  duration_ms: 0.2498
+  type: 'test'
+  ...
+# Subtest: a capability is validated and a duplicate name is refused
+ok 78 - a capability is validated and a duplicate name is refused
+  ---
+  duration_ms: 0.9525
+  type: 'test'
+  ...
+# Subtest: selection drops a tool for surface, read-only, or a denied permission
+ok 79 - selection drops a tool for surface, read-only, or a denied permission
+  ---
+  duration_ms: 7.3996
+  type: 'test'
+  ...
+# Subtest: the gate carries the surface's own sentence about the call, and a failed one costs only the sentence
+ok 80 - the gate carries the surface's own sentence about the call, and a failed one costs only the sentence
+  ---
+  duration_ms: 0.672
+  type: 'test'
+  ...
+# Subtest: a confirmation is not offered for a call the surface already knows cannot run
+ok 81 - a confirmation is not offered for a call the surface already knows cannot run
+  ---
+  duration_ms: 0.4785
+  type: 'test'
+  ...
+# Subtest: the host validates, gates confirmation, and invokes the handler
+ok 82 - the host validates, gates confirmation, and invokes the handler
+  ---
+  duration_ms: 0.5529
+  type: 'test'
+  ...
+# Subtest: UI actions are validated, surface-gated, and normalized into envelopes
+ok 83 - UI actions are validated, surface-gated, and normalized into envelopes
+  ---
+  duration_ms: 0.9392
+  type: 'test'
+  ...
+# Subtest: an action named the way the prompt names it is read, not dropped
+ok 84 - an action named the way the prompt names it is read, not dropped
+  ---
+  duration_ms: 0.3654
+  type: 'test'
+  ...
+1..84
+# tests 84
+# suites 0
+# pass 84
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 654.186
