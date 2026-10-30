@@ -8,12 +8,12 @@ import { createLayoutScenarios } from '../packages/rack/examples/layout-scenario
 const port = Number(process.env.RACK_PREVIEW_PORT ?? 5183);
 if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error('RACK_PREVIEW_PORT must be an integer from 1 to 65535.');
 const metadata = [
-  ['正常布局', '两台机柜位于机房内，与已知障碍及彼此均无占地冲突。'],
-  ['柜间重叠', '移动 A02 的合成位置，让两台机柜的占地产生重叠。'],
-  ['并排贴边', '两个机柜的边恰好相接；占地不重叠，维护净距尚未检查。'],
-  ['混合问题', '同时展示机柜越界、障碍冲突和柜间重叠。'],
-  ['清单不完整', '机柜清单声明为未知；没有已知问题也不能直接判通过。'],
-  ['空方案', '没有提供机柜，显示未检查状态。'],
+  ['Clear layout', 'Two racks are inside the room with no footprint conflicts with known obstacles or each other.'],
+  ['Overlapping racks', 'Move the synthetic position of A02 to create a footprint overlap.'],
+  ['Touching edges', 'Two racks share an edge without footprint overlap. Maintenance clearance has not been checked.'],
+  ['Mixed issues', 'Show room boundary, obstacle and rack overlap conflicts together.'],
+  ['Incomplete inventory', 'Inventory coverage is unknown; no known conflicts does not imply a complete pass.'],
+  ['Empty plan', 'No racks are provided; the layout remains unchecked.'],
 ];
 const payload = JSON.stringify({
   synthetic: true,

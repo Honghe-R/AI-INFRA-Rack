@@ -372,7 +372,7 @@ export function RackEditor({
           if (addKind === 'rack_add') { setSelectedId(result.selectedId); setFocusRequest({rackId:result.selectedId,showFloor:true,nonce:Date.now()}); }
           if (addKind === 'rack_zone') { setSelectedObstacleId(result.selectedId); setFocusRequest({obstacleId:result.selectedId,nonce:Date.now()}); }
           onNavigate(addKind === 'rack_add' ? 'layout' : addKind === 'rack_zone' ? 'constraints' : 'equipment');
-          setNotice('已加入共享草稿。可以继续添加或修改，检查后 Save layout。');
+          setNotice('Added to the shared draft. Continue editing, then check and choose Save layout.');
           setAddKind(null);
         }}/>}
       {notice && (
@@ -427,7 +427,7 @@ export function RackEditor({
             onNavigate={onNavigate} />}
           <div hidden={section !== 'candidates' && !(section === 'layout' && placements.length === 0 && equipment.devices.length === 0)}>
             <RackDemandDesign key={`${layout.planId}:${layout.version}`} client={client} layout={layout} catalogState={catalogState} draft={draft}
-              canWrite={canWrite} onDraftChange={value=>{onDraftChange(value);setError(null);setNotice('自动设计已载入共享草稿，请复核并 Save layout。');setFocusRequest({fitRacks:true,nonce:Date.now()});}}
+              canWrite={canWrite} onDraftChange={value=>{onDraftChange(value);setError(null);setNotice('Design loaded into the shared draft. Review it and choose Save layout.');setFocusRequest({fitRacks:true,nonce:Date.now()});}}
               onNavigate={onNavigate}/>
           </div>
           <div hidden={section !== 'candidates'}><RackOptions client={client} layout={layout} draft={draft}
@@ -445,8 +445,8 @@ export function RackEditor({
             onUpdate={patch => updateRack(selectedId, patch)} onNavigate={onNavigate} focusRequest={focusRequest}
             modelId={modelId} onModelChange={setModelId} onAdd={addRack} onRemove={removeSelectedRack} actions={editorActions}
             feedback={error || inputError || (checkState.error ? rackError(checkState.error) :
-              checkState.pending || checkState.body !== checkKey ? '正在检查当前布局…' :
-              currentReport?.diagnostics.length || equipmentReport?.diagnostics.length ? '存在检查冲突，请调整后再保存。' : notice)} />}
+              checkState.pending || checkState.body !== checkKey ? 'Checking the current layout…' :
+              currentReport?.diagnostics.length || equipmentReport?.diagnostics.length ? 'Checks found conflicts. Resolve them before saving.' : notice)} />}
           <div hidden={section !== 'constraints'} data-rack-panel="layout">
           <RoomFloorplan
             key={snapshot.snapshotId}
@@ -466,7 +466,7 @@ export function RackEditor({
             focusRequest={focusRequest}
           />
           </div>
-          <details hidden={section !== 'layout'} className="rack-studio-advanced"><summary>精确坐标与机柜管理</summary>
+          <details hidden={section !== 'layout'} className="rack-studio-advanced"><summary>Exact coordinates and rack management</summary>
           <div className="rack-editor-columns" data-rack-panel="rack-properties">
             <section className="rack-card" aria-label="Rack inventory">
               <h3>Racks</h3>

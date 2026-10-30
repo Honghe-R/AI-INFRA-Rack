@@ -36,7 +36,8 @@ do {
   plans.push(...page.items); cursor = page.nextCursor;
   assert.ok(plans.length <= 1000, 'Refuse unexpectedly large demonstration project.');
 } while (cursor);
-const matches = plans.filter(p => p.name === HALL_DEMO_NAME);
+// Recognize existing demos created before the English label update; never duplicate them.
+const matches = plans.filter(p => p.name === HALL_DEMO_NAME || p.name === '完整机房演示 · 32柜 / 多排混合设备');
 assert.ok(matches.length <= 1, 'Multiple matching demos; choose explicitly rather than overwriting.');
 const oldPlans = plans.filter(p => p.planId !== matches[0]?.planId);
 const before = await Promise.all(oldPlans.map(p => request(`/plans/${p.planId}/layout`)));

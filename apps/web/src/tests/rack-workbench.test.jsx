@@ -17,10 +17,10 @@ const props={snapshot,placements:[rack],models:[model],constraints,equipment:{de
 
 test('inspector only allows deleting an editable unlocked empty rack and explains installed device protection',()=>{
   const render=patch=>renderToStaticMarkup(<RackInspector rack={rack} model={model} devices={[]} editable onRemove={()=>{}} {...patch}/>);
-  assert.match(render({}),/class="rack-danger">删除选中机柜/);
+  assert.match(render({}),/class="rack-danger">Remove selected rack/);
   for(const patch of [{editable:false},{positionLocked:true},{devices}])
-    assert.match(render(patch),/class="rack-danger" disabled="">删除选中机柜/);
-  assert.match(render({devices}),/请先在设备页卸架或迁移/);
+    assert.match(render(patch),/class="rack-danger" disabled="">Remove selected rack/);
+  assert.match(render({devices}),/Unassign or move equipment on the equipment page/);
 });
 
 test('equipment viewport fits real rotated footprints and reserved zones without changing input geometry',()=>{
@@ -50,28 +50,28 @@ test('drag snaps final physical centre and retains the click offset without muta
 
 test('inspector shows actual rack members, clickable devices and locked controls without assuming unknown resources',()=>{
   const html=renderToStaticMarkup(<RackInspector rack={rack} model={model} devices={devices} positionLocked editable report={null}/>);
-  for(const text of ['R &lt;1&gt;','GPU &lt;test&gt;','Switch','U1–4','U5–5','待检查','Not checked','位置锁定','disabled="" aria-label="旋转选中机柜"']) {
-    if(text.startsWith('disabled')) assert.match(html,/aria-label="旋转选中机柜" disabled=""/); else assert.ok(html.includes(text),text);
+  for(const text of ['R &lt;1&gt;','GPU &lt;test&gt;','Switch','U1–4','U5–5','Not checked','Position locked','disabled="" aria-label="Rotate selected rack"']) {
+    if(text.startsWith('disabled')) assert.match(html,/aria-label="Rotate selected rack" disabled=""/); else assert.ok(html.includes(text),text);
   }
   assert.ok(!html.includes('Unassigned'));
   const deviceHtml=renderToStaticMarkup(<RackInspector devices={devices} selectedDevice={devices[0]} rack={rack}/>);
-  for(const text of ['GPU 服务器','0 kW','未知','demo-gpu-4u · v2'])assert.ok(deviceHtml.includes(text),text);
+  for(const text of ['GPU server','0 kW','Unknown','demo-gpu-4u · v2'])assert.ok(deviceHtml.includes(text),text);
   assert.ok(!deviceHtml.includes('Switch'));
 });
 
 test('pending equipment is distinct from installed equipment and custom devices do not invent a server kind',()=>{
   const pending=renderToStaticMarkup(<RackInspector devices={devices} pending/>);
   assert.ok(pending.includes('Unassigned'));assert.ok(!pending.includes('GPU &lt;test&gt;'));
-  assert.deepEqual(deviceKind(devices[1]),['ToR 交换机','switch']);
-  assert.deepEqual(deviceKind(devices[2]),['设备','other']);
+  assert.deepEqual(deviceKind(devices[1]),['ToR switch','switch']);
+  assert.deepEqual(deviceKind(devices[2]),['Equipment','other']);
 });
 
 test('studio preserves polygon holes, real area, draft restriction and selected rack while presenting one inspector',()=>{
   const html=renderToStaticMarkup(<RackWorkbench {...props}/>);
-  for(const text of ['fill-rule="evenodd"','7999','设备区局部视图','整个房间','房间位置概览','点 Edit layout','选择机柜 R &lt;1&gt;','吸附','未知','NOT_RUN']) {
-    if(text==='NOT_RUN')assert.ok(html.includes('整体工程验证未运行'));else assert.ok(html.includes(text),text);
+  for(const text of ['fill-rule="evenodd"','7999','Equipment area view','Full room','Room overview','Choose Edit layout','Select rack R &lt;1&gt;','Snap','Unknown','NOT_RUN']) {
+    if(text==='NOT_RUN')assert.ok(html.includes('Overall engineering validation has not run'));else assert.ok(html.includes(text),text);
   }
-  assert.equal((html.match(/aria-label="对象详情"/g)||[]).length,1);
+  assert.equal((html.match(/aria-label="Object details"/g)||[]).length,1);
   assert.ok(html.includes('data-locked="true"'));
-  assert.ok(html.includes('aria-label="新增机柜型号" disabled=""'));
+  assert.ok(html.includes('aria-label="New rack model" disabled=""'));
 });

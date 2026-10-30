@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 
-export const HALL_DEMO_NAME = '完整机房演示 · 32柜 / 多排混合设备';
+export const HALL_DEMO_NAME = 'Full Hall Demo · 32 Racks / Mixed Equipment Rows';
 export function hallDemoId(seed, label) {
   const h = createHash('sha256').update(`rack-hall-demo-v1:${seed}:${label}`).digest('hex');
   return `${h.slice(0,8)}-${h.slice(8,12)}-4${h.slice(13,16)}-8${h.slice(17,20)}-${h.slice(20,32)}`;
@@ -39,24 +39,24 @@ export function createHallDemoBody(layout, catalog, seed) {
     const row = Math.floor(i / 8), profile = row === 3 ? lastRow[i % 8] : profiles[row];
     let startU = 1;
     return profile.map((key, j) => {
-      const label = `${rack.name} · ${key === gpu ? 'GPU服务器' : key === cpu ? '计算服务器' : '交换机'} ${String(j+1).padStart(2,'0')}`;
+      const label = `${rack.name} · ${key === gpu ? 'GPU Server' : key === cpu ? 'Compute Server' : 'Switch'} ${String(j+1).padStart(2,'0')}`;
       const d = fromModel(key, label, rack.rackId, startU); startU += d.heightU; return d;
     });
   });
-  devices.push(fromModel(gpu, '待上架 · GPU服务器 01'), fromModel(gpu, '待上架 · GPU服务器 02'),
-    ...Array.from({length:4}, (_, i) => fromModel(cpu, `待上架 · 计算服务器 ${i+1}`)),
-    { deviceId: id('oversized'), name: '待上架 · 超高100U设备（拒绝示例）', heightU: 100, weightKg: 10, powerKw: 1, coolingKw: 1, rackId: null, startU: null },
-    fromModel('demo-unspecified-1u', '待上架 · 规格未知设备（不猜测）'));
+  devices.push(fromModel(gpu, 'Unassigned · GPU Server 01'), fromModel(gpu, 'Unassigned · GPU Server 02'),
+    ...Array.from({length:4}, (_, i) => fromModel(cpu, `Unassigned · Compute Server ${i+1}`)),
+    { deviceId: id('oversized'), name: 'Unassigned · Oversized 100U Device (Rejection Example)', heightU: 100, weightKg: 10, powerKw: 1, coolingKw: 1, rackId: null, startU: null },
+    fromModel('demo-unspecified-1u', 'Unassigned · Device with Unknown Specifications'));
   const powerLimits = [12,12,12,12,10,10,12,12, ...Array(8).fill(10), ...Array(8).fill(8), 4,6,8,10,8,12,10,12];
   const obstacle = (key, name, x, y, w, d) => ({ obstacleId: id(key), name, xM: cx+x, yM: cy+y, widthM: w, depthM: d });
   return { contract_version: 1, snapshot_id: layout.snapshot.snapshotId, placements,
     constraints: { obstacleCoverage: 'UNKNOWN',
       source: { kind: 'ASSUMED', reference: 'Synthetic local hall: A GPU, B compute, C mixed, D network/inference. Reserved corridors are no-placement rectangles, not verified access/egress paths. Actual Facility obstacles are unknown.' },
       clearance: { frontM: 1, rearM: .6 }, obstacles: [
-        obstacle('main-aisle','主通道预留 · 禁放',0,0,1.6,14.4),
-        obstacle('south-aisle','南侧通道预留 · 禁放',0,-8,13,1.2),
-        obstacle('north-aisle','北侧通道预留 · 禁放',0,8,13,1.2),
-        obstacle('service-area','设备暂存区 · 禁放',8.5,0,2,4),
+        obstacle('main-aisle','Main Aisle Reservation',0,0,1.6,14.4),
+        obstacle('south-aisle','South Aisle Reservation',0,-8,13,1.2),
+        obstacle('north-aisle','North Aisle Reservation',0,8,13,1.2),
+        obstacle('service-area','Equipment Staging Area',8.5,0,2,4),
       ] },
     equipment: { coverage: 'DECLARED_COMPLETE',
       source: { kind: 'ASSUMED', reference: 'Synthetic teaching scenario: 32 racks, 236 installed and 8 unassigned devices; all specifications are demo assumptions, not vendor or surveyed data.' },

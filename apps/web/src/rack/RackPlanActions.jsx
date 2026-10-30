@@ -20,21 +20,21 @@ export function RackPlanActions({ client, plan, canWrite, blocked, attempt, onAt
       {version:intent.version,idempotencyKey:intent.key,signal});
       if(signal.aborted)return;
       setForm(null);onManaged(result.data,intent.operation);}
-    catch(e){if(signal.aborted)return;if(!uncertainCreation(e))onAttempt(null);setError(`${uncertainCreation(e)?'结果尚未确认，请重试原操作；不要重复新建请求。 ':''}${rackError(e)}`);}
+    catch(e){if(signal.aborted)return;if(!uncertainCreation(e))onAttempt(null);setError(`${uncertainCreation(e)?'The result is unconfirmed. Retry the original operation instead of creating another request. ':''}${rackError(e)}`);}
     finally{sending.current=false;if(!signal.aborted)setBusy(false);}
   }
   const operation=attempt?.operation??form;
-  return <section className="rack-plan-actions" aria-label="方案管理">
-    {!operation?<div className="rack-actions">{plan.deletedAt?<button disabled={blocked} onClick={()=>setForm('restore')}>恢复方案</button>:<>
-      <button disabled={blocked} onClick={()=>{setName(plan.name);setForm('rename');}}>重命名方案</button>
-      <button className="rack-danger" disabled={blocked} onClick={()=>setForm('delete')}>删除方案</button></>}
-      {blocked&&<span className="rack-muted">请先保存或放弃编辑草稿，再管理方案。</span>}</div>:<form onSubmit={apply}>
-      <h3>{operation==='rename'?'重命名方案':operation==='delete'?'删除此方案？':'恢复此方案？'}</h3>
-      {operation==='rename'?<label>方案名称<input required maxLength={160} value={attempt?.body.name??name} disabled={busy||Boolean(attempt)} onChange={e=>setName(e.target.value)}/></label>:
-        <p>{operation==='delete'?`“${plan.name}”及其 ${plan.placements.length} 个机柜会移入已删除方案，布局、设备和约束均可恢复。`:'恢复后返回正常列表，原布局、设备和约束保留；来源变化仍需按原规则处理。'}</p>}
+  return <section className="rack-plan-actions" aria-label="Plan management">
+    {!operation?<div className="rack-actions">{plan.deletedAt?<button disabled={blocked} onClick={()=>setForm('restore')}>Restore plan</button>:<>
+      <button disabled={blocked} onClick={()=>{setName(plan.name);setForm('rename');}}>Rename plan</button>
+      <button className="rack-danger" disabled={blocked} onClick={()=>setForm('delete')}>Delete plan</button></>}
+      {blocked&&<span className="rack-muted">Save or discard the editing draft before managing this plan.</span>}</div>:<form onSubmit={apply}>
+      <h3>{operation==='rename'?'Rename plan':operation==='delete'?'Delete this plan?':'Restore this plan?'}</h3>
+      {operation==='rename'?<label>Plan name<input required maxLength={160} value={attempt?.body.name??name} disabled={busy||Boolean(attempt)} onChange={e=>setName(e.target.value)}/></label>:
+        <p>{operation==='delete'?`“${plan.name}” and its ${plan.placements.length} racks will move to Deleted plans. The layout, equipment and constraints can be restored.`:'Restore this plan to the active list with its layout, equipment and constraints. Source changes still require review under the existing rules.'}</p>}
       <div className="rack-actions"><button className="rack-primary" disabled={busy||blocked||(operation==='rename'&&!name.trim())}>
-        {busy?'处理中…':attempt?'重试原操作':operation==='rename'?'保存名称':operation==='delete'?'确认删除方案':'确认恢复方案'}</button>
-        <button type="button" disabled={busy||Boolean(attempt)} onClick={()=>{setForm(null);setError(null);}}>取消</button></div>
+        {busy?'Working…':attempt?'Retry original operation':operation==='rename'?'Save name':operation==='delete'?'Confirm plan deletion':'Confirm plan restoration'}</button>
+        <button type="button" disabled={busy||Boolean(attempt)} onClick={()=>{setForm(null);setError(null);}}>Cancel</button></div>
     </form>}
     {error&&<p role="alert" className="rack-error">{error}</p>}
   </section>;

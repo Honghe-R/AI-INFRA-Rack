@@ -172,7 +172,7 @@ export function useAssistantSession({
           return current;
         });
       })
-      .catch((error) => { if (!cancelled) setConnectionError(error.message ?? '无法读取模型连接。'); })
+      .catch((error) => { if (!cancelled) setConnectionError(error.message ?? 'Could not load the model connection.'); })
       .finally(() => { if (!cancelled) setConnectionPending(false); });
     return () => {
       cancelled = true;

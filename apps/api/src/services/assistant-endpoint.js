@@ -41,7 +41,7 @@ export function normalizeAssistantEndpoint(value, allowedOrigins = []) {
 }
 
 function invalidAddress() {
-  return new ApiError('ASSISTANT_ENDPOINT_INVALID', '请填写不含凭证、查询参数或片段的 HTTPS 公网接口地址；内网网关需管理员允许。', { status: 400 });
+  return new ApiError('ASSISTANT_ENDPOINT_INVALID', 'Enter a public HTTPS endpoint without credentials, query parameters or fragments. Internal gateways require administrator approval.', { status: 400 });
 }
 
 /** Check DNS then pin that exact result to the socket; never follow redirects. */
@@ -67,7 +67,7 @@ export function createAssistantFetch({ allowedOrigins = [], lookupImpl = lookup,
       }, (res) => {
         if (res.statusCode >= 300 && res.statusCode < 400) {
           res.destroy();
-          reject(new ApiError('ASSISTANT_REDIRECT_BLOCKED', '模型接口返回重定向，请配置最终地址。', { status: 502 }));
+          reject(new ApiError('ASSISTANT_REDIRECT_BLOCKED', 'The model endpoint returned a redirect. Configure the final URL instead.', { status: 502 }));
           return;
         }
         const chunks = [];

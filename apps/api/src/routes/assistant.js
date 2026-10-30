@@ -62,7 +62,7 @@ export function registerAssistantRoutes(router, { orchestrator, sessionService =
     const body = await json();
     // Credentials and arbitrary provider URLs belong only to connection management.
     if (['apiKey', 'api_key', 'endpoint', 'provider', 'baseURL'].some((key) => Object.hasOwn(body, key))) {
-      throw new ApiError('ASSISTANT_CHAT_INVALID', '聊天请求只能引用已保存的模型连接。', { status: 400 });
+      throw new ApiError('ASSISTANT_CHAT_INVALID', 'Chat requests may only reference a saved model connection.', { status: 400 });
     }
 
     // A caller never supplies its own identity: the authenticated user is stamped
@@ -128,7 +128,7 @@ export function registerAssistantRoutes(router, { orchestrator, sessionService =
       if (turnHost?.connectionId) {
         const suffix = `|connection:${turnHost.connectionId}:${turnHost.connectionVersion}|model:${encodeURIComponent(selectedModel ?? turnHost.model)}`;
         if (typeof turnContextKey !== 'string' || !turnContextKey.endsWith(suffix)) {
-          throw new ApiError('ASSISTANT_CONNECTION_CONTEXT_INVALID', '会话与模型连接不匹配，请刷新后开启新会话。', { status: 400 });
+          throw new ApiError('ASSISTANT_CONNECTION_CONTEXT_INVALID', 'This session does not match the model connection. Refresh and start a new chat.', { status: 400 });
         }
       }
       const result = await (turnHost?.orchestrator ?? orchestrator).runTurn({

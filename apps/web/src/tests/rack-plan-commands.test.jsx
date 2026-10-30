@@ -59,7 +59,7 @@ test('invalid or oversized additions fail without modifying saved or unsaved inp
 
 test('add equipment dialog exposes quantity and pinned version without silently installing devices', () => {
   const html=renderToStaticMarkup(<RackAddDialog kind="rack_device" layout={layout} draft={null} catalogState={{data:catalog}}/>);
-  for(const text of ['设备数量','GPU · v2','待上架库存','Save layout','取消','加入草稿']) assert.ok(html.includes(text),text);
+  for(const text of ['Equipment quantity','GPU · v2','unassigned inventory','Save layout','Cancel','Add to draft']) assert.ok(html.includes(text),text);
 });
 
 test('schematic views retain rack/device IDs and show unknown capacities and actual U ranges', () => {
@@ -69,8 +69,8 @@ test('schematic views retain rack/device IDs and show unknown capacities and act
   const elevations=renderToStaticMarkup(<RackElevations placements={[rack]} models={[model]} devices={devices} selectedId="r" onSelect={()=>{}}/>);
   assert.ok(elevations.includes('GPU &lt;1&gt;'));assert.ok(elevations.includes('U1–4'));assert.ok(elevations.includes('aria-pressed="true"'));assert.ok(elevations.includes('Not checked'));
   const table=renderToStaticMarkup(<RackCapacityTable placements={[rack]} devices={devices} selectedId="r" onSelect={()=>{}}/>);
-  assert.ok(table.includes('3, 4 m · 90°'));assert.ok(table.includes('待检查'));
-  assert.equal(capacityLabel({capacities:{powerKw:{total:null,knownSubtotal:3,limit:null,status:'UNKNOWN'}}},'powerKw','kW'),'≥3 / ? kW · 未知');
+  assert.ok(table.includes('3, 4 m · 90°'));assert.ok(table.includes('Not checked'));
+  assert.equal(capacityLabel({capacities:{powerKw:{total:null,knownSubtotal:3,limit:null,status:'UNKNOWN'}}},'powerKw','kW'),'≥3 / ? kW · Unknown');
   assert.equal(capacityLabel({capacities:{powerKw:{total:0,knownSubtotal:0,limit:0,status:'WITHIN_LIMIT'}}},'powerKw','kW'),'0 / 0 kW');
   assert.deepEqual({rack,devices},source);
 });

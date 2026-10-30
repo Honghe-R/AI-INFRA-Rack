@@ -8,17 +8,17 @@ import { createApiClient } from '../api/client.js';
 test('first-time setup remains inside Ask about Rack and blocks sending until configured', () => {
   const html = renderToStaticMarkup(<AssistantComposer open toolLabel="Rack" draft="Show capacity"
     provider={{ configured: false }} connectionClient={{ getAssistantConnection() {} }} />);
-  assert.match(html, /首次配置 AI 模型连接/);
-  assert.match(html, /正在读取个人连接/);
-  assert.match(html, /disabled=""[^>]*title="请先完成模型连接配置"/);
+  assert.match(html, /Set up AI connection/);
+  assert.match(html, /Loading your connection/);
+  assert.match(html, /disabled=""[^>]*title="Set up a model connection first"/);
 });
 
 test('configured connection keeps a compact settings entry with no key in markup', () => {
   const html = renderToStaticMarkup(<AssistantComposer open toolLabel="Rack" draft="Show capacity"
     provider={{ configured: true, host: 'models.example.com', model: 'test-model' }} connectionClient={{ getAssistantConnection() {} }} />);
-  assert.match(html, /模型连接/);
+  assert.match(html, /Model connection/);
   assert.match(html, /models.example.com/);
-  assert.doesNotMatch(html, /首次配置 AI 模型连接/);
+  assert.doesNotMatch(html, /Set up AI connection/);
   assert.doesNotMatch(html, /type="password"/);
 });
 

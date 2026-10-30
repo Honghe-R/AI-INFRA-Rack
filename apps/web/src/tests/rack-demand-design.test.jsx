@@ -17,10 +17,10 @@ test('demand form assembles exact model versions and quantities, preserves obsta
 test('empty-plan form shows quantity/assumption inputs, blocks dirty generation and directs nonempty plans to preserve existing work',()=>{
   const props={client:{},layout,catalogState:{data:{models:[model]}},canWrite:true};
   const html=renderToStaticMarkup(<RackDemandDesign {...props} draft={{}}/>);
-  for(const text of ['按设备数量自动设计','GPU 数量','单柜功率上限','填入课程示例参数','当前共享草稿','required=""'])assert.ok(html.includes(text),text);
-  assert.ok(/disabled=""[^>]*>生成自动设计候选/.test(html));
+  for(const text of ['Auto design from equipment quantities','GPU Quantity','Rack power limit (kW)','Use course example parameters','Save or discard the shared draft','required=""'])assert.ok(html.includes(text),text);
+  assert.ok(/disabled=""[^>]*>Generate design candidates/.test(html));
   const occupied=renderToStaticMarkup(<RackDemandDesign {...props} layout={{...layout,placements:[{}]}}/>);
-  assert.ok(occupied.includes('请新建空方案'));assert.ok(!occupied.includes('填入课程示例参数'));
+  assert.ok(occupied.includes('Create an empty plan'));assert.ok(!occupied.includes('Use course example parameters'));
 });
 test('demand preview uses readonly version-bound POST and no write headers, with cancellation/no-store',async()=>{
   let call;const signal=new AbortController().signal;

@@ -45,6 +45,6 @@ test('floorplan render labels local units, provenance and unchecked scope withou
     sourceGeometry={{geometryId:'g',role:'FLOOR_BOUNDARY',provenanceReference:'dev-seed-facility',transformReviewState:'NOT_RECORDED'}} />);
   for(const text of ['fill-rule="evenodd"','Hall &lt;A&gt;','10.00','8.00','79.00','Synthetic Facility sample','UNKNOWN','NOT_RUN','Grid N','EPSG:32618','Fit room','Coordinates and source']) assert.ok(html.includes(text),text);
   assert.ok(!html.includes('Validated'));
-  assert.ok(html.includes('<pattern') && html.includes('自动适配点阵视图'));
+  assert.ok(html.includes('<pattern') && html.includes('Auto-fit dot-grid view'));
   assert.ok(!html.includes('Zoom in floorplan') && !html.includes('Scroll or +'));
 });

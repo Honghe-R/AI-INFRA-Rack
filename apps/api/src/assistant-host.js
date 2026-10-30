@@ -78,7 +78,7 @@ export async function createAssistantHostFor({ config, pool, secrets, guard, log
   });
   const host = assemble(factory ? lazyProvider(factory, config) : {
     name: 'openai-compatible', model: null,
-    async complete() { throw new LlmError('ASSISTANT_SETUP_REQUIRED', '请先在模型连接中完成首次配置。', { status: 503 }); },
+    async complete() { throw new LlmError('ASSISTANT_SETUP_REQUIRED', 'Set up your model connection before chatting.', { status: 503 }); },
   }, redact);
 
   // What the composer labels itself with. Read from the same factory the turn uses, so
@@ -96,7 +96,7 @@ export async function createAssistantHostFor({ config, pool, secrets, guard, log
       async resolveTurn({ userId, connectionId, connectionVersion }) {
         const personal = await connections.get(userId);
         if (!personal) {
-          if (connectionId != null) throw new ApiError('ASSISTANT_CONNECTION_CHANGED', '个人模型连接已删除，请刷新连接配置。', { status: 412 });
+          if (connectionId != null) throw new ApiError('ASSISTANT_CONNECTION_CHANGED', 'Your model connection was deleted. Reload the connection settings.', { status: 412 });
           return { orchestrator: host.orchestrator, models: config.llmModels ?? [], redact, release() {} };
         }
         const connection = await connections.open(userId, connectionId, connectionVersion);

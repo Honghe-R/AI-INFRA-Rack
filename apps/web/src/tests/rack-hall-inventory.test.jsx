@@ -14,7 +14,7 @@ const render=patch=>renderToStaticMarkup(<RackHallInventory placements={placemen
 
 test('hall overview separates installed/pending identities and model counts; groups are display names only',()=>{
   const html=render({});
-  for(const text of ['2 个机柜','2 台已安装','1 台待上架','1 个锁定柜','GPU服务器：1','ToR交换机：1','其他／自定义：1','不是空间分区或网络拓扑','A 组','B 组']) assert.ok(html.includes(text),text);
+  for(const text of ['2 racks','2 installed','1 unassigned','1 locked racks','GPU servers: 1','ToR switches: 1','Other / Custom: 1','not spatial zones or network topology','A group','B group']) assert.ok(html.includes(text),text);
   assert.ok(!html.includes('rack-u-slot'));
 });
 
@@ -23,11 +23,11 @@ test('selected rack renders only its read-only elevation and escapes inventory l
   assert.ok(html.includes('GPU &lt;server&gt;'));assert.ok(!html.includes('>Switch</button>'));
   assert.equal((html.match(/class="rack-u-slot(?: |")/g)||[]).length,42);
   assert.ok(html.includes('aria-pressed="true"'));assert.ok(html.includes('data-load="high"'));
-  assert.ok(html.includes('管理设备与 U 位'));
+  assert.ok(html.includes('Manage equipment and U slots'));
 });
 
 test('pending reports do not invent load and arbitrary names remain escaped without a semantic row',()=>{
   const html=render({report:null,placements:[{...placements[0],name:'Custom <rack>'}],selectedId:'a'});
   assert.ok(html.includes('Not checked'));assert.ok(html.includes('data-load="unknown"'));
-  assert.ok(html.includes('Custom &lt;rack&gt;'));assert.ok(html.includes('其他 组'));
+  assert.ok(html.includes('Custom &lt;rack&gt;'));assert.ok(html.includes('Other group'));
 });

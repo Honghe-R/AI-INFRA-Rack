@@ -10,7 +10,7 @@ const fail = (code, message, status = 400) => new ApiError(code, message, { stat
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const text = (value, name, max) => {
   if (typeof value !== 'string' || !value.trim() || value.length > max || /[\u0000-\u001f\u007f]/.test(value)) {
-    throw fail('ASSISTANT_CONNECTION_INVALID', `${name} 不能为空，且不能包含控制字符。`);
+    throw fail('ASSISTANT_CONNECTION_INVALID', `${name} is required and must not contain control characters.`);
   }
   return value.trim();
 };
@@ -29,17 +29,17 @@ export function createAssistantConnections({ directory, keyDirectory, allowedOri
   const active = new Map();
   const testing = new Map();
   const owner = (userId) => {
-    if (typeof userId !== 'string' || !userId) throw fail('UNAUTHENTICATED', '请先登录。', 401);
+    if (typeof userId !== 'string' || !userId) throw fail('UNAUTHENTICATED', 'Sign in first.', 401);
     return createHash('sha256').update(userId).digest('hex');
   };
   const pathFor = (userId) => join(directory, `${owner(userId)}.json`);
   const secretPath = (ref) => {
-    if (!uuid.test(ref)) throw fail('ASSISTANT_STORAGE_INVALID', '连接凭证引用损坏。', 503);
+    if (!uuid.test(ref)) throw fail('ASSISTANT_STORAGE_INVALID', 'The connection credential reference is invalid.', 503);
     return join(directory, 'vault', `${ref}.json`);
   };
   async function read(userId) {
     try { return JSON.parse(await readFile(pathFor(userId), 'utf8')); }
-    catch (error) { if (error.code === 'ENOENT') return null; throw fail('ASSISTANT_STORAGE_INVALID', '无法读取个人模型连接。', 503); }
+    catch (error) { if (error.code === 'ENOENT') return null; throw fail('ASSISTANT_STORAGE_INVALID', 'Could not read your model connection.', 503); }
   }
   async function master({ create = false } = {}) {
     const path = join(keyDirectory, 'master.key');
@@ -49,7 +49,7 @@ export function createAssistantConnections({ directory, keyDirectory, allowedOri
       try { await readFile(path); } catch (error) { if (error.code === 'ENOENT') exists = false; else throw error; }
       if (!exists) {
         const encrypted = await readdir(join(directory, 'vault')).catch((error) => { if (error.code === 'ENOENT') return []; throw error; });
-        if (encrypted.length) throw fail('ASSISTANT_KEY_UNAVAILABLE', '原凭证主密钥缺失，请恢复密钥后继续。', 503);
+        if (encrypted.length) throw fail('ASSISTANT_KEY_UNAVAILABLE', 'The credential master key is missing. Restore it before continuing.', 503);
       }
       try { if (!exists) await writeFile(path, randomBytes(32), { flag: 'wx', mode: 0o600 }); }
       catch (error) { if (error.code !== 'EEXIST') throw error; }
@@ -58,7 +58,7 @@ export function createAssistantConnections({ directory, keyDirectory, allowedOri
       const key = await readFile(path);
       if (key.length !== 32) throw new Error('Invalid master key.');
       return key;
-    } catch { throw fail('ASSISTANT_KEY_UNAVAILABLE', '本机凭证主密钥不可用，请恢复原密钥或删除连接后重新配置。', 503); }
+    } catch { throw fail('ASSISTANT_KEY_UNAVAILABLE', 'The local credential master key is unavailable. Restore it, or delete the connection and configure it again.', 503); }
   }
   function publicInfo(row) {
     if (!row) return null;
@@ -73,7 +73,7 @@ export function createAssistantConnections({ directory, keyDirectory, allowedOri
       decipher.setAAD(Buffer.from(`${owner(userId)}/${row.id}/${row.version}`));
       decipher.setAuthTag(Buffer.from(sealed.tag, 'base64'));
       return Buffer.concat([decipher.update(Buffer.from(sealed.data, 'base64')), decipher.final()]).toString('utf8');
-    } catch { throw fail('ASSISTANT_KEY_UNAVAILABLE', '无法解密本机模型凭证，请恢复原主密钥或重新配置。', 503); }
+    } catch { throw fail('ASSISTANT_KEY_UNAVAILABLE', 'Could not decrypt the local model credential. Restore the original master key or configure the connection again.', 503); }
   }
   async function serial(userId, work) {
     const id = owner(userId);
@@ -88,26 +88,26 @@ export function createAssistantConnections({ directory, keyDirectory, allowedOri
   }
   async function assertVersion(userId, id, version) {
     const row = await read(userId);
-    if (!row || row.id !== id) throw fail('ASSISTANT_CONNECTION_NOT_FOUND', '个人模型连接不存在，请重新加载。', 404);
-    if (row.version !== version) throw fail('ASSISTANT_CONNECTION_CHANGED', '模型连接已修改，请重新加载后继续。', 412);
+    if (!row || row.id !== id) throw fail('ASSISTANT_CONNECTION_NOT_FOUND', 'Your model connection was not found. Reload the connection settings.', 404);
+    if (row.version !== version) throw fail('ASSISTANT_CONNECTION_CHANGED', 'The model connection has changed. Reload it before continuing.', 412);
     return row;
   }
   async function save(userId, body) {
     return serial(userId, async () => {
       if (!body || typeof body !== 'object' || Array.isArray(body) ||
           Object.keys(body).some((key) => !['name', 'endpoint', 'model', 'apiKey', 'version'].includes(key))) {
-        throw fail('ASSISTANT_CONNECTION_INVALID', '连接字段不正确。');
+        throw fail('ASSISTANT_CONNECTION_INVALID', 'Invalid connection fields.');
       }
       const previous = await read(userId);
-      if (body.version !== (previous?.version ?? null)) throw fail('ASSISTANT_CONNECTION_CHANGED', '模型连接已修改，请重新加载后再保存。', 412);
-      const name = text(body.name, '连接名称', 80);
+      if (body.version !== (previous?.version ?? null)) throw fail('ASSISTANT_CONNECTION_CHANGED', 'The model connection has changed. Reload it before saving.', 412);
+      const name = text(body.name, 'Connection name', 80);
       const endpoint = normalizeAssistantEndpoint(body.endpoint, allowedOrigins);
-      const model = text(body.model, '模型 ID', 160);
+      const model = text(body.model, 'Model ID', 160);
       const apiKey = body.apiKey === undefined || body.apiKey === ''
         ? previous ? await credential(previous, userId) : null : text(body.apiKey, 'API Key', 8192);
-      if (!apiKey) throw fail('ASSISTANT_CONNECTION_INVALID', '首次配置需要填写 API Key。');
-      if (apiKey.length < 4) throw fail('ASSISTANT_CONNECTION_INVALID', 'API Key 长度不足。');
-      if (/^[*•]+$/.test(apiKey)) throw fail('ASSISTANT_CONNECTION_INVALID', '请输入真实 Key，不能保存掩码；留空可保留已保存的 Key。');
+      if (!apiKey) throw fail('ASSISTANT_CONNECTION_INVALID', 'An API key is required for the initial setup.');
+      if (apiKey.length < 4) throw fail('ASSISTANT_CONNECTION_INVALID', 'The API key is too short.');
+      if (/^[*•]+$/.test(apiKey)) throw fail('ASSISTANT_CONNECTION_INVALID', 'Enter the actual key, not a mask. Leave it blank to keep the saved key.');
       const row = { id: previous?.id ?? randomUUID(), version: (previous?.version ?? 0) + 1,
         name, endpoint, model, secretRef: randomUUID(), updatedAt: new Date(now()).toISOString() };
       // An existing encrypted record never causes silent master-key regeneration.
@@ -126,7 +126,7 @@ export function createAssistantConnections({ directory, keyDirectory, allowedOri
       } catch {
         await unlink(temporary).catch(() => {});
         await unlink(secretPath(row.secretRef)).catch(() => {});
-        throw fail('ASSISTANT_STORAGE_UNAVAILABLE', '无法保存个人模型连接，请检查本机存储权限。', 503);
+        throw fail('ASSISTANT_STORAGE_UNAVAILABLE', 'Could not save your model connection. Check local storage permissions.', 503);
       }
       revoke(userId);
       if (previous) await unlink(secretPath(previous.secretRef)).catch(() => {});
@@ -137,7 +137,7 @@ export function createAssistantConnections({ directory, keyDirectory, allowedOri
     return serial(userId, async () => {
       const previous = await read(userId);
       if (!previous) return;
-      if (previous.version !== version) throw fail('ASSISTANT_CONNECTION_CHANGED', '模型连接已修改，请重新加载。', 412);
+      if (previous.version !== version) throw fail('ASSISTANT_CONNECTION_CHANGED', 'The model connection has changed. Reload it.', 412);
       await unlink(pathFor(userId));
       revoke(userId);
       await unlink(secretPath(previous.secretRef)).catch(() => {});
@@ -166,9 +166,9 @@ export function createAssistantConnections({ directory, keyDirectory, allowedOri
   async function test(userId, { connectionId, version }, signal) {
     const id = owner(userId);
     const previous = testing.get(id);
-    if (previous && (previous.pending || now() - previous.at < 10_000)) throw fail('ASSISTANT_TEST_LIMIT', '请等待当前测试完成，测试间隔至少 10 秒。', 429);
+    if (previous && (previous.pending || now() - previous.at < 10_000)) throw fail('ASSISTANT_TEST_LIMIT', 'Wait for the current test to finish. Allow at least 10 seconds between tests.', 429);
     if (testing.size >= 1000) for (const [key, item] of testing) if (!item.pending && now() - item.at >= 10_000) testing.delete(key);
-    if (!testing.has(id) && testing.size >= 1000) throw fail('ASSISTANT_TEST_LIMIT', '当前连接测试繁忙，请稍后重试。', 429);
+    if (!testing.has(id) && testing.size >= 1000) throw fail('ASSISTANT_TEST_LIMIT', 'Connection testing is busy. Try again later.', 429);
     testing.set(id, { pending: true, at: now() });
     let connection;
     try {
@@ -180,19 +180,19 @@ export function createAssistantConnections({ directory, keyDirectory, allowedOri
       const message = first.choices?.[0]?.message;
       if (!message || (!message.content && !message.tool_calls?.length)) throw new Error('Empty model reply.');
       const calls = message.tool_calls ?? [];
-      if (calls.length === 0) return { chat: true, toolRoundTrip: false, message: '模型已响应，但本次没有调用测试工具；Rack Agent 工具能力尚未确认。' };
+      if (calls.length === 0) return { chat: true, toolRoundTrip: false, message: 'The model responded without calling the test tool. Rack Agent tool support is not confirmed.' };
       if (calls.length !== 1 || calls[0].function?.name !== 'connection_ping' || !calls[0].id || JSON.parse(calls[0].function.arguments)?.token !== 'rack-test') {
-        return { chat: true, toolRoundTrip: false, message: '模型已响应，但测试工具调用格式不符合约定。' };
+        return { chat: true, toolRoundTrip: false, message: 'The model responded, but the test tool call did not match the expected format.' };
       }
       const second = await connection.provider.complete({ messages: [...messages, message,
         { role: 'tool', tool_call_id: calls[0].id, content: '{"ok":true,"token":"rack-test"}' }], tools, signal, modelOptions: { max_tokens: 256 } });
       const final = second.choices?.[0]?.message;
-      if (!final?.content || final.tool_calls?.length) return { chat: true, toolRoundTrip: false, message: '工具调用已产生，但未完成最终回答；需要进一步检查模型兼容性。' };
-      return { chat: true, toolRoundTrip: true, message: '模型响应和工具调用往返测试通过。可以在 Ask about Rack 中使用。' };
+      if (!final?.content || final.tool_calls?.length) return { chat: true, toolRoundTrip: false, message: 'The model called the tool but did not complete a final answer. Check model compatibility.' };
+      return { chat: true, toolRoundTrip: true, message: 'Model response and tool-call round trip passed. You can use Ask about Rack.' };
     } catch (error) {
       if (error instanceof ApiError) throw error;
       // Provider body and free-form error text can contain credentials. Never echo either.
-      throw fail('ASSISTANT_CONNECTION_TEST_FAILED', '连接测试失败，请检查地址、Key、模型 ID、网络或服务商额度。', 502);
+      throw fail('ASSISTANT_CONNECTION_TEST_FAILED', 'Connection test failed. Check the endpoint, key, model ID, network and provider quota.', 502);
     } finally {
       connection?.release();
       testing.set(id, { pending: false, at: now() });

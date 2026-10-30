@@ -164,7 +164,7 @@ export function RoomFloorplan({
       <div className="rack-heading">
         <div>
           <h3>{room.name}</h3>
-          <p className="rack-muted">{layoutLabel ?? (onMove ? 'Layout editor' : 'Saved layout')} · Projected grid metres · 自动适配点阵视图</p>
+          <p className="rack-muted">{layoutLabel ?? (onMove ? 'Layout editor' : 'Saved layout')} · Projected grid metres · Auto-fit dot-grid view</p>
         </div>
         <div className="rack-actions" aria-label="Floorplan controls">
           <button onClick={toggleExpanded}>{expanded ? 'Exit expanded map' : 'Expand map'}</button>
@@ -383,7 +383,7 @@ export function RoomFloorplan({
       <p className="rack-muted">
         Dashed blue: front maintenance · Dashed amber: rear maintenance · Shaded blocks: planning obstacles
       </p>
-      <p className="rack-muted">点阵仅辅助阅读，不代表物理网格 · Fit room 查看全房 · Fit racks 自动适配设备区 · 0 回到全房 · Esc 退出展开视图</p>
+      <p className="rack-muted">Dots are a visual guide, not a physical grid · Fit room: full room · Fit racks: equipment area · 0: full room · Esc: exit expanded view</p>
       <dl className="rack-floor-stats">
         <div>
           <dt>X extent</dt>

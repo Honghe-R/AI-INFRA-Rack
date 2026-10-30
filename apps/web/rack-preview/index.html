@@ -1,38 +1,38 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Rack 布局预览 · AI INFRA</title>
+  <title>Rack Layout Preview · AI INFRA</title>
   <link rel="stylesheet" href="/preview.css">
   <script type="module" src="/preview.js"></script>
 </head>
 <body>
   <aside class="sidebar">
     <div class="brand"><span class="brand-mark">R</span><div>AI INFRA<small>Rack planning</small></div></div>
-    <div class="nav-caption">空间规则演示 <span>06</span></div>
-    <nav id="scenarios" aria-label="演示场景"></nav>
-    <div class="sidebar-note"><span class="live-dot"></span> 本地离线预览<p>使用合成机房与机柜数据。<br>无需 Docker 或数据库。</p></div>
+    <div class="nav-caption">Spatial rule examples <span>06</span></div>
+    <nav id="scenarios" aria-label="Example scenarios"></nav>
+    <div class="sidebar-note"><span class="live-dot"></span> Local offline preview<p>Synthetic room and rack data.<br>No Docker or database required.</p></div>
   </aside>
   <main>
-    <header class="topbar"><div><span class="eyebrow">RACK / PREVIEW</span><h1>机柜布局预览</h1></div><span class="demo-badge">合成数据 · 不保存方案</span></header>
+    <header class="topbar"><div><span class="eyebrow">RACK / PREVIEW</span><h1>Rack Layout Preview</h1></div><span class="demo-badge">Synthetic data · Plans are not saved</span></header>
     <div id="load-error" class="load-error" role="alert" hidden></div>
-    <section class="case-header" aria-labelledby="case-title"><div><h2 id="case-title">正在加载…</h2><p id="case-description">读取已实现规则的计算结果</p></div><span id="status" role="status"></span></section>
-    <section id="metrics" class="metrics" aria-label="检查汇总"></section>
+    <section class="case-header" aria-labelledby="case-title"><div><h2 id="case-title">Loading…</h2><p id="case-description">Loading results from implemented checks</p></div><span id="status" role="status"></span></section>
+    <section id="metrics" class="metrics" aria-label="Check summary"></section>
     <div class="workspace">
-      <section class="canvas-panel" aria-label="机房俯视图">
-        <div class="panel-heading"><div><h3>机房平面</h3><span>10 × 8 m · 局部米制坐标</span></div><span class="scale-label">每格 1 m</span></div>
-        <div class="canvas-wrap"><svg id="floorplan" role="group" aria-label="可点击机柜的机房平面图" viewBox="-1 -0.9 12 10"></svg></div>
-        <div class="legend"><span><i class="normal"></i>机柜</span><span><i class="issue"></i>存在问题</span><span><i class="obstacle"></i>障碍区</span><span><i class="overlap"></i>重叠区域</span><span class="legend-hint">点击机柜或诊断以定位</span></div>
+      <section class="canvas-panel" aria-label="Room top view">
+        <div class="panel-heading"><div><h3>Room floorplan</h3><span>10 × 8 m · Local metric coordinates</span></div><span class="scale-label">1 m per grid square</span></div>
+        <div class="canvas-wrap"><svg id="floorplan" role="group" aria-label="Room floorplan with selectable racks" viewBox="-1 -0.9 12 10"></svg></div>
+        <div class="legend"><span><i class="normal"></i>Rack</span><span><i class="issue"></i>Issues found</span><span><i class="obstacle"></i>Obstacle</span><span><i class="overlap"></i>Overlap</span><span class="legend-hint">Select a rack or diagnostic to locate it</span></div>
       </section>
       <aside class="inspector">
-        <section class="detail-panel"><div class="panel-heading"><h3>机柜详情</h3><span id="selection-count"></span></div><div id="rack-detail"></div><div id="rack-list" class="rack-list" aria-label="机柜列表"></div></section>
-        <section class="diagnostic-panel"><div class="panel-heading"><h3>诊断结果</h3><span id="issue-count"></span></div><div id="diagnostics" aria-live="polite"></div></section>
+        <section class="detail-panel"><div class="panel-heading"><h3>Rack details</h3><span id="selection-count"></span></div><div id="rack-detail"></div><div id="rack-list" class="rack-list" aria-label="Rack inventory"></div></section>
+        <section class="diagnostic-panel"><div class="panel-heading"><h3>Diagnostics</h3><span id="issue-count"></span></div><div id="diagnostics" aria-live="polite"></div></section>
       </aside>
     </div>
-    <section class="scope-panel"><div><h3>当前检查范围</h3><div id="rule-checks" class="rule-checks"></div></div><p>尚未检查：维护净距、通道、设备与容量、来源新鲜度、真实方案绑定和权限。<br>本页仅展示离线样例，不代表完整方案通过，也不会保存任何修改。</p></section>
-    <details class="raw-report"><summary>查看原始诊断数据</summary><pre id="raw-json"></pre></details>
-    <footer>AI INFRA Rack · 课程项目开发预览 <span>结果来自同一套 Rack 领域规则</span></footer>
+    <section class="scope-panel"><div><h3>Check coverage</h3><div id="rule-checks" class="rule-checks"></div></div><p>Unchecked: maintenance clearances, aisles, equipment and capacity, source freshness, saved-plan binding and permissions.<br>Offline examples only. These results do not certify a complete plan and no changes are saved.</p></section>
+    <details class="raw-report"><summary>View raw diagnostic data</summary><pre id="raw-json"></pre></details>
+    <footer>AI INFRA Rack · Course project development preview <span>Results use the shared Rack domain rules</span></footer>
   </main>
 </body>
 </html>

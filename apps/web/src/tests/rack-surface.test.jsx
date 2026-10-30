@@ -14,14 +14,14 @@ test('plan management separates recovery and blocks writes with a draft or witho
   const plan={planId:'plan',name:'Example',placements:[]};
   assert.equal(renderToStaticMarkup(<RackPlanActions plan={plan} canWrite={false}/>),'');
   const active=renderToStaticMarkup(<RackPlanActions plan={plan} canWrite blocked/>);
-  assert.match(active,/disabled=""[^>]*>删除方案/);
-  assert.match(active,/先保存或放弃/);
+  assert.match(active,/disabled=""[^>]*>Delete plan/);
+  assert.match(active,/Save or discard/);
   const trash=renderToStaticMarkup(<RackPlanActions plan={{...plan,deletedAt:'today'}} canWrite/>);
-  assert.match(trash,/恢复方案/); assert.doesNotMatch(trash,/删除方案|重命名方案/);
+  assert.match(trash,/Restore plan/); assert.doesNotMatch(trash,/Delete plan|Rename plan/);
   const retry=renderToStaticMarkup(<RackPlanActions plan={plan} canWrite attempt={{operation:'rename',body:{name:'Exact retained name'}}}/>);
   const input=retry.match(/<input[^>]*>/)?.[0]??'';
   assert.match(input,/value="Exact retained name"/); assert.match(input,/disabled=""/);
-  assert.match(retry,/重试原操作/);
+  assert.match(retry,/Retry original operation/);
 });
 
 test('Rack creation binds only an actual HALL in the exact current source', () => {

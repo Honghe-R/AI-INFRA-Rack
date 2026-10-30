@@ -35,9 +35,9 @@ export function dragPosition(start, pointer, step) {
 
 export function deviceKind(device) {
   const id=device.catalogRef?.modelId;
-  if (id==='demo-gpu-4u') return ['GPU 服务器','gpu'];
-  if (id==='demo-compute-2u') return ['计算服务器','server'];
-  if (id==='demo-tor-1u') return ['ToR 交换机','switch'];
-  if (id==='demo-optical-2u') return ['光交换机','switch'];
-  return ['设备','other'];
+  if (id==='demo-gpu-4u') return ['GPU server','gpu'];
+  if (id==='demo-compute-2u') return ['Compute server','server'];
+  if (id==='demo-tor-1u') return ['ToR switch','switch'];
+  if (id==='demo-optical-2u') return ['Optical switch','switch'];
+  return ['Equipment','other'];
 }

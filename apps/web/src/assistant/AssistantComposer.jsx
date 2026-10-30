@@ -444,8 +444,8 @@ export function AssistantComposer({
 
         {connectionClient ? <AssistantConnection client={connectionClient} forceSetup={!connectionPending && provider?.configured === false}
           onChanged={onConnectionChange} disabled={streaming} /> : null}
-        {connectionPending ? <p className="assistant__notices" role="status">正在读取模型连接…</p> : null}
-        {connectionError ? <p className="assistant__notices" role="alert">{connectionError} <button type="button" onClick={onConnectionChange}>重试连接信息</button></p> : null}
+        {connectionPending ? <p className="assistant__notices" role="status">Loading model connection…</p> : null}
+        {connectionError ? <p className="assistant__notices" role="alert">{connectionError} <button type="button" onClick={onConnectionChange}>Reload connection info</button></p> : null}
 
         <AssistantTranscript
           turns={turns}
@@ -587,7 +587,7 @@ export function AssistantComposer({
                 type="button"
                 className="assistant__send"
                 disabled={!sendable}
-                title={setupBlocked ? '请先完成模型连接配置' : sendable ? undefined : 'Enter a message or attach a file to send'}
+                title={setupBlocked ? 'Set up a model connection first' : sendable ? undefined : 'Enter a message or attach a file to send'}
                 onClick={() => onSend()}
               >
                 Send

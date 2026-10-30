@@ -48,9 +48,9 @@ function RackWorkspace({ client, context, routeState = {}, onRouteChange, onDirt
 
   useEffect(() => {
     if (!routeState.rackCommand) return;
-    const reason = routeState.rackCommand.planId !== selectedId ? '方案选择已改变，请重新选择操作。' :
-      detail.data?.deletedAt ? '此方案已删除，请先到 Plans 恢复。' :
-      !facilityPending && !canReadFacility ? '需要 Facility 读取权限才能打开此操作。' : null;
+    const reason = routeState.rackCommand.planId !== selectedId ? 'The selected plan has changed. Choose the action again.' :
+      detail.data?.deletedAt ? 'This plan was deleted. Restore it in Plans first.' :
+      !facilityPending && !canReadFacility ? 'Facility read access is required for this action.' : null;
     if (reason) { onRouteChange({rackCommand:null}); setNotice(reason); }
   }, [routeState.rackCommand, selectedId, detail.data?.deletedAt, facilityPending, canReadFacility, onRouteChange]);
 
@@ -128,7 +128,7 @@ function RackWorkspace({ client, context, routeState = {}, onRouteChange, onDirt
       setDeleted(false);
       onRouteChange({ rackDraft: null, rackPlanId: result.data.planId, functionId:'layout' });
       onDirtyChange(false);
-      setNotice(result.meta?.replayed ? 'The saved plan was recovered. No duplicate was created.' : '方案已创建。下一步：输入设备数量与约束，生成自动设计候选；也可以手工编辑。');
+      setNotice(result.meta?.replayed ? 'The saved plan was recovered. No duplicate was created.' : 'Plan created. Next, enter equipment quantities and constraints to generate design candidates, or edit the layout manually.');
       reload();
     } catch (error) {
       if (signal.aborted) return;
@@ -169,7 +169,7 @@ function RackWorkspace({ client, context, routeState = {}, onRouteChange, onDirt
       {list.error && <p role="alert">{rackError(list.error)}</p>}
     </div>}
     {notice && <p role="status" className="rack-notice">{notice}</p>}
-    {!draft&&selectedId&&!detail.data?.deletedAt&&<nav className="rack-journey" aria-label="方案操作步骤">{[['layout','① 自动设计 / 布置'],['equipment','② 设备上架'],['constraints','③ 空间约束'],['capacity','④ 容量预算'],['validate','⑤ 检查结果'],['plans','方案管理']].map(([id,label])=>
+    {!draft&&selectedId&&!detail.data?.deletedAt&&<nav className="rack-journey" aria-label="Plan workflow">{[['layout','① Auto design / Layout'],['equipment','② Equipment allocation'],['constraints','③ Space rules'],['capacity','④ Capacity budgets'],['validate','⑤ Check results'],['plans','Plan management']].map(([id,label])=>
       <button key={id} aria-current={section.functionId===id?'step':undefined} onClick={()=>navigate(id)}>{label}</button>)}</nav>}
     {draft && <form className="rack-card rack-create" onSubmit={submit} aria-label="Create empty Rack plan">
       <h2>Create an empty plan</h2><p>Bind a saved plan to one HALL. Supported room geometry is captured as a fixed input; racks can be added after creation.</p>
@@ -201,17 +201,17 @@ function RackWorkspace({ client, context, routeState = {}, onRouteChange, onDirt
       </div>
     </form>}
     <div className={section.functionId === 'plans' ? 'rack-columns' : 'rack-section-content'}>
-      <section hidden={section.functionId !== 'plans'} className="rack-card" aria-label="Saved Rack plans"><h2>{deleted?'已删除方案':'Saved plans'}</h2>
-        <label><input type="checkbox" checked={deleted} disabled={Boolean(draft||editDraft||planAttempt)} onChange={e=>{setDeleted(e.target.checked);setCursors([null]);onRouteChange({rackPlanId:null});}}/>查看已删除方案</label>
+      <section hidden={section.functionId !== 'plans'} className="rack-card" aria-label="Saved Rack plans"><h2>{deleted?'Deleted plans':'Saved plans'}</h2>
+        <label><input type="checkbox" checked={deleted} disabled={Boolean(draft||editDraft||planAttempt)} onChange={e=>{setDeleted(e.target.checked);setCursors([null]);onRouteChange({rackPlanId:null});}}/>Show deleted plans</label>
         <p className="rack-muted">Newest first · Up to 20 per page</p>
         {list.pending ? <p role="status">Loading plans…</p> : list.error ? <div role="alert">
           <p className="rack-error">{rackError(list.error)}</p><button onClick={reload}>Retry list</button></div>
-          : !list.data?.items?.length ? <p className="rack-empty">{deleted?'暂无已删除方案。':'No saved plans in this scope. Create an empty plan to start.'}</p>
+          : !list.data?.items?.length ? <p className="rack-empty">{deleted?'No deleted plans.':'No saved plans in this scope. Create an empty plan to start.'}</p>
             : <ul className="rack-plan-list">{list.data.items.map(plan => <li key={plan.planId}>
               <button className={selectedId === plan.planId ? 'rack-plan-item is-selected' : 'rack-plan-item'}
                 aria-pressed={selectedId === plan.planId} disabled={Boolean(draft || editDraft || planAttempt)} onClick={() => { setNotice(null); onRouteChange({ rackPlanId: plan.planId }); }}>
                 <strong>{plan.name}</strong><span>{roomName(plan.facilityInput.containerId)}</span>
-                <span>{plan.deletedAt?'已删除':'DRAFT'} · v{plan.version} · <SourceStatus status={plan.facilityInputStatus?.status} /></span>
+                <span>{plan.deletedAt?'Deleted':'DRAFT'} · v{plan.version} · <SourceStatus status={plan.facilityInputStatus?.status} /></span>
               </button></li>)}</ul>}
         <nav className="rack-actions" aria-label="Rack plan pages">
           <button disabled={list.pending || cursors.length === 1} onClick={() => setCursors(value => value.slice(0, -1))}>Previous</button>
@@ -223,13 +223,13 @@ function RackWorkspace({ client, context, routeState = {}, onRouteChange, onDirt
         {detail.pending ? <p role="status">Reading saved plan…</p> : detail.error ? <div role="alert">
           <p className="rack-error">{rackError(detail.error)}</p><button onClick={() => setRefresh(value => value + 1)}>Retry detail</button></div>
           : detail.data ? <>
-            <div className="rack-heading"><h2>{detail.data.name}</h2><span className="rack-badge">{detail.data.deletedAt?'已删除':detail.data.state} · v{detail.data.version}</span></div>
+            <div className="rack-heading"><h2>{detail.data.name}</h2><span className="rack-badge">{detail.data.deletedAt?'Deleted':detail.data.state} · v{detail.data.version}</span></div>
             {section.functionId === 'plans' && !draft && <><RackPlanActions key={detail.data.planId} client={client} plan={detail.data} canWrite={canWrite}
               blocked={Boolean(draft||editDraft)} attempt={planAttempt} onAttempt={value=>onRouteChange({rackPlanAttempt:value})}
               onManaged={(value,operation)=>{onRouteChange({rackPlanAttempt:null,rackPlanId:operation==='delete'?null:value.planId,functionId:'plans'});
-                setDeleted(false);setNotice(operation==='delete'?'方案已移入已删除方案，可以恢复。':operation==='restore'?'方案已恢复，布局和设备已保留。':'方案名称已更新。');reload();}}/>
+                setDeleted(false);setNotice(operation==='delete'?'Plan moved to Deleted plans. You can restore it.':operation==='restore'?'Plan restored with its layout and equipment.':'Plan name updated.');reload();}}/>
               {!detail.data.deletedAt&&<div className="rack-actions"><button onClick={() => navigate('layout')}>Open layout</button><button onClick={() => navigate('overview')}>Plan overview</button></div>}</>}
-            {detail.data.deletedAt&&<p className="rack-warning">此方案已删除。到方案管理中恢复后，才能打开布局或继续编辑。</p>}
+            {detail.data.deletedAt&&<p className="rack-warning">This plan was deleted. Restore it in Plan management before opening or editing the layout.</p>}
             {!draft && !detail.data.deletedAt && <div hidden={section.functionId === 'plans'}><RackEditor key={detail.data.planId} client={client} plan={detail.data} context={context}
               section={section.functionId} onNavigate={navigate}
               commandRequest={routeState.rackCommand} onCommandConsumed={() => onRouteChange({ rackCommand: null })}
