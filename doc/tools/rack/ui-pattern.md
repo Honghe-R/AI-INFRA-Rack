@@ -1,27 +1,93 @@
-# UI pattern
+# Rack Planner UI Pattern
 
-## 主流程
+## Workbench Layout
 
-选择项目/场景/HALL → 新建 Plan 并捕获可用边界 → 输入设备型号版本和数量、机柜型号/数量上限、单柜资源上限、前后维护净距等 → 生成候选 → 比较柜数/紧凑度/未安排项及检查范围 → 复核转共享草稿 → 可拖拽微调 → Save layout。
+Rack uses the shared shell: project/scenario/Facility revision context, Rack sidebar, toolbar, central workbench, findings panels and **Ask about Rack**. Current plan, dirty state and read-only status must be understandable without interpreting colors.
 
-新用户默认可走自动规划；保留手工编辑、已有柜重排、未分配设备上架入口。首版需求规划只接受空的已保存方案，不能暗中清空已有布局。存在共享草稿时先保存或放弃，不允许跨页互相覆盖。
+The workbench contains title/counts, plan commands, view controls, canvas/table, rack inventory and one inspector. The canvas is a metre-scaled dot grid. Dots are a visual guide, not validated tile sizes or aisle geometry. Fit and expanded views change the camera only; the actual Polygon and holes remain intact.
 
-## 可视化
+## Route States and Sidebar Functions
 
-点阵背景与 Network/Power 一致，默认自动适配设备区；全房按钮查看真实房间边界。对象位置采用局部米制，图纸必须保留实际 Polygon 和孔洞，不能把面积等效矩形当真实机房。主工作台不要求用户手动缩放；候选与约束视图统一提供自动适配。
+| Section | Purpose | Content |
+| --- | --- | --- |
+| Overview | Understand totals and next steps | Room/context, coverage and inventory summary |
+| Plans | Create/select/manage lifecycle | HALL/name, pagination, rename, delete, deleted list, restore |
+| Inputs & impact | Inspect fixed inputs and changes | Snapshot/source identities and stale/unavailable reasons |
+| Rack layout | Main physical workspace | Manual editing, empty-plan demand form and save |
+| Space rules | Declare exclusions/clearance | Rectangles, source statement and coverage |
+| Devices & U slots | Manage inventory/installations | Catalog versions, custom assumptions and allocation |
+| Capacity | Inspect resources | U, kg, kW and room budgets |
+| Layout options | Compare algorithm candidates | Relocation and demand-driven previews |
+| Checks | Explain local findings | Diagnostics, coverage and unchecked rules |
 
-点击柜：身份、尺寸、位置/旋转、锁定、U 位立面、资源负载；点击柜内服务器/交换机：目录版本、U 范围、重量/功率/冷却及来源。窄屏详情下移。画布、清单和诊断通过稳定 ID 联动。
+Project/scenario/revision changes invalidate incompatible selections. Deleted plans have inspectable metadata but require restoration before layout/planning access. A name-prefix group is a browsing convenience, not a physical zone, electrical domain or network topology.
 
-显示保存版本、草稿状态、Facility 新鲜度、假设来源和未知值。未知不能显示成零/无限，局部无冲突不能显示成工程批准。候选生成不写入数据库，确认转草稿与保存是两个明确动作。
+## Primary User Journey
 
-## 删除与恢复
+1. Enter a project and Rack under an available Facility revision.
+2. Create a named plan for a real HALL. Explain missing permissions or unsupported geometry.
+3. Choose quantity-based Auto design for an empty plan, or add objects incrementally.
+4. Enter pinned equipment quantities, rack limits, clearance, spacing and assumption source. Save exclusion edits before generating from them.
+5. Compare completeness, rack count, envelope area, unplaced reasons and local reports. Limited search failure is not proof of infeasibility.
+6. Inspect racks/devices, acknowledge assumptions and stage one candidate.
+7. Adjust the shared draft if needed, resolve errors, Save layout and reload.
+8. Rename/delete in Plans. Confirm deletion; use Show deleted plans → Restore plan to recover the same content and identity.
 
-Plan 重命名、软删除、恢复共用版本/幂等保护；活动列表与已删除列表分开。柜内有设备或已保存锁定柜不能直接删除。机柜/设备/禁放区删除先进入草稿，Discard 可撤销未保存变化。没有永久删除和单对象已保存回收站。
+## UI Editing Tool Palette
 
-## Plan 内命令与多视图（2026-10-29，第二十三轮）
+### Toolbar and Dialogs
 
-Plans 继续负责新建、重命名、软删除和恢复。选定 Plan 后，shell 顶部命令行提供 Add rack、Add equipment、Add exclusion zone、Constraints、Capacity limits、Auto design、Check results；未选择方案时解释阻止原因，不创建隐式方案。
+Commands include Add rack, Add equipment, Add exclusion zone and links to design/space/capacity/options/checks. Commands explain disabled reasons. Writes depend on `rack.write` and compatible plan/source state; the backend remains authoritative.
 
-三种 Add 打开真正的模态表单，取消不产生草稿。确认时创建或复用共享草稿；设备支持精确目录版本与数量，先进入待上架库存，再走现有自动上架/手动 U 位分配。添加机柜和禁放区跳到对应页面并选中新增对象。约束/容量命令进入对应编辑页；自动设计进入候选页，已有共享草稿时阻止覆盖。Check results 是当前草稿检查，不伪装正式 Validation Run。权限、快照、源新鲜度、方案版本和未决保存均检查。
+Add dialogs contribute to the shared draft. Equipment is version-pinned and initially unassigned. Canceling before apply does not change the draft. An immutable in-flight save attempt blocks conflicting editing until resolved.
 
-Overview 与 Layout 共享工作台。工作台切换平面布局、机柜立面、容量表，继续共用一个 Inspector；切换样式不改物理坐标、设备归属或已保存内容。立面为 U 位示意，容量表使用当前请求体对应的后端报告，未知需求/上限明确表达。真实平面仍保留 Polygon、孔洞、米制和拖动吸附。
+### Canvas and Inspector
+
+- Select a rack for model, position, orientation, capacities and installed devices.
+- Select an elevation/list device for host, U interval, resources and provenance.
+- Drag unlocked racks in edit mode; snap uses metres. Arrow-key nudge and rotation affect the selected rack.
+- A previously locked rack must be unlocked and saved before movement/model change/deletion. Auto allocation excludes locked target racks.
+- An occupied rack cannot be removed until equipment and limit references are handled. Never silently orphan inventory.
+- Findings focus associated objects. Use textual status and lists alongside colors.
+
+### View and Metric Semantics
+
+Floor layout, front elevations and capacity table share IDs and selection. U1 is at the bottom. Switching view cannot move objects. Unknown and Not checked are distinct from normal load. The rack-body envelope metric is an axis-aligned area, not certified freed usable floor space. Power/U coloring describes local checks, not circuit or airflow validation.
+
+## Shared Draft and Editing Safety
+
+One plan has one draft across sections. Manual layout, inventory, budgets and staged options compose into that draft. Plan switches/lifecycle changes while dirty require Save/Discard guidance. Browser reload may lose unsaved state; there is no persistent draft history.
+
+Generation reads saved data with a base version and snapshot. Preview is not a write. Staging requires reviewed coverage, compatible identity/version and a stageable option without a competing draft. Save rechecks source, permissions, locks, geometry and equipment. Version conflict retains the draft for review; it never silently replaces another user's edit.
+
+An uncertain request uses Retry original operation with the exact original body/version/key. Do not convert an uncertain write into a new request or mutate its retained payload.
+
+## Assistant Interaction
+
+Ask about Rack is the chat entry. First use shows personal connection setup; saved configuration is reused. The panel supports edit, key retention/replacement, synthetic test and deletion, and explains external model data transmission. Saving configuration does not test or charge a model request.
+
+Tools inspect saved data. Dirty-state hints do not contain the draft itself. Capacity answers must not imply inclusion of unsaved changes. Chat relocation results are summaries; regenerate in Layout options to inspect/stage/save. No Rack-specific model UI actions or writes are registered.
+
+## State Handling
+
+| State | Required response |
+| --- | --- |
+| No HALL/plan | Explain prerequisites and the creation path |
+| Unsupported boundary | Show adapter reason; do not guess a room from area |
+| Empty layout | Offer Auto design/Add; never label validated |
+| Changed Facility source | Preserve snapshot for inspection; block layout mutation/planning |
+| Version conflict | Keep draft and require saved-data review |
+| Rule conflict | Show code, objects, units and correction guidance |
+| Unknown resources | Preserve unknowns and assumption provenance |
+| Deleted plan | Restore before layout access |
+| Model failure | Report actual error and keep ordinary planning usable |
+
+## Accessibility and Responsive Requirements
+
+Built-in labels/examples use English. Values keep m/kg/kW/U units and distinguish zero from unknown. Controls, dialogs and selectable SVG objects require accessible labels; view changes must preserve understandable selection. Dialog focus returns to the invoking control. Lists/tables provide alternatives to canvas-only interactions.
+
+Keyboard, focus, narrow-screen and assistive-technology behavior require manual acceptance beyond static render tests. Crowding in narrow canvas/inspector layouts remains an audit item; this document does not certify accessibility compliance.
+
+## Acceptance Criteria
+
+The complete creation-to-restoration chain must work without a hidden mutation channel. Read-only content remains useful without write controls. Source/version/deletion blockers match backend behavior. View changes preserve physical coordinates. Verification reports distinguish browser interaction, static rendering and HTTP-only checks.

@@ -1,27 +1,113 @@
 # Rack Planner
 
-本工具负责一个 HALL 内的机柜摆放、设备与连续 U 位分配、局部空间和容量检查。课程 Option 2.2 的核心是可解释的规划过程，而不只是展示几台设备。
+The Rack Planner turns a Facility HALL boundary and equipment requirements into reviewable rack layouts and equipment assignments. It implements the course Option 2.2: placement, capacity, equipment allocation, physical constraints, optimization and dependencies. The result must explain why a candidate is acceptable, which constraints were checked and which inputs remain assumptions.
 
-## 所有权与边界
+This bundle follows the structure of the [Site and Facility Editor](../site-and-facility/Overview.md), adapted to Rack ownership. **Implementation baseline: 2026-10-30.** Implemented describes inspected source, not production certification. Planned describes future work, not an available endpoint. MUST/SHOULD requirements apply to their stated scope.
 
-Rack 拥有 Plan、机柜实例、方案内设备库存/安装关系、规划禁放区和假设预算。Facility 拥有机房 Polygon、孔洞及其版本；Rack 读取并固定副本，不修改 Facility。Catalog 提供版本化规格；目前接入的是本地合成只读目录。Network 拥有网络连接，Power 拥有供电路径/回路，不能把 Rack 的 kW 检查称作完成这两个工具。
+## Ownership Boundaries
 
-## 规范索引
+| Concern | Rack owns | Referenced owner / boundary |
+| --- | --- | --- |
+| Context | Independent versioned plan for one HALL | Facility owns project/scenario/revision, HALL identity and authoritative Polygon |
+| Layout | Rack identities, models, positions, orientations and locks | No edits to Facility geometry |
+| Equipment | Plan-local devices, inventory and contiguous U assignments | Not a shared asset registry or Network endpoint database |
+| Space rules | Assumed rectangular exclusions and front/rear maintenance clearance | No inferred surveyed obstacles, corridors or evacuation paths |
+| Capacity | Per-rack limits and optional plan-local room assumptions | No authoritative Facility allocation, electrical or HVAC design |
+| Planning | Packing, bounded layout search, relocation and automatic allocation | Network graph layout is not a physical placement algorithm |
+| Assistance | Rack projection of existing read/computation services | Shared Assistant host owns connections, sessions and orchestration |
+| Governance | Versions, idempotent writes, soft deletion/restoration | No formal Rack Validation Run, publication or approvals yet |
 
-1. [UI 与用户流程](ui-pattern.md)
-2. [跨工具输入输出](interchange-contract.md)
-3. [实体与不变量](entity-model.md)
-4. [存储与事务](storage-shape.md)
-5. [HTTP 契约](backend-api-contracts.md)
-6. [业务操作面与 Assistant](tool-surface.md)
-7. [检查和验收](verification-requirements.md)
-8. [需求驱动规划算法与开发顺序](demand-planning.md)
-9. [老师平台只读参考记录](reference-observations.md)
+The inherited blueprint also assigns room/row concerns to Floorplan. This course implementation owns plan-local rack placements inside a Facility HALL. A platform-wide canonical Floorplan/Rack ownership contract remains an [open decision](decisions.md).
 
-## 开发基线（2026-10-29）
+## Core and Peripheral Design Targets
 
-已实现：固定机房快照、点阵工作台、拖拽/详情、手工布置、已有柜重排、待上架分配、局部规则、共享草稿和原子保存、方案软删除/恢复、RBAC、Assistant 只读/候选工具。
+### Core Design Targets
 
-本轮增量：空方案按目录型号数量生成机柜/U 位/布局候选，经过原规则复核后沿用共享草稿保存；准确实现状态和验证结果见根目录 PROGRESS.md。设计文档定义验收目标，不是通过证明。
+| Target | Implemented result | Evidence boundary |
+| --- | --- | --- |
+| Physical input | Fixed supported Polygon with holes in local metres | Extent/area never substitute for the actual boundary |
+| Arrangement | Dot-grid canvas, drag/nudge/rotate, locks, inspectors, elevations and capacity table | Shared objects and coordinates across views |
+| Equipment mapping | Inventory versus installed devices, inclusive U intervals | Devices belong to racks within one plan |
+| Constraints | Polygon, overlap, zones, maintenance bands, U and resource checks | Unknowns remain unknown; coverage is explicit |
+| Automatic design | Empty-plan quantities and constraints produce two candidates | First Fit and dominant-resource Best Fit plus real Polygon checks |
+| Improvement | Existing-rack relocation and unassigned allocation | Preview, explicit stage and ordinary save |
+| Persistence | Atomic aggregate save and source/version/snapshot guards | Client preview cannot authorize a write |
 
-待实现：连续访问/疏散通道、正式版本绑定 Validation Run、候选持久化历史、跨方案权威预算预留、厂商完整适配、网络/供电/热工程验证。大模型配置按用户决定暂缓，不能声称自然语言端到端已验收。
+### Peripheral Design Targets
+
+| Target | Current behavior | Remaining work |
+| --- | --- | --- |
+| Traceability | Source/model versions, algorithm IDs, fingerprints, commands | Durable candidate history and reports |
+| Collaboration | Authentication, RBAC, isolation, optimistic concurrency | Presence and draft merging |
+| Assistant | Five read/computation tools and personal model connection | Demand/allocation projection and real-model acceptance |
+| Recovery | Soft deletion, restore, exact retry | Retention policy and restore drills |
+| Handoff | Documented input/output boundaries | Accepted Network/Power/Thermal/Verify exports |
+
+## Functions
+
+1. Create, select, rename, delete and restore a HALL-bound plan.
+2. Inspect pinned inputs, source freshness and the room boundary.
+3. Specify quantities, limits, exclusions, clearance and assumption sources.
+4. Generate/compare candidates and explain unplaced items.
+5. Edit placement, assign devices, inspect loads and diagnose conflicts.
+6. Stage a reviewed candidate and save the shared draft atomically.
+7. Ask the Assistant about saved inventory, capacity, checks and relocation options.
+
+## Software Architecture
+
+```mermaid
+flowchart LR
+  UI[React Rack workbench] --> HTTP[Rack HTTP routes]
+  Chat[Ask about Rack] --> Host[Shared Assistant host]
+  Host --> Tools[Five Rack read/computation tools]
+  HTTP --> Services[Plan and layout services]
+  Tools --> Services
+  Services --> Domain[Pure rack domain package]
+  Services --> DB[(PostgreSQL / PostGIS)]
+  Services --> Facility[Facility input reads]
+  Host --> Connection[Per-user model connection]
+  Connection --> Model[External model service]
+```
+
+Domain functions normalize values, check equipment and generate deterministic proposals. Services enforce persistence, scope, freshness and authoritative Polygon checks. UI and Assistant consume services; neither accesses the database directly. Not every browser operation has been migrated into the generic named-command registry.
+
+### Implementation Map
+
+| Concern | Source of truth |
+| --- | --- |
+| Domain exports and invariants | [Rack package](../../../packages/rack/src/index.js) |
+| HTTP route/permission matrix | [Rack routes](../../../apps/api/src/routes/rack.js) |
+| Plan lifecycle and source identity | [Plan service](../../../apps/api/src/services/rack-plans.js) |
+| Polygon checks, previews and atomic save | [Layout service](../../../apps/api/src/services/rack-layout.js) |
+| Quantity packing and compact layout | [Demand planner](../../../packages/rack/src/demand-planner.js) |
+| Shared draft and browser composition | [Rack editor](../../../apps/web/src/rack/RackEditor.jsx) |
+| Model-facing tools and guide | [Rack Assistant projection](../../../apps/api/src/services/rack-assistant.js) |
+| Personal connection persistence/security | [Connection service](../../../apps/api/src/services/assistant-connections.js), [endpoint transport](../../../apps/api/src/services/assistant-endpoint.js) |
+| Domain verification | [Rack tests](../../../packages/rack/src/tests) |
+
+## Specification Bundle
+
+| Document | Responsibility |
+| --- | --- |
+| [UI Pattern](ui-pattern.md) | Navigation, canvas, inspector, shared draft and user journey |
+| [Interchange Contract](interchange-contract.md) | Pinned inputs, ownership, output and future handoff |
+| [Entity Model](entity-model.md) | Shapes, relationships, units and invariants |
+| [Storage Shape](storage-shape.md) | Tables, transactions, indexes and recovery |
+| [Backend API Contracts](backend-api-contracts.md) | Actual HTTP routes, examples and errors |
+| [Tool Surface](tool-surface.md) | Operations shared across transports |
+| [Verification Requirements](verification-requirements.md) | Test matrix, gates and evidence |
+| [Constraint Catalog](constraint-catalog.md) | Diagnostics and unchecked scope |
+| [Import Mapping](import-adapters.md) | Current normalized inputs and future file/vendor adapters |
+| [Assistant Integration](assistant-integration.md) | Capabilities, grounding, personal API setup and security |
+| [Non-Functional Requirements](non-functional-requirements.md) | Limits, performance experiments and operational risks |
+| [Decisions and Open Questions](decisions.md) | Implemented choices and unresolved policies |
+| [Demand Planning](demand-planning.md) | Algorithm, objectives, budgets and limitations |
+| [Reference Observations](reference-observations.md) | Historical UI references and evidence boundaries |
+
+## Implementation Status and Acceptance Criteria
+
+Implemented: fixed snapshots, three workbench views, manual editing, relocation, allocation, demand design, local checks, lifecycle and personal Assistant connections. Whole-plan validation remains `NOT_RUN`.
+
+Planned: continuous aisles/evacuation, electrical redundancy, rail/depth compatibility, airflow, floor loading, shared reservations, durable candidates, publication and cross-tool exports. A real provider has not been accepted end to end merely because scripted-provider tests pass.
+
+Acceptance requires create → demand/manual layout → compare → inspect U/layout → stage → save → reload → rename/delete/restore. A stale second browser must be refused. Read-only users must not save. Assistant statements must identify the saved version and evidence limits. See [verification](verification-requirements.md) and the historical [progress log](../../../PROGRESS.md).

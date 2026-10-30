@@ -1,8 +1,10 @@
-# 需求驱动规划 v1：先规范，再按此实现
+# Rack Planner Demand Planning
 
-## 输入与目标
+## Purpose, Scope and Input
 
-只支持空的已保存方案（无柜/设备/单柜限值），已有边界快照且 Facility 未变。保留已保存禁放区和房间预算，允许请求覆盖完整 constraints 和 roomBudget。请求 demand：
+Demand design starts from an empty saved plan: no placements, devices or rack-limit records, with a supported fixed snapshot and unchanged Facility source. Saved exclusions and room budget can exist. The goal is to derive racks, U assignments and a compact physical candidate from equipment quantities, rather than requiring one-by-one placement.
+
+The browser endpoint is POST `/api/v1/projects/:projectId/rack/plans/:planId/layout/design-options`. It uses read permissions and performs no write. The request wraps contract_version, base_version, snapshot_id and the following demand:
 
 ```json
 {
@@ -10,31 +12,79 @@
   "rackModelId":"10000000-0000-4000-8000-000000000001",
   "maxRacks":16,
   "rackLimits":{"maxWeightKg":800,"maxPowerKw":12,"maxCoolingKw":12},
-  "sourceReference":"Course planning assumptions; confirm before engineering use",
+  "sourceReference":"Course planning assumptions; verify before deployment.",
   "gapM":0.2,
-  "constraints":{"obstacleCoverage":"UNKNOWN","source":{"kind":"ASSUMED","reference":"User planning assumptions"},"obstacles":[],"clearance":{"frontM":1,"rearM":0.6}}
+  "constraints":{
+    "obstacleCoverage":"UNKNOWN",
+    "source":{"kind":"ASSUMED","reference":"User planning assumptions"},
+    "obstacles":[],
+    "clearance":{"frontM":1,"rearM":0.6}
+  }
 }
 ```
 
-单柜上限显式输入；目录规格由后端按版本解析，不能客户端随意提供。未知设备需求保留未分配并阻止采用；启用但未知房间预算也阻止采用。未提供预算沿用保存值，未记录预算只做局部规划并显式 INCOMPLETE。
+Groups require unique exact model/version pairs, positive integer quantities and a server-resolvable catalog entry. Rack limits are explicit finite nonnegative assumptions; demand packing caps each by a known model limit when present. Source reference is required. Optional constraints replace the request's planning input; omission retains saved constraints. Optional roomBudget follows the room-budget contract; omission retains the saved budget.
 
-优先满足全部设备，其次减少柜数，再比较机柜包围面积。目标是有限搜索中的可用紧凑候选，不声称全局最优。
+## Objectives and Comparison
 
-## 算法与预算
+Prefer complete equipment allocation, then fewer racks, then a compact rack-body envelope. The two packing strategies are compared, not presented as a proof of optimality. The geometry stage ranks candidate matrix shapes by rack-body envelope area, longest span and deterministic tie-breakers, but returns the first accepted proposal within its bounded translation schedule. It does not exhaustively optimize all feasible translations.
 
-基线：输入顺序 First Fit；启发式：按 U/重量/功率/冷却占单柜比例的最大值降序 Best Fit。各柜从 U1 连续向上装，按同一资源浮点容差判断。使用量不超过显式上限，柜型号已知上限不能被假设放宽。无法放入的设备仍留库存并有原因。
+The displayed envelope is the axis-aligned box around rack bodies. Maintenance bands affect feasibility even though they are excluded from that area metric. A reduced envelope is not an engineering measurement of newly available floor area.
 
-几何阶段枚举紧凑矩阵的列数与0/90°方向，在真实房间包围盒内有限平移。行距保守预留前+后维护带和 gap，柜间横向 gap。每一整体排列经 PostGIS Polygon/孔洞/障碍筛选，随后运行原全布局/设备检查。只找完整矩阵，复杂障碍可能需要手工或后续局部搜索。
+## Stage 1: Deterministic Demand Expansion
 
-形状按界面展示的机柜占地区包围面积、最长跨度排序，维护带仍全部参与可行性检查。gap 是最小间距；0时额外留1微米数值分隔，避免浮点导致名义共边Polygon发生微小重叠及GEOS错误，不放宽检查容差或替代工程净距。整体提案使用GeometryCollection保留独立柜占地，最终仍逐柜完整复核。
+Resolve specifications on the server, expand each requested quantity into plan-local device instances, preserve catalogRef and derive stable IDs from the input fingerprint. Identical pinned input/catalog/algorithm produces identical identities. Every requested device remains represented, including unknown or oversized devices. No browser-supplied replacement specification is accepted under a catalog reference.
 
-最多16需求组、128设备、32柜；每种装箱策略最多256个整体几何提案、每批16个，包含所有允许列数/方向的公平轮询；SQL5秒、请求15秒。固定输入摘要派生稳定 ID；算法无随机种子和 IO。受限搜索无结果表述为 NO_COMPACT_LAYOUT/SEARCH_LIMIT，不能宣称房间装不下。
+## Stage 2: Multi-Resource Packing
 
-## 开发和验收顺序
+| Strategy / algorithm ID | Ordering | Bin choice |
+| --- | --- | --- |
+| Input First Fit / demand-first-fit-v1 | Request group/device order | First existing rack that fits; otherwise create a bin up to maxRacks |
+| Dominant Best Fit / demand-dominant-best-fit-v1 | Descending maximum U/weight/power/cooling capacity fraction; stable tie-break | Fit with the smallest summed normalized resource remainder; otherwise create a bin |
 
-1. 固定本文 schema/状态/边界及8份规范。
-2. 纯领域需求展开/资源装箱/几何提案，测试未知、上限、确定性和不丢设备。
-3. 接只读 design-options 服务、原 PostGIS 检查、普通保存格式及 HTTP 契约测试。
-4. 空方案主入口的数量/限值/净距表单，比较与确认转共享草稿，沿用工作台保存。
-5. 统一辅助预览点阵与自动适配；实际浏览器完整流程验收并记录证据。
-6. 下一轮再做连续通道、正式验证记录和规模实验；不在本轮扩展网络/供电拓扑。
+Each bin has U and three resource limits. Devices occupy contiguous U intervals from U1 upward. Unknown demand is retained as UNKNOWN_DEVICE_DEMAND; individually oversized demand as DEVICE_EXCEEDS_RACK; exhausted rack-count capacity as RACK_COUNT_LIMIT. Floating-point comparisons use the shared resource tolerance, not an engineering safety allowance.
+
+These are greedy heuristics for multidimensional bin packing. They can miss a better packing. They do not balance network cabling, electrical phases, airflow or equipment affinity.
+
+## Stage 3: Bounded Physical Search
+
+Enumerate compact matrices across column counts and 0/90-degree orientation. Rack spacing includes the requested gap; row spacing conservatively reserves front plus rear clearance. Shape proposals are translated within the real boundary extent using centre/corners then an 8×8 fraction schedule, with fair round-robin exploration of shapes.
+
+The extent only proposes positions. A PostGIS adapter tests complete arrangements against actual Polygon/holes/declared obstacles and maintenance bands. Every resulting candidate receives the ordinary full spatial/equipment recheck before stageability is reported.
+
+A zero requested gap retains one micrometre of numerical separation. This avoids nearly coincident footprint overlap/invalid aggregate geometry; it does not waive clearance or relax checker tolerance. Whole arrangements use GeometryCollection to preserve independent footprints instead of an invalid edge-sharing MultiPolygon.
+
+## Search Budgets and Failure Semantics
+
+| Bound | Implemented value |
+| --- | --- |
+| Demand groups | 1–16 |
+| Total devices | 1–128 |
+| Generated racks | 1–32 maximum input |
+| Whole-layout proposals | 256 per packing strategy |
+| Proposal batch | 16 |
+| SQL statement timeout | 5 seconds in the service |
+| Cooperative generation deadline | 15 seconds |
+| Gap | 0–5m |
+
+NO_COMPACT_LAYOUT means no accepted complete matrix was found under the bounded search. It does not prove the room cannot fit the equipment. Existing-rack relocation separately uses NO_GRID_POSITION/SEARCH_LIMIT. A timeout changes no data. Cooperative deadlines are not a production latency SLA and do not imply interruption inside every synchronous function.
+
+Unknown device resources, unplaced equipment, actual spatial/resource conflicts and an explicitly unknown room budget can prevent staging. Missing room budget remains an explicit unchecked/incomplete scope rather than automatically forbidding all local planning. The candidate must retain the reason and original inventory, not discard difficult items to look successful.
+
+## Other Planning Operations
+
+Existing-rack relocation compares row-scan-v1 and largest-first-v1, preserves devices/U assignments and saved locked rack geometry, and uses a configurable 0.1–5m grid. Bounds: 64 movable racks, 2,048 submitted poses per rack, 16,384 per option, batches of 128.
+
+Automatic equipment allocation changes only unassigned devices. It sorts descending height with stable ID ties, scans contiguous U gaps in unlocked racks and checks weight/power/cooling plus optional room budget. Bounds: 128 pending devices, 64 eligible racks, rack height at most 100U. Installed assignments and all rack positions stay unchanged. Unknown/oversized/room-blocked devices remain unassigned with reasons.
+
+## Output, Review and Persistence
+
+The result pins baseVersion/snapshotId/Facility input/fingerprint and contains algorithm IDs, limits, elapsedMs, metrics, unplaced reasons, reports and ordinary save bodies. It is persisted:false with validationState:NOT_RUN. Browser review → acknowledged stage → shared draft → normal save is mandatory. A stale preview must be regenerated/reviewed; canStage is not authorization.
+
+The Assistant currently exposes existing-rack relocation only. Quantity design and equipment allocation are browser/service functions, not model tools.
+
+## Development and Acceptance Sequence
+
+Keep schema/invariants and ownership documented first; then domain normalization/packing/search; then PostGIS service/HTTP guards; then UI comparison/staging/save; then recorded browser acceptance. Future work should prioritize aisle connectivity, formal validation and measured scale before broader optimization claims.
+
+Tests must cover deterministic IDs/ties, exact catalog versions, unknown/zero/boundary resources, every requested device retained, irregular Polygon/holes/exclusions, numerical zero-gap behavior, stale versions, read-only generation and atomic ordinary save. Compare heuristics with a baseline on identical inputs and report counterexamples rather than cherry-picked improvements. See [Verification Requirements](verification-requirements.md).

@@ -1,22 +1,87 @@
-# Verification requirements
+# Rack Planner Verification Requirements
 
-## 已有局部规则
+## Validation Scope and Target Gating
 
-PostGIS：真实 Polygon 覆盖、孔洞接触、柜间内部重叠、禁放区接触、前后维护带越界/占用。柜边接触允许，孔洞和禁放区接触保守阻止；维护带相互可共享，不等于连续通道。
+Verification distinguishes input validity, local spatial/equipment checks, candidate stageability, atomic persistence, Assistant integration and future formal engineering validation. Current state is DRAFT/NOT_RUN. Passing local tests or a green candidate does not create a formal Validation Run or certification.
 
-设备：连续 U 上下界/重叠、重量/功率/冷却、方案内已安装总需求预算、未知需求/限值。库存与已安装分口径。数据 schema、目录固定版本、锁定身份、来源新鲜度、租户/权限/乐观锁/幂等属于独立契约门槛。
+A save gate rejects actual spatial/U/known resource conflicts and state/permission failures. Incomplete assumptions can be saved when structurally valid; they remain explicit. Stageability is operation-specific: demand design/relocation reject unplaced items, while equipment allocation may stage useful partial assignments and retain the remainder as unassigned inventory. Staging never replaces save checks. Source/model assumptions never become verified merely by a successful transaction.
 
-报告必须区分 ISSUES_FOUND / INCOMPLETE / CHECKED_SCOPE_CLEAR / NOT_CHECKED，whole-plan 保持 NOT_RUN。错误阻止保存；无已知错误但信息不完整可保存规划草稿，不能声称安全批准。
+## Required Evidence Levels
 
-## 需求规划验收
+| Level | What it establishes | What it cannot establish |
+| --- | --- | --- |
+| Domain tests | Shapes, math, deterministic algorithms and unknown behavior | Actual PostGIS, HTTP authorization or browser interaction |
+| API/service tests | Schema/route/permission/version behavior with stated fixtures | A real database if fixtures are mocked/skipped |
+| Real DB/HTTP | Transaction rollback, geometry, project isolation and persistence | Production RLS role safety or full visual usability |
+| Static Web render/state tests | Controls, labels, guards and state transitions | Drag/focus/layout quality in a browser |
+| Browser journey | Real navigation, dialog/canvas/inspector and save/reload | Vendor accuracy or scale SLA |
+| Scripted model integration | Orchestrator/tool/permission mechanics | Real provider quality, cost or tools compatibility |
+| Real provider acceptance | Chosen service behavior on defined scenarios | General model correctness or engineering certification |
 
-1. 给定型号数量，所有设备身份保留，已分配有合法连续 U，未安排逐条说明；不得静默丢设备。
-2. 三维容量、房间预算、零/未知、超大设备、柜数上限均有测试；输入不被修改、同输入确定性、基线与启发式可比较。
-3. 图形候选通过原权威完整检查，包含非矩形/孔洞/障碍拒绝；搜索预算耗尽不能宣称数学无解。
-4. 真实 DB/HTTP 覆盖无写入副作用、旧版本/源变化/非空/越权、普通保存后重读一致；错误事务不能部分写入。
-5. Web 走新建→输入→比较→确认→共享草稿→保存→重读，及删除/恢复；浏览器检查点阵视图、对象详情、禁用与错误信息。
-6. 保留可复现命令与日志，记录测试范围、跳过和失败；局部通过不代表全仓通过。
+Every report must state command, environment, pass/fail/skip count, inspected version and limitations. Historical logs are not automatically revalidated by editing documentation.
 
-## 后续正式验证
+## Geometry, Equipment and Coverage Matrix
 
-连续访问/疏散连通、楼板载荷、供电冗余/PUE、气流热仿真、厂商深度/导轨兼容、跨方案权威容量和版本化 Validation Run 均未完成。性能分析需单独设计多规模可复现实验，不能仅凭某次毫秒数声称扩展性。
+| Area | Required cases |
+| --- | --- |
+| Identity | Foreign project/scenario/revision/HALL, duplicate IDs, invalid model binding |
+| Boundary | Valid concave Polygon, holes, exterior contact, hole contact, unsupported CRS/dimensions/complexity |
+| Collision | Positive-area overlap, shared edge, obstacle contact, rotated racks |
+| Clearance | All orientations; rack/obstacle/room intrusion; absent versus zero distances |
+| U slots | Lowest/highest valid slot, end beyond height, overlap, fragmented free U, unassignment |
+| Resources | Exact limit, excess, zero, null, partial known subtotal, binary arithmetic edge |
+| Room budget | Installed versus inventory, unknown demand/limit, cross-rack sum, omitted budget preservation/null clear |
+| Locks | Move/model/delete protected; separate saved unlock; allocator skips locked target |
+| Coverage | Empty/unknown/declared complete and clear-versus-incomplete distinctions |
+
+## Planning Acceptance
+
+Demand tests retain all requested devices, pin exact catalog versions, derive deterministic IDs/ties and compare both strategies under identical limits. Exercise unknown/oversized demand, maxRacks, irregular boundary/holes, exclusions, room budgets and zero-gap numerical separation. A no-result search must not claim infeasibility or global optimality.
+
+Relocation tests preserve locked racks and inventory/U assignments, enforce search caps and recheck full output. Allocation tests preserve installed devices/positions and retain unknown, oversized, fragmented-U and room-blocked devices with reasons.
+
+Generation tests verify no plan/command writes and normal save-body compatibility. Stale baseVersion/snapshot/source must fail. Save after generation rechecks all ordinary guards rather than trusting canStage.
+
+## Persistence and Concurrency Acceptance
+
+- Two saves from one version permit one success and one 412 conflict.
+- Exact retry replays without duplicating objects/version; changed request under one key conflicts.
+- A failed equipment/spatial check rolls back all aggregate fields and placements.
+- Delete versus layout save shares one version/lock domain; restore retains contents and stale clients stay invalid.
+- Unsupported snapshot capture never invents a room or mutates Facility.
+- Creation retries use original identity, including uncertain network outcomes.
+- RLS tests must name the actual database role; an initialization superuser does not certify production isolation.
+
+## UI Journey and Accessibility Acceptance
+
+Run create → quantities/constraints → compare → inspect floor/elevation/capacity → stage → adjust → save → reload → rename → delete → restore. Verify add equipment/exclusion paths, installed-rack removal protection, dirty-plan navigation, unknown resource display, version conflict recovery and a read-only account. Include empty/unavailable/loading/error states.
+
+Check drag/snap/rotation, keyboard alternatives, object identity after view switches, preserved Polygon holes, dialog focus and narrow viewport overflow. Static rendering alone cannot certify these. Built-in labels/examples and current local demonstration names are English; development logs retain historical language.
+
+## Assistant and Connection Acceptance
+
+Test both permissions at entry and each invocation, scope/version binding, strict schema/pagination/caps, ambiguous rack names, one generation/ten calls, dirty-state guard and saved-only facts. Prove no tools can save/apply/create or fall through to Facility mutations.
+
+Connection tests cover persistence across service instances, owner isolation, optimistic versioning, blank-key retention, authenticated ciphertext tampering, missing master-key protection, cancellation after rotation/deletion, redacted failures and session/model binding. Transport tests cover public/private/mixed DNS, redirects, response cap and exact administrator-origin exception. Synthetic tests send no plan data.
+
+Real model acceptance remains separate: explicitly test actual tools round trip, capacity grounding, unknown explanations, provider timeout/quota/compatibility and whether answers misstate algorithm limits. Never use real keys in fixtures or chat.
+
+## Verification Commands and Historical Baseline
+
+From the Rack repository root:
+
+```powershell
+npm run test --workspace @ai-infra/rack
+node --test scripts/tests/rack-hall-demo.test.mjs
+node --test apps/api/src/tests/rack-assistant.test.js apps/api/src/tests/assistant-connections.test.js apps/api/src/tests/assistant-projection.test.js
+npm run test --workspace @ai-infra/web -- src/tests/rack src/tests/assistant src/tests/shell-render src/tests/assistant-tool-surface-render
+npm run build --workspace @ai-infra/web
+```
+
+Real DB tests must use the isolated Rack environment and the repository's documented fixture setup; do not run seed/reset to manufacture success. Consult [progress](../../../PROGRESS.md) and [connection evidence](../../../records/2026-10-29-rack-assistant-connection/commands.md).
+
+Recorded earlier results include 226 Web/30 API tests and build in the English-UI round; the personal-connection round separately recorded 64 DB/HTTP and 84 Assistant-package tests. These are dated evidence, not results from this documentation round. New numeric claims require rerunning the relevant checks.
+
+## Formal Validation and Publication
+
+Planned formal validation needs a saved plan version/content checksum, pinned source/catalog/algorithm versions, rule-set version, checked/unchecked coverage, timestamps, diagnostics and invalidation after changes. Publication must gate on such a record and explicit authority. Continuous aisles, egress, mechanical/electrical/thermal/floor-load acceptance require their own inputs and qualified criteria. No current publish/approve/waiver command is implemented for Rack.

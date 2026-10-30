@@ -982,6 +982,26 @@ Docker 可能保留已下载的镜像缓存，本轮没有清理全局 Docker �
 - 未迁移、seed/reset、删卷或改动老师目录/平台；未读取输出真实凭证、调用模型或commit/push。现有本地服务继续运行，用户刷新页面读取新名称；数据库变更不随Git传播，其他已有本地库需要按记录手动预览/应用相同维护，新生成机房示例直接使用英文。
 - 本轮仅文案与已授权名称维护，未重复全仓测试/生产构建或浏览器视觉验收；既有业务功能缺口仍沿用前轮。源码、进展与新增记录 whitespace 检查通过，备份确认被Git忽略。
 
+## 2026-10-30: Round 29 — Complete English Rack specification bundle
+
+### Scope and changes
+
+- The user requested a detailed English specification under `doc/tools/rack`, structured after Site and Facility and including the missing Assistant integration. Starting HEAD was `3afb153` with a clean working tree. Only the Rack copy was used; no teacher directory or hosted platform access.
+- Rewrote the ten existing Rack documents and added five: [Assistant Integration](doc/tools/rack/assistant-integration.md), [Constraint Catalog](doc/tools/rack/constraint-catalog.md), [Import Mapping](doc/tools/rack/import-adapters.md), [Non-Functional Requirements](doc/tools/rack/non-functional-requirements.md) and [Decisions](doc/tools/rack/decisions.md). The [Overview](doc/tools/rack/Overview.md) indexes all 15 documents and links implementation owners.
+- Expanded ownership/architecture, user journey and views, canonical entities, units/unknowns, source/snapshot handoffs, actual HTTP routes/examples, transactional storage, deterministic algorithms/budgets, diagnostic evidence, test matrices, security, performance/recovery plans and unresolved decisions. Added three diagrams. All text in the Rack specification folder is English; historical evidence outside it remains unchanged.
+- Assistant Integration now documents the actual five read/computation capabilities, strict schemas/pages/turn bounds, context/permission checks, saved-only grounding, absent Rack actions/digest, first-use personal connection flow, owner/version/session isolation, external encrypted credential storage, endpoint/SSRF controls, synthetic testing and real-model acceptance limits.
+
+### Accuracy and validation
+
+- Cross-checked copied Site and Facility structure against Rack source/routes/services/domain/migrations. Kept implemented/planned/historically tested behavior distinct. Explicitly recorded plan-limit policy differences, partial equipment-allocation stageability, missing room-budget coverage, single-instance connection storage and absent formal validation/aisle/export features.
+- [Review record](records/2026-10-30-rack-specification-bundle/commands.md): all15 documents indexed and scanned for remaining Han text, 49 relative links resolved, three JSON examples parsed, balanced fences/no trailing whitespace, and the five named model capabilities matched source registrations. Three Mermaid blocks were inspected as source, not rendered. Tracked and new Markdown whitespace checks passed.
+- No application tests/build or runtime/browser acceptance was repeated: this is Markdown-only work. Earlier numeric test results are labelled historical. Documentation validation does not certify runtime, production security, provider quality or engineering feasibility.
+
+### Remaining work and local-only status
+
+- Use the expanded contracts and acceptance matrices to drive subsequent implementation and evidence collection. Formal Validation Runs, continuous access/egress, shared authoritative capacity, real provider acceptance, production roles/recovery and scale benchmarks remain separate work.
+- No business code, database, services, environment, real keys or original teacher files changed. No commit/push or remote changes; the user retains all commit control.
+
 ## 后续记录格式（第十七轮后沿用）
 
 每轮追加一个日期标题，至少写清：

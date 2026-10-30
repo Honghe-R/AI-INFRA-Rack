@@ -1,16 +1,30 @@
-# 老师平台只读观察（2026-10-29）
+# Rack Planner Reference Observations
 
-来源：用户授权查看 https://202.120.39.134:5500/ 的 Northern DC Campus。由用户手动处理浏览器证书提示后，通过浏览器亲自打开已有版本与对象查看。未新增/移动/修改/验证/发布/删除任何老师数据，未导出老师示例用于本地种子。
+## Source and Evidence Boundary
 
-| 页面/版本 | 实际观察 | Rack 可借鉴 / 边界 |
+These are historical read-only observations from 2026-10-29 of the teacher demonstration platform, recorded before the user instructed us to work only on our platform. No teacher page was revisited for this documentation update. No teacher objects were created, moved, validated, published or deleted, and no teacher sample was exported as local seed data.
+
+The observations concern particular displayed pages/revisions, not a code/algorithm audit or proof of hidden deployment configuration. The local repository's copied Site and Facility specification is the document-structure reference; the following UI observations serve interaction design only.
+
+## Observed Pages and Rack Implications
+
+| Reference | Observed behavior | Suitable Rack interpretation |
 | --- | --- | --- |
-| Power /18ff33d2 | 107 devices、130 connections、24 circuits；点阵、Wiring/By level、方向和 snap 控件、点击对象 Inspector | 点阵和对象详情；电力图是层级示意，不能照搬为米制楼层布局 |
-| Power ats-a Inspector | Identity、Declaration、Supply path、Protection、Capacity and load、Redundancy、Provenance；Delivered1.1MVA、Demand192kVA、Headroom916kVA、Utilisation17.3%，标DERIVED；Basis NOT PROVIDED | 负载/余量/利用率、派生与缺失来源；这些 kVA/MVA 不等于 Rack kW 可直接换算 |
-| Network /a2074084 | 40设备、3层、144连接；By plane/By rack/Blast radius、方向、Tier bands；leaf-0-0 可选 | 图形分组/过滤、稳定身份和详情联动；网络连接和机柜占地职责不同 |
-| Network Inspector/overview | Identity、Ports and endpoints、Connectivity、Capacity and policy、Resilience、Provenance；目录未pin、17 open findings；部分能力 Provisional/Not provided | 说明未固定输入、缺失证据、局部覆盖；Current 也不是所有能力都完备 |
-| Network /8a2d4bdd | 空示例，“scope has nothing to draw”、no_result 明确区别无结果与无缺陷 | 空状态要引导下一步，不能假装检查通过 |
-| Rack、Floorplan | Overview只有工具占位与版本/lifecycle上下文，无实际编辑器 | 当前老师线上无可直接照搬的完整Rack；我们需自行完成核心流程 |
+| Power revision 18ff33d2 | 107 devices, 130 connections, 24 circuits; dot grid, Wiring/By level, orientation/snap, selectable inspector | Consistent grid/selection/details. Electrical hierarchy layout is not metre-based floor placement |
+| Power ats-a inspector | Identity, declaration, supply path, protection, load/headroom, redundancy and provenance; derived values and missing basis | Present totals/headroom/utilization with provenance. kVA/MVA is not directly Rack kW |
+| Network revision a2074084 | 40 devices, 3 tiers, 144 links; By plane/By rack/Blast radius and tier bands | Reuse grouping/filter/selection patterns while preserving Rack physical semantics |
+| Network inspector | Ports/connectivity/capacity/resilience/provenance, open findings, provisional/not-provided inputs | Show missing/pinned input evidence and partial coverage instead of implying completeness |
+| Network revision 8a2d4bdd | Empty scope with explicit no-result behavior | Distinguish empty/unavailable from a checked design with no defects |
+| Rack/Floorplan at that time | Context/lifecycle placeholder rather than complete editor | Local Rack must implement its own core workflow |
 
-不同工具图数据属于不同 revision。Power版本切Network会提示无本工具设计，并可只读打开已有Network版本；未创建新revision。Power pins显示Facility已固定，Rack/Catalog等未固定。说明跨工具输入引用和新鲜度比单纯“画大图”更重要。
+Tool data shown in these references belonged to different revisions. Switching tools could expose missing-tool-data guidance rather than creating a new revision. Input pinning/source freshness matters beyond drawing a large graph.
 
-这是对这些页面的观察，不是对老师所有模块或算法的审计。没有把 Power 的现存“5 devices moved”状态当作本次修改，也没有点击 Put them back。参考结论优先落实到交互、来源/未知提示和文档边界。
+## Applied Design Choices
+
+Keep Plans creation/deletion/restoration, then add Rack-appropriate commands inside each selected plan. Use floor layout, elevations and capacity table with one shared inspector and object identity. Keep metric/unknown/provenance labels and source/version guards. Use a physical room Polygon and metre coordinates; do not turn Network/Power graph spacing into physical feasibility.
+
+The current local full-hall sample is explicitly synthetic: 32 racks with mixed equipment, exclusions and resource assumptions. Its size/appearance is not evidence that teacher topology or engineering data was reused.
+
+## Non-Transferable Conclusions
+
+No visual reference proves an optimization method, durable candidate history, verified wiring/airflow or credential storage. The previously observed Assistant service/model labels cannot establish key ownership, billing, exact endpoint or retention. Our own [Assistant Integration](assistant-integration.md) documents our actual architecture and limits instead.
