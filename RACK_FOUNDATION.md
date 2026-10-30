@@ -1,5 +1,7 @@
 # Rack 基础设计与本轮边界
 
+Latest supplement (2026-10-30, round31): [Authentication and Access Control](doc/tools/rack/access-control.md) separates Rack editing from plan delete/restore and adds scoped Project access management with member versions, atomic events, last-administrator protection and revocation checks. Migration012 was applied to the isolated Rack DB. Runtime/test evidence and remaining production-login limitations are in PROGRESS.md.
+
 最新补充（2026-10-29，第二十五轮）：[Assistant 首次配置](RACK_ASSISTANT_CONNECTION.md) 在原 Ask about Rack 内保存每账号默认连接，支持后端外置加密凭证、测试、修改/删除、请求与会话隔离。无迁移；本机仅合成凭证验收并已删除，真实模型质量尚未验收。下方历轮状态以当轮记录为准。
 
 最新补充（2026-10-29，第二十三轮）：[Plan 操作与多视图](RACK_PLAN_WORKBENCH.md) 为选定方案接入顶部添加机柜/设备/禁放区和约束/容量/候选/检查入口；平面、立面、容量表共用对象详情与原草稿保存。Plans 生命周期保留，无后端/数据库变更。验证见 PROGRESS.md。

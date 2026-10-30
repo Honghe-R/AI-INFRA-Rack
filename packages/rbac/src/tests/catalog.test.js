@@ -60,6 +60,12 @@ test('Rack read/write grants are project-scoped and preserve read-only roles', (
     assert.ok(!ROLE_PRESETS[role].keys.includes(RACK_KEYS.WRITE));
   }
   assert.ok(!ROLE_PRESETS['system-admin'].keys.includes(RACK_KEYS.WRITE));
+  for (const key of [RACK_KEYS.DELETE, RACK_KEYS.RESTORE]) {
+    assert.ok(ROLE_PRESETS['project-admin'].keys.includes(key));
+    for (const role of ['project-editor', 'project-viewer', 'organisation-admin', 'system-admin']) {
+      assert.ok(!ROLE_PRESETS[role].keys.includes(key), `${role} must not receive ${key} by default`);
+    }
+  }
   assert.ok(!SHOWCASE_READ_KEYS.has(RACK_KEYS.READ));
 });
 

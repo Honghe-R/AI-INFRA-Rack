@@ -24,6 +24,7 @@ import { registerFacilityValidationRoutes } from './routes/facility-validation.j
 import { registerHealthRoutes } from './routes/health.js';
 import { registerMapRoutes } from './routes/map.js';
 import { registerProjectRoutes } from './routes/projects.js';
+import { registerProjectAccessRoutes } from './routes/project-access.js';
 import { registerSelfRoutes } from './routes/me.js';
 import { registerRackRoutes } from './routes/rack.js';
 import { assistantConnectionDirectories, createAssistantConnections } from './services/assistant-connections.js';
@@ -83,6 +84,7 @@ if (pool) {
   registerSelfRoutes(router, { repository, guard });
   registerAdminRoutes(router, { repository, evaluator });
   registerProjectRoutes(router, { pool });
+  registerProjectAccessRoutes(router, { pool, evaluator });
   registerFacilityRoutes(router, { pool });
   registerRackRoutes(router, { pool, guard });
 

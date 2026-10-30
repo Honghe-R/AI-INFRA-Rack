@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { rackError, uncertainCreation } from './rack-plan-state.js';
 
-export function RackPlanActions({ client, plan, canWrite, blocked, attempt, onAttempt, onManaged }) {
+export function RackPlanActions({ client, plan, canWrite, canDelete = false, canRestore = false, blocked, attempt, onAttempt, onManaged }) {
   const [form,setForm]=useState(null),[name,setName]=useState(plan.name),[busy,setBusy]=useState(false),[error,setError]=useState(null);
   const sending=useRef(false), lifetime=useRef(null);
   useEffect(()=>{
@@ -9,9 +9,10 @@ export function RackPlanActions({ client, plan, canWrite, blocked, attempt, onAt
     lifetime.current=controller;
     return ()=>controller.abort();
   },[]);
-  if(!canWrite)return null;
+  const allowed = operation => operation === 'rename' ? canWrite : operation === 'delete' ? canDelete : operation === 'restore' ? canRestore : false;
+  if(!canWrite && !canDelete && !canRestore)return null;
   async function apply(event){
-    event.preventDefault();if(sending.current||blocked)return;
+    event.preventDefault();if(sending.current||blocked||!allowed(attempt?.operation??form))return;
     const intent=attempt??{planId:plan.planId,operation:form,key:crypto.randomUUID(),version:plan.version,
       body:{contract_version:1,...(form==='rename'?{name:name.trim()}:{})}};
     const signal=lifetime.current.signal;
@@ -25,14 +26,15 @@ export function RackPlanActions({ client, plan, canWrite, blocked, attempt, onAt
   }
   const operation=attempt?.operation??form;
   return <section className="rack-plan-actions" aria-label="Plan management">
-    {!operation?<div className="rack-actions">{plan.deletedAt?<button disabled={blocked} onClick={()=>setForm('restore')}>Restore plan</button>:<>
-      <button disabled={blocked} onClick={()=>{setName(plan.name);setForm('rename');}}>Rename plan</button>
-      <button className="rack-danger" disabled={blocked} onClick={()=>setForm('delete')}>Delete plan</button></>}
+    {!operation?<div className="rack-actions">{plan.deletedAt?(canRestore&&<button disabled={blocked} onClick={()=>setForm('restore')}>Restore plan</button>):<>
+      {canWrite&&<button disabled={blocked} onClick={()=>{setName(plan.name);setForm('rename');}}>Rename plan</button>}
+      {canDelete&&<button className="rack-danger" disabled={blocked} onClick={()=>setForm('delete')}>Delete plan</button>}</>}
       {blocked&&<span className="rack-muted">Save or discard the editing draft before managing this plan.</span>}</div>:<form onSubmit={apply}>
       <h3>{operation==='rename'?'Rename plan':operation==='delete'?'Delete this plan?':'Restore this plan?'}</h3>
       {operation==='rename'?<label>Plan name<input required maxLength={160} value={attempt?.body.name??name} disabled={busy||Boolean(attempt)} onChange={e=>setName(e.target.value)}/></label>:
         <p>{operation==='delete'?`“${plan.name}” and its ${plan.placements.length} racks will move to Deleted plans. The layout, equipment and constraints can be restored.`:'Restore this plan to the active list with its layout, equipment and constraints. Source changes still require review under the existing rules.'}</p>}
-      <div className="rack-actions"><button className="rack-primary" disabled={busy||blocked||(operation==='rename'&&!name.trim())}>
+      {!allowed(operation)&&<p role="alert">Your access no longer permits this operation. Refresh access before continuing.</p>}
+      <div className="rack-actions"><button className="rack-primary" disabled={busy||blocked||!allowed(operation)||(operation==='rename'&&!name.trim())}>
         {busy?'Working…':attempt?'Retry original operation':operation==='rename'?'Save name':operation==='delete'?'Confirm plan deletion':'Confirm plan restoration'}</button>
         <button type="button" disabled={busy||Boolean(attempt)} onClick={()=>{setForm(null);setError(null);}}>Cancel</button></div>
     </form>}

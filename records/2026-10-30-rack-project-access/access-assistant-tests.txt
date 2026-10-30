@@ -1,0 +1,328 @@
+TAP version 13
+# Subtest: personal configuration survives a new service instance; no plaintext credential on disk or in metadata
+ok 1 - personal configuration survives a new service instance; no plaintext credential on disk or in metadata
+  ---
+  duration_ms: 54.4089
+  type: 'test'
+  ...
+# Subtest: keeping a key, rotation, optimistic concurrency, cancellation and deletion do not cross users
+ok 2 - keeping a key, rotation, optimistic concurrency, cancellation and deletion do not cross users
+  ---
+  duration_ms: 86.4041
+  type: 'test'
+  ...
+# Subtest: missing master key never regenerates over another user encrypted credentials
+ok 3 - missing master key never regenerates over another user encrypted credentials
+  ---
+  duration_ms: 32.3745
+  type: 'test'
+  ...
+# Subtest: authenticated encryption rejects altered ciphertext without revealing provider details
+ok 4 - authenticated encryption rejects altered ciphertext without revealing provider details
+  ---
+  duration_ms: 52.287
+  type: 'test'
+  ...
+# Subtest: invalid input cannot save partial configuration or change provider implementation
+ok 5 - invalid input cannot save partial configuration or change provider implementation
+  ---
+  duration_ms: 6.6173
+  type: 'test'
+  ...
+# Subtest: synthetic test proves tool-call round trip and preserves configured connection
+ok 6 - synthetic test proves tool-call round trip and preserves configured connection
+  ---
+  duration_ms: 51.0532
+  type: 'test'
+  ...
+# Subtest: ordinary chat response is not reported as successful agent tool compatibility
+ok 7 - ordinary chat response is not reported as successful agent tool compatibility
+  ---
+  duration_ms: 41.1359
+  type: 'test'
+  ...
+# Subtest: untrusted provider errors during testing never echo key or response body
+ok 8 - untrusted provider errors during testing never echo key or response body
+  ---
+  duration_ms: 26.8105
+  type: 'test'
+  ...
+# Subtest: endpoint normalization rejects credential URLs, private IPs, alternate schemes and duplicate suffixes
+ok 9 - endpoint normalization rejects credential URLs, private IPs, alternate schemes and duplicate suffixes
+  ---
+  duration_ms: 0.6484
+  type: 'test'
+  ...
+# Subtest: DNS with any private result and lookup cancellation fail before opening a socket
+ok 10 - DNS with any private result and lookup cancellation fail before opening a socket
+  ---
+  duration_ms: 0.8424
+  type: 'test'
+  ...
+# Subtest: administrator origin allowlist permits a local gateway; redirects and oversized responses are blocked
+ok 11 - administrator origin allowlist permits a local gateway; redirects and oversized responses are blocked
+  ---
+  duration_ms: 16.6762
+  type: 'test'
+  ...
+# Subtest: unconfigured deployment still builds a host when personal setup is enabled
+ok 12 - unconfigured deployment still builds a host when personal setup is enabled
+  ---
+  duration_ms: 2.8657
+  type: 'test'
+  ...
+# Subtest: connection HTTP lifecycle is authenticated, owner-scoped, versioned and never returns submitted keys
+ok 13 - connection HTTP lifecycle is authenticated, owner-scoped, versioned and never returns submitted keys
+  ---
+  duration_ms: 83.3328
+  type: 'test'
+  ...
+# Subtest: authenticated routes use persisted owner connection, enforce session binding and redact real orchestrator output
+ok 14 - authenticated routes use persisted owner connection, enforce session binding and redact real orchestrator output
+  ---
+  duration_ms: 80.5587
+  type: 'test'
+  ...
+# Subtest: the assembled host declares the facility projection: 22 capabilities and 6 UI actions
+ok 15 - the assembled host declares the facility projection: 22 capabilities and 6 UI actions
+  ---
+  duration_ms: 11.0744
+  type: 'test'
+  ...
+# Subtest: a deployment with no tool surface still resolves a context but exposes no tools
+ok 16 - a deployment with no tool surface still resolves a context but exposes no tools
+  ---
+  duration_ms: 0.3842
+  type: 'test'
+  ...
+# Subtest: member mutation rejects arbitrary roles, statuses, versions and server-owned scope fields
+ok 17 - member mutation rejects arbitrary roles, statuses, versions and server-owned scope fields
+  ---
+  duration_ms: 1.8512
+  type: 'test'
+  ...
+# Subtest: member routes enforce authentication, manager role, foreign-project scope and no-store
+ok 18 - member routes enforce authentication, manager role, foreign-project scope and no-store
+  ---
+  duration_ms: 329.4515
+  type: 'test'
+  ...
+# Subtest: candidate search is organisation-scoped, active, bounded and literal
+ok 19 - candidate search is organisation-scoped, active, bounded and literal
+  ---
+  duration_ms: 201.5477
+  type: 'test'
+  ...
+# Subtest: adding, changing, suspending and reactivating a member updates grants and durable events
+ok 20 - adding, changing, suspending and reactivating a member updates grants and durable events
+  ---
+  duration_ms: 412.979
+  type: 'test'
+  ...
+# Subtest: foreign/inactive users, scope injection, unsupported roles and self changes are rejected without events
+ok 21 - foreign/inactive users, scope injection, unsupported roles and self changes are rejected without events
+  ---
+  duration_ms: 177.289
+  type: 'test'
+  ...
+# Subtest: optimistic versions reject stale and concurrent updates without duplicate events
+ok 22 - optimistic versions reject stale and concurrent updates without duplicate events
+  ---
+  duration_ms: 173.3515
+  type: 'test'
+  ...
+# Subtest: last-administrator guard serializes concurrent demotions even for an organisation manager
+ok 23 - last-administrator guard serializes concurrent demotions even for an organisation manager
+  ---
+  duration_ms: 390.5774
+  type: 'test'
+  ...
+# Subtest: inherited repository mutations advance versions including change-back ABA
+ok 24 - inherited repository mutations advance versions including change-back ABA
+  ---
+  duration_ms: 381.4229
+  type: 'test'
+  ...
+# Subtest: project suspension leaves an independent organisation grant effective
+ok 25 - project suspension leaves an independent organisation grant effective
+  ---
+  duration_ms: 159.9686
+  type: 'test'
+  ...
+# Subtest: service rechecks actual manager grants even if invoked after a stale gateway decision
+ok 26 - service rechecks actual manager grants even if invoked after a stale gateway decision
+  ---
+  duration_ms: 169.7829
+  type: 'test'
+  ...
+# Subtest: event insertion failure rolls back membership and assignment together
+ok 27 - event insertion failure rolls back membership and assignment together
+  ---
+  duration_ms: 126.9354
+  type: 'test'
+  ...
+# Subtest: API host registers the Rack surface and five namespaced tools alongside Facility
+ok 28 - API host registers the Rack surface and five namespaced tools alongside Facility
+  ---
+  duration_ms: 10.7143
+  type: 'test'
+  ...
+# Subtest: an unconfigured provider is explicitly unavailable and never replaced by a fake answer
+ok 29 - an unconfigured provider is explicitly unavailable and never replaced by a fake answer
+  ---
+  duration_ms: 0.4754
+  type: 'test'
+  ...
+# Subtest: Rack tools are read-only and selection cannot expose Facility mutation capabilities
+ok 30 - Rack tools are read-only and selection cannot expose Facility mutation capabilities
+  ---
+  duration_ms: 0.9706
+  type: 'test'
+  ...
+# Subtest: capacity uses the shared checker and distinguishes known power from unknown weight
+ok 31 - capacity uses the shared checker and distinguishes known power from unknown weight
+  ---
+  duration_ms: 1.903
+  type: 'test'
+  ...
+# Subtest: capacity reports plan-wide room totals even when filtered to one rack, bounding diagnostic device identities
+ok 32 - capacity reports plan-wide room totals even when filtered to one rack, bounding diagnostic device identities
+  ---
+  duration_ms: 1.2669
+  type: 'test'
+  ...
+# Subtest: every call reauthorizes both permissions before any service read
+ok 33 - every call reauthorizes both permissions before any service read
+  ---
+  duration_ms: 0.2934
+  type: 'test'
+  ...
+# Subtest: strict schemas reject forged plan/scope arguments, invalid pagination and invalid planner parameters
+ok 34 - strict schemas reject forged plan/scope arguments, invalid pagination and invalid planner parameters
+  ---
+  duration_ms: 1.1865
+  type: 'test'
+  ...
+# Subtest: tools require a selected plan, and refuse mismatched scenario/revision or advanced version
+ok 35 - tools require a selected plan, and refuse mismatched scenario/revision or advanced version
+  ---
+  duration_ms: 0.547
+  type: 'test'
+  ...
+# Subtest: inventory pages do not silently pretend to be complete and duplicate rack names are refused
+ok 36 - inventory pages do not silently pretend to be complete and duplicate rack names are refused
+  ---
+  duration_ms: 0.9743
+  type: 'test'
+  ...
+# Subtest: checks send only saved content through the original checker and limit diagnostic output
+ok 37 - checks send only saved content through the original checker and limit diagnostic output
+  ---
+  duration_ms: 0.9158
+  type: 'test'
+  ...
+# Subtest: candidate generation is bounded, summary-only and uses exact saved version and snapshot
+ok 38 - candidate generation is bounded, summary-only and uses exact saved version and snapshot
+  ---
+  duration_ms: 0.525
+  type: 'test'
+  ...
+# Subtest: generation refuses local dirty drafts and stale UI versions without invoking the planner
+ok 39 - generation refuses local dirty drafts and stale UI versions without invoking the planner
+  ---
+  duration_ms: 0.3252
+  type: 'test'
+  ...
+# Subtest: ten total calls cap a provider that emits many calls per iteration
+ok 40 - ten total calls cap a provider that emits many calls per iteration
+  ---
+  duration_ms: 0.511
+  type: 'test'
+  ...
+# Subtest: scripted provider drives the real orchestrator through Rack read, capacity, checks and options
+ok 41 - scripted provider drives the real orchestrator through Rack read, capacity, checks and options
+  ---
+  duration_ms: 5.7446
+  type: 'test'
+  ...
+# Subtest: a protected route without a token is 401
+ok 42 - a protected route without a token is 401
+  ---
+  duration_ms: 36.3072
+  type: 'test'
+  ...
+# Subtest: an invalid token is 403, not 401
+ok 43 - an invalid token is 403, not 401
+  ---
+  duration_ms: 8.388
+  type: 'test'
+  ...
+# Subtest: the self endpoint returns the effective keys
+ok 44 - the self endpoint returns the effective keys
+  ---
+  duration_ms: 5.8382
+  type: 'test'
+  ...
+# Subtest: the check endpoint answers 200 for an allowed key
+ok 45 - the check endpoint answers 200 for an allowed key
+  ---
+  duration_ms: 5.9513
+  type: 'test'
+  ...
+# Subtest: the check endpoint answers 200 with allowed:false for a denial
+ok 46 - the check endpoint answers 200 with allowed:false for a denial
+  ---
+  duration_ms: 4.617
+  type: 'test'
+  ...
+# Subtest: the check endpoint reports an unknown key without a transport error
+ok 47 - the check endpoint reports an unknown key without a transport error
+  ---
+  duration_ms: 4.1612
+  type: 'test'
+  ...
+# Subtest: an unresolvable scope is still a protocol error on the check endpoint
+ok 48 - an unresolvable scope is still a protocol error on the check endpoint
+  ---
+  duration_ms: 3.9507
+  type: 'test'
+  ...
+# Subtest: a system administration route refuses a caller without the system key
+ok 49 - a system administration route refuses a caller without the system key
+  ---
+  duration_ms: 4.1493
+  type: 'test'
+  ...
+# Subtest: a system administration route allows a caller holding the system key
+ok 50 - a system administration route allows a caller holding the system key
+  ---
+  duration_ms: 9.1909
+  type: 'test'
+  ...
+# Subtest: a scoped role cannot reach a scope-nulled system route
+ok 51 - a scoped role cannot reach a scope-nulled system route
+  ---
+  duration_ms: 4.3893
+  type: 'test'
+  ...
+# Subtest: the organisation route takes its scope from the request body
+ok 52 - the organisation route takes its scope from the request body
+  ---
+  duration_ms: 6.0764
+  type: 'test'
+  ...
+# Subtest: the organisation route rejects a scope the caller cannot resolve
+ok 53 - the organisation route rejects a scope the caller cannot resolve
+  ---
+  duration_ms: 3.9686
+  type: 'test'
+  ...
+1..53
+# tests 53
+# suites 0
+# pass 53
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2752.1193

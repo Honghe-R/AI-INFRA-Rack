@@ -75,6 +75,12 @@ test('rejects an empty user or key', async () => {
   assert.equal((await evaluator.evaluate({ userId: USER })).reason, REASON.FUNCTION_REQUIRED);
 });
 
+test('a foreign organisation grant cannot authorize an unrelated project, even without the HTTP guard', async () => {
+  const { repository, evaluator } = setup();
+  repository.assign({ userId: USER, scopeKind: 'organisation', scopeId: 'foreign-org', keys: [F.READ] });
+  assert.equal((await evaluator.evaluate({ userId: USER, key: F.READ, projectId: PROJECT, organisationId: 'foreign-org' })).allowed, false);
+});
+
 test('denies an unregistered key rather than allowing it', async () => {
   const { evaluator } = setup();
   const decision = await evaluator.evaluate({ userId: USER, key: 'facility.read.typo', projectId: PROJECT });

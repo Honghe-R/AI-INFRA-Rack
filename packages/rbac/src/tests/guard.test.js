@@ -75,6 +75,15 @@ test('an allowed check returns the decision with the grant reason', async () => 
   assert.equal(result.functionKey, F.READ);
 });
 
+test('body/query organisation identifiers cannot redirect a project authorization scope', async () => {
+  const other = '33333333-3333-3333-3333-333333333333';
+  for (const source of ['body', 'query']) {
+    const { guard, evaluator } = guardFor({ [F.READ]: true });
+    await assert.rejects(() => guard.check(F.READ, { user: USER, params: { projectId: PROJECT }, [source]: { organisationId: other } }), { status: 404 });
+    assert.equal(evaluator.calls.length, 0);
+  }
+});
+
 test('a denial is 403 with a machine-readable body', async () => {
   const { guard } = guardFor();
   const error = await expectError(() => guard.check(F.PUBLISH, { user: USER, params: { projectId: PROJECT } }));

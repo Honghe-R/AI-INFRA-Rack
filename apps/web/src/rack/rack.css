@@ -300,6 +300,18 @@
 .rack-plan-actions { margin:16px 0; padding:14px; background:var(--surface-sunken); border-radius:8px; }
 .rack-plan-actions label { display:grid; gap:6px; margin-bottom:12px; }.rack-plan-actions input { max-width:100%; box-sizing:border-box; }
 .rack-plan-actions h3 { margin:0 0 12px; }.rack-plan-actions .rack-danger { color:var(--error); }
+.rack-access-summary { display: flex; flex-wrap: wrap; gap: 6px; color: var(--muted); font-size: 12px; }
+.rack-project-access { margin: 16px 0; }
+.rack-project-access h2 { margin: 0; }
+.rack-access-table { overflow-x: auto; margin: 16px 0; }
+.rack-access-table table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
+.rack-access-table caption { text-align: left; font-weight: 600; margin-bottom: 10px; }
+.rack-access-table th, .rack-access-table td { padding: 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.rack-access-table small { display: block; color: var(--muted); overflow-wrap: anywhere; }
+.rack-access-form { margin: 16px 0; padding: 16px; border: 1px solid var(--line); border-radius: 8px; }
+.rack-access-form label { display: grid; gap: 6px; margin: 10px 0; max-width: 480px; }
+.rack-access-form input, .rack-access-form select { max-width: 100%; min-width: 0; }
+.rack-project-access li { margin: 12px 0; overflow-wrap: anywhere; }
 .rack-workbench:fullscreen { margin: 0; border: 0; border-radius: 0; overflow: auto; height: 100dvh; color: var(--text); }
 .rack-workbench:fullscreen .rack-workbench-body { grid-template-columns: minmax(0,1fr) 330px; }
 .rack-workbench:fullscreen .rack-inspector { max-height: calc(100dvh - 112px); }

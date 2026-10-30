@@ -1,0 +1,15 @@
+
+ RUN  v2.1.9 C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/web
+
+ ✓ src/tests/dev-identity.test.js (13 tests) 5ms
+ ✓ src/tests/permission-client.test.js (13 tests) 5ms
+ ✓ src/tests/project-access.test.jsx (5 tests) 15ms
+ ✓ src/tests/rack-sections.test.jsx (4 tests) 15ms
+ ✓ src/tests/rack-plan-commands.test.jsx (6 tests) 19ms
+ ✓ src/tests/rack-surface.test.jsx (5 tests) 11ms
+
+ Test Files  6 passed (6)
+      Tests  46 passed (46)
+   Start at  22:29:14
+   Duration  1.48s (transform 641ms, setup 0ms, collect 2.02s, tests 71ms, environment 1ms, prepare 2.17s)
+

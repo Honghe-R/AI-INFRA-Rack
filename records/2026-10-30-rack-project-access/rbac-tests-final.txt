@@ -1,0 +1,458 @@
+
+> @ai-infra/rbac@0.1.0 test
+> node --env-file-if-exists=../../.env --test src/tests/**/*.test.js
+
+TAP version 13
+# Subtest: caches a value for its TTL and reloads after expiry
+ok 1 - caches a value for its TTL and reloads after expiry
+  ---
+  duration_ms: 1.9898
+  type: 'test'
+  ...
+# Subtest: de-duplicates concurrent loads behind one promise
+ok 2 - de-duplicates concurrent loads behind one promise
+  ---
+  duration_ms: 1.3214
+  type: 'test'
+  ...
+# Subtest: invalidates entries by tag
+ok 3 - invalidates entries by tag
+  ---
+  duration_ms: 0.5945
+  type: 'test'
+  ...
+# Subtest: clear empties the cache and reports the count
+ok 4 - clear empties the cache and reports the count
+  ---
+  duration_ms: 0.6175
+  type: 'test'
+  ...
+# Subtest: peek and set support callers that must not cache negatives
+ok 5 - peek and set support callers that must not cache negatives
+  ---
+  duration_ms: 0.6089
+  type: 'test'
+  ...
+# Subtest: bounds the number of entries
+ok 6 - bounds the number of entries
+  ---
+  duration_ms: 0.9206
+  type: 'test'
+  ...
+# Subtest: catalog keys are unique and well formed
+ok 7 - catalog keys are unique and well formed
+  ---
+  duration_ms: 1.8038
+  type: 'test'
+  ...
+# Subtest: every catalog entry has a name, a description, and a known scope
+ok 8 - every catalog entry has a name, a description, and a known scope
+  ---
+  duration_ms: 0.4704
+  type: 'test'
+  ...
+# Subtest: the tool keys declared in the specification are all present
+ok 9 - the tool keys declared in the specification are all present
+  ---
+  duration_ms: 0.3186
+  type: 'test'
+  ...
+# Subtest: the workspace keys declared in the bundle are all present
+ok 10 - the workspace keys declared in the bundle are all present
+  ---
+  duration_ms: 0.1743
+  type: 'test'
+  ...
+# Subtest: Rack read/write grants are project-scoped and preserve read-only roles
+ok 11 - Rack read/write grants are project-scoped and preserve read-only roles
+  ---
+  duration_ms: 0.3208
+  type: 'test'
+  ...
+# Subtest: lookup helpers fail closed for an unknown key
+ok 12 - lookup helpers fail closed for an unknown key
+  ---
+  duration_ms: 0.1503
+  type: 'test'
+  ...
+# Subtest: system keys are exactly the system-scoped entries
+ok 13 - system keys are exactly the system-scoped entries
+  ---
+  duration_ms: 1.2451
+  type: 'test'
+  ...
+# Subtest: showcase exposes only registered read keys
+ok 14 - showcase exposes only registered read keys
+  ---
+  duration_ms: 0.2394
+  type: 'test'
+  ...
+# Subtest: every preset key is registered in the catalog
+ok 15 - every preset key is registered in the catalog
+  ---
+  duration_ms: 0.6559
+  type: 'test'
+  ...
+# Subtest: presets never grant a system key from a scoped role
+ok 16 - presets never grant a system key from a scoped role
+  ---
+  duration_ms: 0.7827
+  type: 'test'
+  ...
+# Subtest: there is no all-keys super-role
+ok 17 - there is no all-keys super-role
+  ---
+  duration_ms: 0.4166
+  type: 'test'
+  ...
+# Subtest: preset helpers agree with the preset definitions
+ok 18 - preset helpers agree with the preset definitions
+  ---
+  duration_ms: 0.2936
+  type: 'test'
+  ...
+# Subtest: the generated client catalog is current
+ok 19 - the generated client catalog is current
+  ---
+  duration_ms: 6.0585
+  type: 'test'
+  ...
+# Subtest: the generated client catalog carries every registered key
+ok 20 - the generated client catalog carries every registered key
+  ---
+  duration_ms: 3.7183
+  type: 'test'
+  ...
+# Subtest: no client source retypes a permission key in a check position
+ok 21 - no client source retypes a permission key in a check position
+  ---
+  duration_ms: 143.2691
+  type: 'test'
+  ...
+# Subtest: the client catalog is importable without server dependencies
+ok 22 - the client catalog is importable without server dependencies
+  ---
+  duration_ms: 0.5025
+  type: 'test'
+  ...
+# Subtest: non-throwing result echoes scope and states a reason on denial
+ok 23 - non-throwing result echoes scope and states a reason on denial
+  ---
+  duration_ms: 3.1329
+  type: 'test'
+  ...
+# Subtest: showcase and read-only flags survive the non-throwing wrapper
+ok 24 - showcase and read-only flags survive the non-throwing wrapper
+  ---
+  duration_ms: 0.3181
+  type: 'test'
+  ...
+# Subtest: the throwing wrapper maps reasons to codes and statuses
+ok 25 - the throwing wrapper maps reasons to codes and statuses
+  ---
+  duration_ms: 0.8919
+  type: 'test'
+  ...
+# Subtest: the throwing wrapper returns the decision when allowed
+ok 26 - the throwing wrapper returns the decision when allowed
+  ---
+  duration_ms: 0.1923
+  type: 'test'
+  ...
+# Subtest: http status maps an allowed decision to 200
+ok 27 - http status maps an allowed decision to 200
+  ---
+  duration_ms: 0.236
+  type: 'test'
+  ...
+# Subtest: rejects an empty user or key
+ok 28 - rejects an empty user or key
+  ---
+  duration_ms: 2.216
+  type: 'test'
+  ...
+# Subtest: a foreign organisation grant cannot authorize an unrelated project, even without the HTTP guard
+ok 29 - a foreign organisation grant cannot authorize an unrelated project, even without the HTTP guard
+  ---
+  duration_ms: 0.7141
+  type: 'test'
+  ...
+# Subtest: denies an unregistered key rather than allowing it
+ok 30 - denies an unregistered key rather than allowing it
+  ---
+  duration_ms: 0.2434
+  type: 'test'
+  ...
+# Subtest: a project role grants at project scope
+ok 31 - a project role grants at project scope
+  ---
+  duration_ms: 0.5654
+  type: 'test'
+  ...
+# Subtest: an organisation role satisfies a project check through the owning organisation
+ok 32 - an organisation role satisfies a project check through the owning organisation
+  ---
+  duration_ms: 0.4913
+  type: 'test'
+  ...
+# Subtest: a global role satisfies a scoped check
+ok 33 - a global role satisfies a scoped check
+  ---
+  duration_ms: 0.281
+  type: 'test'
+  ...
+# Subtest: a scoped role never satisfies an unscoped check
+ok 34 - a scoped role never satisfies an unscoped check
+  ---
+  duration_ms: 0.2689
+  type: 'test'
+  ...
+# Subtest: system keys ignore scope, so no scoped role can grant them
+ok 35 - system keys ignore scope, so no scoped role can grant them
+  ---
+  duration_ms: 0.5247
+  type: 'test'
+  ...
+# Subtest: a suspended membership grants nothing
+ok 36 - a suspended membership grants nothing
+  ---
+  duration_ms: 1.1594
+  type: 'test'
+  ...
+# Subtest: an unknown project scope fails closed
+ok 37 - an unknown project scope fails closed
+  ---
+  duration_ms: 0.7267
+  type: 'test'
+  ...
+# Subtest: onboarding grants only with zero memberships
+ok 38 - onboarding grants only with zero memberships
+  ---
+  duration_ms: 0.9206
+  type: 'test'
+  ...
+# Subtest: showcase allows the fixed read set read-only and nothing else
+ok 39 - showcase allows the fixed read set read-only and nothing else
+  ---
+  duration_ms: 0.6241
+  type: 'test'
+  ...
+# Subtest: an evaluator exception denies and is logged, never allowed
+ok 40 - an evaluator exception denies and is logged, never allowed
+  ---
+  duration_ms: 0.4984
+  type: 'test'
+  ...
+# Subtest: decisions are cached and invalidated by tag
+ok 41 - decisions are cached and invalidated by tag
+  ---
+  duration_ms: 0.5539
+  type: 'test'
+  ...
+# Subtest: concurrent identical decisions share one load
+ok 42 - concurrent identical decisions share one load
+  ---
+  duration_ms: 0.5059
+  type: 'test'
+  ...
+# Subtest: key resolution is not negatively cached
+ok 43 - key resolution is not negatively cached
+  ---
+  duration_ms: 0.3068
+  type: 'test'
+  ...
+# Subtest: invalidating the catalog clears resolved key ids
+ok 44 - invalidating the catalog clears resolved key ids
+  ---
+  duration_ms: 0.4154
+  type: 'test'
+  ...
+# Subtest: a missing user is 401, not 403
+ok 45 - a missing user is 401, not 403
+  ---
+  duration_ms: 1.439
+  type: 'test'
+  ...
+# Subtest: a missing permission key is refused
+ok 46 - a missing permission key is refused
+  ---
+  duration_ms: 0.2438
+  type: 'test'
+  ...
+# Subtest: an allowed check returns the decision with the grant reason
+ok 47 - an allowed check returns the decision with the grant reason
+  ---
+  duration_ms: 0.6598
+  type: 'test'
+  ...
+# Subtest: body/query organisation identifiers cannot redirect a project authorization scope
+ok 48 - body/query organisation identifiers cannot redirect a project authorization scope
+  ---
+  duration_ms: 1.1838
+  type: 'test'
+  ...
+# Subtest: a denial is 403 with a machine-readable body
+ok 49 - a denial is 403 with a machine-readable body
+  ---
+  duration_ms: 1.0159
+  type: 'test'
+  ...
+# Subtest: an unknown key is reported as such, not as insufficient permission
+ok 50 - an unknown key is reported as such, not as insufficient permission
+  ---
+  duration_ms: 0.2609
+  type: 'test'
+  ...
+# Subtest: scope precedence is params, then body, then query
+ok 51 - scope precedence is params, then body, then query
+  ---
+  duration_ms: 1.1402
+  type: 'test'
+  ...
+# Subtest: an unresolvable project is 404, never a silent null scope
+ok 52 - an unresolvable project is 404, never a silent null scope
+  ---
+  duration_ms: 0.3321
+  type: 'test'
+  ...
+# Subtest: a malformed project identifier is 404
+ok 53 - a malformed project identifier is 404
+  ---
+  duration_ms: 0.4791
+  type: 'test'
+  ...
+# Subtest: an unresolvable organisation is 404
+ok 54 - an unresolvable organisation is 404
+  ---
+  duration_ms: 0.6344
+  type: 'test'
+  ...
+# Subtest: the owning organisation is derived from the project
+ok 55 - the owning organisation is derived from the project
+  ---
+  duration_ms: 0.3222
+  type: 'test'
+  ...
+# Subtest: a system key ignores scope and does not resolve it
+ok 56 - a system key ignores scope and does not resolve it
+  ---
+  duration_ms: 0.2254
+  type: 'test'
+  ...
+# Subtest: an evaluator exception becomes 500, never an unhandled crash
+ok 57 - an evaluator exception becomes 500, never an unhandled crash
+  ---
+  duration_ms: 0.2737
+  type: 'test'
+  ...
+# Subtest: a fail-closed evaluation failure is reported as 500, not as a denial
+ok 58 - a fail-closed evaluation failure is reported as 500, not as a denial
+  ---
+  duration_ms: 0.9017
+  type: 'test'
+  ...
+# Subtest: the guard works without a repository for unscoped checks
+ok 59 - the guard works without a repository for unscoped checks
+  ---
+  duration_ms: 0.2398
+  type: 'test'
+  ...
+# Subtest: require() returns a reusable middleware
+ok 60 - require() returns a reusable middleware
+  ---
+  duration_ms: 0.2635
+  type: 'test'
+  ...
+# Subtest: the seeded catalog matches the code catalog exactly
+ok 61 - the seeded catalog matches the code catalog exactly
+  ---
+  duration_ms: 27.0435
+  type: 'test'
+  ...
+# Subtest: the seeded roles match the role presets exactly
+ok 62 - the seeded roles match the role presets exactly
+  ---
+  duration_ms: 5.5901
+  type: 'test'
+  ...
+# Subtest: re-declaring a user converges its name and never erases one
+ok 63 - re-declaring a user converges its name and never erases one
+  ---
+  duration_ms: 15.0473
+  type: 'test'
+  ...
+# Subtest: an unknown permission key is denied, and a known one is not
+ok 64 - an unknown permission key is denied, and a known one is not
+  ---
+  duration_ms: 28.3873
+  type: 'test'
+  ...
+# Subtest: a project assignment grants at project scope and refuses beyond it
+ok 65 - a project assignment grants at project scope and refuses beyond it
+  ---
+  duration_ms: 37.9312
+  type: 'test'
+  ...
+# Subtest: assignment replaces within a scope rather than stacking
+ok 66 - assignment replaces within a scope rather than stacking
+  ---
+  duration_ms: 43.7678
+  type: 'test'
+  ...
+# Subtest: suspending a membership subtracts permission without deleting the assignment
+ok 67 - suspending a membership subtracts permission without deleting the assignment
+  ---
+  duration_ms: 33.38
+  type: 'test'
+  ...
+# Subtest: a suspended user account grants nothing even with an active membership
+ok 68 - a suspended user account grants nothing even with an active membership
+  ---
+  duration_ms: 28.2306
+  type: 'test'
+  ...
+# Subtest: an organisation role grants through the owning project
+ok 69 - an organisation role grants through the owning project
+  ---
+  duration_ms: 25.2981
+  type: 'test'
+  ...
+# Subtest: a brand-new account can bootstrap an organisation and loses that key afterwards
+ok 70 - a brand-new account can bootstrap an organisation and loses that key afterwards
+  ---
+  duration_ms: 17.0628
+  type: 'test'
+  ...
+# Subtest: replacing a role mapping refuses an unknown key and changes nothing
+ok 71 - replacing a role mapping refuses an unknown key and changes nothing
+  ---
+  duration_ms: 5.8478
+  type: 'test'
+  ...
+# Subtest: replacing a role mapping is transactional and takes effect
+ok 72 - replacing a role mapping is transactional and takes effect
+  ---
+  duration_ms: 16.723
+  type: 'test'
+  ...
+# Subtest: applying a preset is idempotent and never removes a key
+ok 73 - applying a preset is idempotent and never removes a key
+  ---
+  duration_ms: 11.5877
+  type: 'test'
+  ...
+# Subtest: effective keys union the matched scopes
+ok 74 - effective keys union the matched scopes
+  ---
+  duration_ms: 26.6832
+  type: 'test'
+  ...
+1..74
+# tests 74
+# suites 0
+# pass 74
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 616.8925

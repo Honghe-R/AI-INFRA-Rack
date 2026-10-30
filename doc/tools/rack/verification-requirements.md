@@ -58,7 +58,13 @@ Run create → quantities/constraints → compare → inspect floor/elevation/ca
 
 Check drag/snap/rotation, keyboard alternatives, object identity after view switches, preserved Polygon holes, dialog focus and narrow viewport overflow. Static rendering alone cannot certify these. Built-in labels/examples and current local demonstration names are English; development logs retain historical language.
 
-## Assistant and Connection Acceptance
+## Authentication and Project Access Acceptance
+
+The [access-control contract](access-control.md) adds separate delete/recovery grants, active-organisation account selection, member version preconditions, transaction-local actor reauthorization, last-administrator protection, permission-cache invalidation and transactional access events. Verify editor rename/save success but delete/restore denial, all viewer mutations denied, foreign project/organisation requests denied, stale/concurrent updates refused, change-back versions advanced and failed event writes rolling back assignment/membership. Project suspension must not be misrepresented as revoking independent organisation/global grants. Development identity switching demonstrates authorization, not production sign-in.
+
+Run `node --env-file-if-exists=.env --test apps/api/src/tests/project-access.test.js apps/api/src/tests/rack-plans.test.js` against the isolated Rack DB after migration 012, together with the RBAC package and Web project-access tests. Runtime results and initial failures are recorded per round, not assumed from this matrix.
+
+## Assistant and Personal Connection Checks
 
 Test both permissions at entry and each invocation, scope/version binding, strict schema/pagination/caps, ambiguous rack names, one generation/ten calls, dirty-state guard and saved-only facts. Prove no tools can save/apply/create or fall through to Facility mutations.
 

@@ -157,6 +157,10 @@ test('new-user lifecycle retains layout, equipment and constraints across rename
 
 test('lifecycle enforces tenant, permission, preconditions and atomic command rollback', {skip},async()=>fixture(async f=>server(f.people,async request=>{
   const created=await request(path(f.a),{body:f.input()}),url=created.location;
+  assert.equal((await request(url,{method:'PATCH',body:{contract_version:1,name:'Editor renamed'},version:1,user:'editor'})).status,200);
+  for (const operation of [{method:'DELETE',suffix:''},{method:'POST',suffix:'/restore'}]) {
+    assert.equal((await request(url+operation.suffix,{method:operation.method,body:{contract_version:1},version:2,user:'editor'})).status,403);
+  }
   for(const operation of [{method:'DELETE',body:{contract_version:1}},{method:'PATCH',body:{contract_version:1,name:'Renamed'}},{method:'POST',suffix:'/restore',body:{contract_version:1}}]) {
     const {suffix='',...opts}=operation;
     assert.equal((await request(url+suffix,{...opts,version:1,user:'viewer'})).status,403);
@@ -168,12 +172,23 @@ test('lifecycle enforces tenant, permission, preconditions and atomic command ro
   assert.equal((await request(url,{method:'DELETE',body:{contract_version:1,extra:true},version:1})).status,400);
   assert.equal((await request(url,{method:'PATCH',body:{contract_version:1,name:' '},version:1})).status,400);
   assert.equal((await request(`${path(f.a)}?deleted=maybe`)).status,400);
-  const count=(await pool.query('SELECT count(*)::int AS n FROM rack_layout_commands WHERE project_id=$1',[f.a.projectId])).rows[0].n;assert.equal(count,0);
+  const count=(await pool.query('SELECT count(*)::int AS n FROM rack_layout_commands WHERE project_id=$1',[f.a.projectId])).rows[0].n;
+  assert.equal(count,1,'Only the successful editor rename persists a command; rejected operations add nothing.');
   // Cleanup and rename stay possible when Facility changed; restoring never bypasses the layout source lock.
   await pool.query('UPDATE revision_etags SET etag=$1 WHERE project_id=$2',[randomUUID(),f.a.projectId]);
-  assert.equal((await request(url,{method:'DELETE',body:{contract_version:1},version:1})).status,200);
-  assert.equal((await request(`${url}/restore`,{body:{contract_version:1},version:2})).status,200);
+  assert.equal((await request(url,{method:'DELETE',body:{contract_version:1},version:2})).status,200);
+  assert.equal((await request(`${url}/restore`,{body:{contract_version:1},version:3})).status,200);
   assert.equal((await request(url)).body.data.facilityInputStatus.status,'STALE');
+})));
+
+test('editor can create and save an empty layout while viewer mutation is refused', {skip},async()=>fixture(async f=>server(f.people,async request=>{
+  await addBoundary(f.a);
+  const created=await request(path(f.a),{body:f.input(),user:'editor'});assert.equal(created.status,201);
+  const layout=(await request(`${created.location}/layout`,{user:'editor'})).body.data;
+  const body={contract_version:1,snapshot_id:layout.snapshot.snapshotId,placements:[],constraints:layout.constraints,equipment:layout.equipment};
+  assert.equal((await request(`${created.location}/layout`,{method:'PUT',body,version:1,user:'viewer'})).status,403);
+  assert.equal((await request(`${created.location}/layout`,{method:'PUT',body,version:1,user:'editor'})).status,200);
+  assert.equal((await request(`${created.location}/layout`,{user:'viewer'})).body.data.version,2);
 })));
 
 test('delete and layout save serialize on the same version without resurrecting a plan', {skip},async()=>fixture(async f=>server(f.people,async request=>{

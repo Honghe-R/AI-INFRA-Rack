@@ -33,7 +33,7 @@ export function createApiClient({ baseUrl = '', fetchImpl = globalThis.fetch, id
     const response = await fetchImpl(`${baseUrl}${path}`, {
       method,
       // Bypass existing cached lifecycle responses, including a prior 410.
-      ...(path.includes('/rack/') || path.includes('/assistant/') ? { cache: 'no-store' } : {}),
+      ...(path.includes('/rack/') || path.includes('/assistant/') || /\/members(?:\/|\?|$)|\/member-candidates(?:\?|$)/.test(path) ? { cache: 'no-store' } : {}),
       headers: {
         accept: 'application/json',
         ...(body ? { 'content-type': 'application/json' } : {}),
@@ -68,6 +68,12 @@ export function createApiClient({ baseUrl = '', fetchImpl = globalThis.fetch, id
      * project needs a revision identifier, which only this read provides.
      */
     listScenarios: (projectId) => request(`/api/v1/projects/${encodeURIComponent(projectId)}/scenarios`),
+    listProjectMembers: (projectId, { offset = 0, signal } = {}) =>
+      request(`/api/v1/projects/${encodeURIComponent(projectId)}/members?offset=${offset}&limit=20`, { signal }),
+    findProjectMemberCandidates: (projectId, query = '', { signal } = {}) =>
+      request(`/api/v1/projects/${encodeURIComponent(projectId)}/member-candidates?q=${encodeURIComponent(query)}&limit=20`, { signal }),
+    setProjectMember: (projectId, userId, body, { signal } = {}) =>
+      request(`/api/v1/projects/${encodeURIComponent(projectId)}/members/${encodeURIComponent(userId)}`, { method: 'PUT', body, signal }),
 
     getRackCatalog: (projectId, { signal } = {}) =>
       request(`/api/v1/projects/${encodeURIComponent(projectId)}/rack/catalog`, { signal }),

@@ -99,6 +99,7 @@ Domain functions normalize values, check equipment and generate deterministic pr
 | [Constraint Catalog](constraint-catalog.md) | Diagnostics and unchecked scope |
 | [Import Mapping](import-adapters.md) | Current normalized inputs and future file/vendor adapters |
 | [Assistant Integration](assistant-integration.md) | Capabilities, grounding, personal API setup and security |
+| [Authentication and Access Control](access-control.md) | Role matrix, lifecycle authority, scoped membership administration and audit |
 | [Non-Functional Requirements](non-functional-requirements.md) | Limits, performance experiments and operational risks |
 | [Decisions and Open Questions](decisions.md) | Implemented choices and unresolved policies |
 | [Demand Planning](demand-planning.md) | Algorithm, objectives, budgets and limitations |

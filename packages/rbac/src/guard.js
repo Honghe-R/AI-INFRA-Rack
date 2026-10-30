@@ -55,13 +55,16 @@ export function createPermissionGuard({ evaluator, repository = null, logger = n
   /** Resolves public identifiers to internal ones, or throws 404. */
   async function resolveScope(ctx, options) {
     let { projectId, organisationId } = readRawScope(ctx, options);
+    if (organisationId && (typeof organisationId !== 'string' || !UUID.test(organisationId))) throw NOT_FOUND();
 
     if (projectId) {
       if (typeof projectId !== 'string' || !UUID.test(projectId)) throw NOT_FOUND();
       const project = repository?.getProject ? await repository.getProject(projectId) : { projectId, organisationId: null };
       if (!project) throw NOT_FOUND();
       projectId = project.projectId;
-      if (!organisationId) organisationId = project.organisationId ?? null;
+      // A caller-supplied organisation cannot lend its grants to another tenant's project.
+      if (organisationId && project.organisationId && organisationId.toLowerCase() !== project.organisationId.toLowerCase()) throw NOT_FOUND();
+      organisationId = project.organisationId ?? organisationId ?? null;
     }
 
     if (organisationId) {

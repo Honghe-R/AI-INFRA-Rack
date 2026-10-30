@@ -4,7 +4,7 @@
 
 PostgreSQL/PostGIS holds saved Rack aggregates and fixed source references. Browser state holds the unsaved shared draft. Candidates are request-local. Personal model connections use an external encrypted file adapter. Project asset bytes remain owned by the shared asset subsystem; Rack defines no new plan object-store layout.
 
-Schema comes from immutable migrations 007–011. Existing databases use migrations, not reset/reseed of edited examples.
+Rack aggregate schema comes from immutable migrations 007–011; migration 012 adds scoped access controls and events. Existing databases use migrations, not reset/reseed of edited examples.
 
 ## Transactional Store
 
@@ -59,6 +59,8 @@ AES-256-GCM binds ciphertext to owner/connection/version. Immutable ciphertext p
 Unix requests 0700/0600; Windows relies on the runtime account ACL. This is not cloud KMS or multi-instance distributed locking. Both directories need backup and persistent container mounts. An attacker controlling the API/OS account can still access credentials. See [Assistant Integration](assistant-integration.md).
 
 ## Durability and Retention
+
+Migration 012 separately adds `project_memberships.access_version`, triggers covering direct role/status changes, and project-RLS-protected `project_access_events`. Membership/assignment/event writes are atomic and serialized per project. Version changes also cover inherited repository operations; events only describe the new project-access workflow, not every privileged system administration change. See [Access Control](access-control.md).
 
 No hard-delete/retention job exists. Deleted plans, snapshots and command records remain until a reviewed policy is implemented. Ordinary shutdown retains database/object-store volumes. Reset is destructive and not daily startup.
 

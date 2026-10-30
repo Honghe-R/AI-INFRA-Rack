@@ -37,7 +37,7 @@ Project/scenario/revision changes invalidate incompatible selections. Deleted pl
 
 ### Toolbar and Dialogs
 
-Commands include Add rack, Add equipment, Add exclusion zone and links to design/space/capacity/options/checks. Commands explain disabled reasons. Writes depend on `rack.write` and compatible plan/source state; the backend remains authoritative.
+Commands include Add rack, Add equipment, Add exclusion zone and links to design/space/capacity/options/checks. Commands explain disabled reasons. Editing depends on `rack.write` and compatible plan/source state; whole-plan deletion and recovery require `rack.delete` and `rack.restore` respectively. The backend remains authoritative. The header shows granted Rack capabilities and exposes **Project access** only with `project.member.manage`; see [Access Control](access-control.md) for the member workflow and inheritance limits.
 
 Add dialogs contribute to the shared draft. Equipment is version-pinned and initially unassigned. Canceling before apply does not change the draft. An immutable in-flight save attempt blocks conflicting editing until resolved.
 

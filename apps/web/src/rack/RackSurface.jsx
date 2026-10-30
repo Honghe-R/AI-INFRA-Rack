@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { RACK_KEYS, FACILITY_KEYS } from '../generated/permission-keys.js';
+import { RACK_KEYS, FACILITY_KEYS, PLATFORM_KEYS } from '../generated/permission-keys.js';
 import { usePermission } from '../permissions/usePermission.jsx';
 import { planIntent, rackError, roomSource, samePlanScope, uncertainCreation } from './rack-plan-state.js';
 import './rack.css';
@@ -7,23 +7,29 @@ import { RackEditor } from './RackEditor.jsx';
 import { rackSection } from './rack-sections.js';
 import { RackSectionGuide } from './RackSections.jsx';
 import { RackPlanActions } from './RackPlanActions.jsx';
+import { ProjectAccess, RackAccessSummary } from './ProjectAccess.jsx';
 
 export function RackSurface(props) {
   const scope = { projectId: props.context.projectId };
   const read = usePermission(RACK_KEYS.READ, scope);
   const write = usePermission(RACK_KEYS.WRITE, scope);
   const facility = usePermission(FACILITY_KEYS.READ, scope);
+  const remove = usePermission(RACK_KEYS.DELETE, scope);
+  const restore = usePermission(RACK_KEYS.RESTORE, scope);
+  const manage = usePermission(PLATFORM_KEYS.PROJECT_MEMBER_MANAGE, scope);
   if (read.pending) return <section className="rack-surface" role="status">Checking Rack access…</section>;
   if (read.allowed !== true) return <section className="rack-surface" role="alert">
     {read.unavailable ? 'Rack permissions could not be checked. Reopen this workspace to retry.' : 'You do not have access to Rack plans in this project.'}
   </section>;
   if (!props.client) return <section className="rack-surface" role="alert">The Rack API is unavailable.</section>;
   return <RackWorkspace {...props} canWrite={write.allowed === true} canReadFacility={facility.allowed === true}
+    canDelete={remove.allowed === true} canRestore={restore.allowed === true} canManage={manage.allowed === true}
+    accessPending={write.pending || remove.pending || restore.pending || manage.pending}
     writePending={write.pending} writeUnavailable={write.unavailable}
     facilityPending={facility.pending} facilityUnavailable={facility.unavailable} />;
 }
 
-function RackWorkspace({ client, context, routeState = {}, onRouteChange, onDirtyChange, canWrite, canReadFacility,
+function RackWorkspace({ client, context, routeState = {}, onRouteChange, onDirtyChange, canWrite, canReadFacility, canDelete, canRestore, canManage, accessPending,
   writePending, writeUnavailable, facilityPending, facilityUnavailable }) {
   const { projectId, scenarioId, revisionId } = context;
   const section = rackSection(routeState.functionId);
@@ -32,6 +38,7 @@ function RackWorkspace({ client, context, routeState = {}, onRouteChange, onDirt
   const editDraft = routeState.rackEditDraft ?? null;
   const planAttempt = routeState.rackPlanAttempt ?? null;
   const [deleted,setDeleted]=useState(false);
+  const [showAccess,setShowAccess]=useState(false);
   const selectedId = routeState.rackPlanId ?? null;
   const [list, setList] = useState({ pending: true, data: null, error: null });
   const [detail, setDetail] = useState({ pending: false, data: null, error: null });
@@ -146,12 +153,15 @@ function RackWorkspace({ client, context, routeState = {}, onRouteChange, onDirt
       <div><p className="rack-eyebrow">RACK INFRASTRUCTURE</p><h1>{section.label}</h1>
         <p>{section.description}</p></div>
       <div className="rack-actions">
+        {canManage && <button type="button" onClick={() => setShowAccess(value => !value)}>Project access</button>}
         <button type="button" disabled={Boolean(planAttempt)} onClick={reload}>Refresh plans</button>
         {canWrite && !draft && <button type="button" className="rack-primary" disabled={Boolean(editDraft||planAttempt)} onClick={() => {
           setCreateError(null); setNotice(null); onRouteChange({ functionId: 'plans', rackDraft: { name: '', hallId: '' } });
         }}>New empty plan</button>}
       </div>
     </header>
+    <RackAccessSummary canWrite={canWrite} canDelete={canDelete} canRestore={canRestore} canManage={canManage} pending={accessPending} />
+    {showAccess && canManage && <ProjectAccess key={projectId} client={client} projectId={projectId} onClose={() => setShowAccess(false)} />}
     {!canWrite && <p className="rack-muted" role="status">{writePending ? 'Checking creation access…'
       : writeUnavailable ? 'Creation permissions could not be checked. Reopen this workspace to retry.'
         : 'Read-only access. Creating plans requires rack.write.'}</p>}
@@ -225,6 +235,7 @@ function RackWorkspace({ client, context, routeState = {}, onRouteChange, onDirt
           : detail.data ? <>
             <div className="rack-heading"><h2>{detail.data.name}</h2><span className="rack-badge">{detail.data.deletedAt?'Deleted':detail.data.state} · v{detail.data.version}</span></div>
             {section.functionId === 'plans' && !draft && <><RackPlanActions key={detail.data.planId} client={client} plan={detail.data} canWrite={canWrite}
+              canDelete={canDelete} canRestore={canRestore}
               blocked={Boolean(draft||editDraft)} attempt={planAttempt} onAttempt={value=>onRouteChange({rackPlanAttempt:value})}
               onManaged={(value,operation)=>{onRouteChange({rackPlanAttempt:null,rackPlanId:operation==='delete'?null:value.planId,functionId:'plans'});
                 setDeleted(false);setNotice(operation==='delete'?'Plan moved to Deleted plans. You can restore it.':operation==='restore'?'Plan restored with its layout and equipment.':'Plan name updated.');reload();}}/>

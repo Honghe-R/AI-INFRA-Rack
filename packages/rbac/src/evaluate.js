@@ -70,7 +70,10 @@ export function createEvaluator({
           // resolution failure into a 404 before evaluation.
           return denied(REASON.INSUFFICIENT_PERMISSION, { projectId: scopedProjectId, organisationId: scopedOrganisationId });
         }
-        if (!scopedOrganisationId) scopedOrganisationId = project.organisationId ?? null;
+        if (scopedOrganisationId && project.organisationId && (typeof scopedOrganisationId !== 'string' || scopedOrganisationId.toLowerCase() !== project.organisationId.toLowerCase())) {
+          return denied(REASON.INSUFFICIENT_PERMISSION, { projectId: scopedProjectId, organisationId: project.organisationId });
+        }
+        scopedOrganisationId = project.organisationId ?? scopedOrganisationId ?? null;
       }
 
       const tags = [

@@ -1,0 +1,82 @@
+TAP version 13
+# Subtest: member mutation rejects arbitrary roles, statuses, versions and server-owned scope fields
+ok 1 - member mutation rejects arbitrary roles, statuses, versions and server-owned scope fields
+  ---
+  duration_ms: 1.5171
+  type: 'test'
+  ...
+# Subtest: member routes enforce authentication, manager role, foreign-project scope and no-store
+ok 2 - member routes enforce authentication, manager role, foreign-project scope and no-store
+  ---
+  duration_ms: 320.8303
+  type: 'test'
+  ...
+# Subtest: candidate search is organisation-scoped, active, bounded and literal
+ok 3 - candidate search is organisation-scoped, active, bounded and literal
+  ---
+  duration_ms: 157.6458
+  type: 'test'
+  ...
+# Subtest: adding, changing, suspending and reactivating a member updates grants and durable events
+ok 4 - adding, changing, suspending and reactivating a member updates grants and durable events
+  ---
+  duration_ms: 679.7073
+  type: 'test'
+  ...
+# Subtest: foreign/inactive users, scope injection, unsupported roles and self changes are rejected without events
+ok 5 - foreign/inactive users, scope injection, unsupported roles and self changes are rejected without events
+  ---
+  duration_ms: 191.3204
+  type: 'test'
+  ...
+# Subtest: optimistic versions reject stale and concurrent updates without duplicate events
+ok 6 - optimistic versions reject stale and concurrent updates without duplicate events
+  ---
+  duration_ms: 166.0736
+  type: 'test'
+  ...
+# Subtest: last-administrator guard serializes concurrent demotions even for an organisation manager
+ok 7 - last-administrator guard serializes concurrent demotions even for an organisation manager
+  ---
+  duration_ms: 131.3939
+  type: 'test'
+  ...
+# Subtest: inherited repository mutations advance versions including change-back ABA
+ok 8 - inherited repository mutations advance versions including change-back ABA
+  ---
+  duration_ms: 228.1015
+  type: 'test'
+  ...
+# Subtest: project suspension leaves an independent organisation grant effective
+ok 9 - project suspension leaves an independent organisation grant effective
+  ---
+  duration_ms: 174.8394
+  type: 'test'
+  ...
+# Subtest: service rechecks actual manager grants even if invoked after a stale gateway decision
+ok 10 - service rechecks actual manager grants even if invoked after a stale gateway decision
+  ---
+  duration_ms: 200.8599
+  type: 'test'
+  ...
+# Subtest: restricted database role cannot read another project access event or an unscoped event
+ok 11 - restricted database role cannot read another project access event or an unscoped event
+  ---
+  duration_ms: 191.7962
+  type: 'test'
+  ...
+# Subtest: event insertion failure rolls back membership and assignment together
+ok 12 - event insertion failure rolls back membership and assignment together
+  ---
+  duration_ms: 142.3697
+  type: 'test'
+  ...
+1..12
+# tests 12
+# suites 0
+# pass 12
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2735.0347

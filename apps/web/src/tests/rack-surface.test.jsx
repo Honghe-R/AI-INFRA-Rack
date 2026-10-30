@@ -13,10 +13,10 @@ const envelope = { ...context, lifecycleState: 'DRAFT', etag: 'token', designCon
 test('plan management separates recovery and blocks writes with a draft or without permission', () => {
   const plan={planId:'plan',name:'Example',placements:[]};
   assert.equal(renderToStaticMarkup(<RackPlanActions plan={plan} canWrite={false}/>),'');
-  const active=renderToStaticMarkup(<RackPlanActions plan={plan} canWrite blocked/>);
+  const active=renderToStaticMarkup(<RackPlanActions plan={plan} canWrite canDelete blocked/>);
   assert.match(active,/disabled=""[^>]*>Delete plan/);
   assert.match(active,/Save or discard/);
-  const trash=renderToStaticMarkup(<RackPlanActions plan={{...plan,deletedAt:'today'}} canWrite/>);
+  const trash=renderToStaticMarkup(<RackPlanActions plan={{...plan,deletedAt:'today'}} canWrite canRestore/>);
   assert.match(trash,/Restore plan/); assert.doesNotMatch(trash,/Delete plan|Rename plan/);
   const retry=renderToStaticMarkup(<RackPlanActions plan={plan} canWrite attempt={{operation:'rename',body:{name:'Exact retained name'}}}/>);
   const input=retry.match(/<input[^>]*>/)?.[0]??'';

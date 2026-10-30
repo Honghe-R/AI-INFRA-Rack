@@ -25,7 +25,7 @@ The implemented services are not yet a complete migration of all Rack commands i
 | --- | --- | --- |
 | List/read plans | createRackPlanService | rack.read; filtered cursor pagination |
 | Create plan | Plan service | rack.write; source/HALL validation and creation retry key |
-| Rename/delete/restore | Plan service.manage | rack.write; plan lock/version/idempotency |
+| Rename/delete/restore | Plan service.manage | rack.write / rack.delete / rack.restore respectively; plan lock/version/idempotency |
 | Read live room | Plan service.roomView | rack.read + facility.read |
 | Read fixed layout | createRackLayoutService.get | rack.read + facility.read |
 | Capture snapshot | Layout service.mutate capture | rack.write + facility.read; source/version guarded |

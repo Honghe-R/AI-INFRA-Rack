@@ -44,6 +44,8 @@ export const FACILITY_KEYS = Object.freeze({
 export const RACK_KEYS = Object.freeze({
   READ: 'rack.read',
   WRITE: 'rack.write',
+  DELETE: 'rack.delete',
+  RESTORE: 'rack.restore',
 });
 
 /** Every registered key, for drift checks and administration surfaces. */
@@ -79,7 +81,9 @@ export const ALL_PERMISSION_KEYS = Object.freeze([
   'project.member.manage',
   'project.read',
   'project.write',
+  'rack.delete',
   'rack.read',
+  'rack.restore',
   'rack.write',
   'system.admin',
   'system.catalog.manage',

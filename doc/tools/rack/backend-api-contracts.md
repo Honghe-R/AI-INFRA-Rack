@@ -14,9 +14,13 @@ Rack responses follow `{data,meta?}`; command metadata includes replay/applied-v
 | Room view/layout/check/options/allocation/design | rack.read | facility.read checked explicitly |
 | Create plan | rack.write | Valid project/scenario/HALL/source contract |
 | Capture snapshot/save layout | rack.write | facility.read and unchanged mutable source |
-| Rename/delete/restore | rack.write | Matching plan version and lifecycle |
+| Rename | rack.write | Matching plan version and lifecycle |
+| Delete | rack.delete | Matching plan version and lifecycle |
+| Restore | rack.restore | Matching plan version and lifecycle |
 
 Tenant transactions/RLS supplement route guards. IDs and UI read-only hints cannot authorize a request. Services are internal and expect authorized callers. Model tools reauthorize independently.
+
+Project membership administration is outside the `/rack` base, under `/api/v1/projects/:projectId/members` and `/member-candidates`. It requires `project.member.manage`, fresh transactional actor checks and versioned commands; see [Authentication and Access Control](access-control.md) for the complete workflow, request shape and inherited-grant caveats.
 
 ## Resource Reads
 

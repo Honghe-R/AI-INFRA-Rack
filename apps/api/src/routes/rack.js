@@ -82,6 +82,6 @@ export function registerRackRoutes(router, { pool, guard }) {
       const result=await service.manage({projectId:ctx.params.projectId,planId:ctx.params.planId,
         actorId:ctx.user.userId,operation,body:ctx.body,key:ctx.headers['idempotency-key'],ifMatch:ctx.headers['if-match']});
       return {data:result.plan,meta:{replayed:result.replayed,applied_version:result.appliedVersion},headers:{etag:`"${result.plan.version}"`}};
-    }),{permission:RACK_KEYS.WRITE,projectParam:'projectId'});
+    }),{permission:operation === 'delete' ? RACK_KEYS.DELETE : operation === 'restore' ? RACK_KEYS.RESTORE : RACK_KEYS.WRITE,projectParam:'projectId'});
   }
 }

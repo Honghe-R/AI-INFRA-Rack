@@ -318,7 +318,10 @@ export function createRbacRepository({ pool }) {
 
       if (projectId) {
         const project = await this.getProject(projectId);
-        if (project && !resolvedOrganisationId) resolvedOrganisationId = project.organisationId;
+        if (!project || (resolvedOrganisationId && project.organisationId && (typeof resolvedOrganisationId !== 'string' || resolvedOrganisationId.toLowerCase() !== project.organisationId.toLowerCase()))) {
+          return { keys: [], organisationId: project?.organisationId ?? null };
+        }
+        resolvedOrganisationId = project.organisationId ?? resolvedOrganisationId;
         for (const key of await this.grantedKeys({ userId, scopeKind: 'project', scopeId: projectId })) keys.add(key);
       }
       if (resolvedOrganisationId) {
