@@ -154,7 +154,7 @@ export function RackWorkbench({snapshot, placements, models, constraints, equipm
                 {w>10&&[.22,.4,.58,.76].map(f=><g key={f}><line className="rack-studio-slot" x1={-w*.32} x2={w*.32} y1={-h/2+h*f} y2={-h/2+h*f}/><circle className="rack-studio-led" cx={w*.28} cy={-h/2+h*f} r={Math.min(1.2,w*.04)}/></g>)}
                 <line className="rack-studio-front" x1={-w*.35} x2={w*.35} y1={h/2-2} y2={h/2-2}/>
               </g>
-              {w>8&&<text x={x} y={y-(r.rotationDeg%180===0?h:w)/2-7} textAnchor="middle" style={{fontSize:8}}>{r.name}</text>}
+              {(selectedId===r.rackId||w>=Math.max(16,r.name.length*5))&&<text x={x} y={y-(r.rotationDeg%180===0?h:w)/2-7} textAnchor="middle" style={{fontSize:8}}>{r.name}</text>}
             </g>;
           })}</g>
           <g className="rack-studio-scale"><rect x="14" y="390" width="118" height="40" rx="5"/><path d={`M26 413 v6 h${scaleM*camera.scale} v-6`}/><text x="26" y="405">{scaleM} m · To scale</text></g>

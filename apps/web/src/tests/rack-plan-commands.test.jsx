@@ -6,11 +6,22 @@ import { beginLayoutDraft, defaultEditorEquipment, defaultEditorConstraints } fr
 import { RackCapacityTable, RackElevations, capacityLabel } from '../rack/RackViews.jsx';
 import { ActiveToolToolbar } from '../shell/ActiveToolToolbar.jsx';
 import { RackAddDialog } from '../rack/RackAddDialog.jsx';
+import { MAX_EQUIPMENT_DEVICES } from '../rack/limits.generated.js';
 
 const model = {modelId:'m',name:'42U',heightU:42,widthM:.6,depthM:1.2};
 const layout = {planId:'p',version:3,snapshot:{snapshotId:'s',view:{extentM:{width:20,height:10}}},sourceStatus:{status:'UNCHANGED'},models:[model],placements:[],constraints:defaultEditorConstraints(),equipment:defaultEditorEquipment()};
 const catalog = {models:[{modelId:'gpu',version:2,name:'GPU',specification:{heightU:4,weightKg:80,powerKw:3,coolingKw:3}}]};
 const rackValues = {modelId:'m',name:'Rack <A>',xM:'3',yM:'4',rotationDeg:'90'};
+
+test('batch additions cross the old limit but respect the shared inventory maximum', () => {
+  const equipment = count => ({ ...defaultEditorEquipment(), devices: Array.from({length:count}, (_, i) => ({
+    deviceId:`existing-${i}`,name:`Device ${i}`,heightU:1,weightKg:1,powerKw:1,coolingKw:1,rackId:null,startU:null })) });
+  const add = count => addPlanObject(layout, {...beginLayoutDraft(layout),equipment:equipment(count)}, 'rack_device',
+    {quantity:1,catalogKey:'gpu@2'},catalog,()=>`new-${count}`);
+  assert.equal(add(512).draft.equipment.devices.length, 513);
+  assert.equal(add(MAX_EQUIPMENT_DEVICES - 1).draft.equipment.devices.length, MAX_EQUIPMENT_DEVICES);
+  assert.throws(() => add(MAX_EQUIPMENT_DEVICES), /2048-device/);
+});
 
 test('toolbar registers Rack domain commands, explains missing plan and filters writer commands for readers', () => {
   const html = renderToStaticMarkup(<ActiveToolToolbar toolId="rack" grantedKeys={['rack.read','rack.write']} disabledReasons={{rack_add:'Select a saved Plan first.'}}/>);
@@ -52,7 +63,7 @@ test('invalid or oversized additions fail without modifying saved or unsaved inp
   assert.throws(()=>addPlanObject(layout,draft,'rack_add',{...rackValues,xM:''},catalog));
   assert.throws(()=>addPlanObject(layout,{...draft,placements:Array(256).fill({})},'rack_add',rackValues,catalog));
   assert.throws(()=>addPlanObject(layout,{...draft,constraints:{...draft.constraints,obstacles:Array(64).fill({})}},'rack_zone',{},catalog));
-  assert.throws(()=>addPlanObject(layout,{...draft,equipment:{...draft.equipment,devices:Array(512).fill({})}},'rack_device',{quantity:1,catalogKey:'gpu@2'},catalog));
+  assert.throws(()=>addPlanObject(layout,{...draft,equipment:{...draft.equipment,devices:Array(MAX_EQUIPMENT_DEVICES).fill({})}},'rack_device',{quantity:1,catalogKey:'gpu@2'},catalog));
   assert.throws(()=>addPlanObject(layout,{...draft,attempt:{}},'rack_add',rackValues,catalog));
   assert.deepEqual(draft,before);assert.equal(layout.placements.length,0);
 });

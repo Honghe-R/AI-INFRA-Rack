@@ -1,3 +1,5 @@
+import { MAX_EQUIPMENT_DEVICES, MAX_EQUIPMENT_RACK_LIMITS } from './limits.generated.js';
+
 export function rackCorners(rack, model) {
   const [cos, sin] = [
     [1, 0],
@@ -54,11 +56,11 @@ export function validateEditorEquipment(e, placements) {
     return 'Record the equipment planning reference and inventory coverage.';
   if (
     !Array.isArray(e.devices) ||
-    e.devices.length > 512 ||
+    e.devices.length > MAX_EQUIPMENT_DEVICES ||
     !Array.isArray(e.rackLimits) ||
-    e.rackLimits.length > 256
+    e.rackLimits.length > MAX_EQUIPMENT_RACK_LIMITS
   )
-    return 'Equipment supports up to 512 devices and 256 rack limits.';
+    return `Equipment supports up to ${MAX_EQUIPMENT_DEVICES} devices and ${MAX_EQUIPMENT_RACK_LIMITS} rack limits.`;
   const quantity = (v) => v === null || (Number.isFinite(v) && v >= 0 && v <= 1000000);
   if (e.roomBudget != null && (e.roomBudget.source?.kind !== 'ASSUMED' ||
     typeof e.roomBudget.source.reference !== 'string' || !e.roomBudget.source.reference.trim() || e.roomBudget.source.reference.length > 512 ||

@@ -23,7 +23,7 @@ Tool data shown in these references belonged to different revisions. Switching t
 
 Keep Plans creation/deletion/restoration, then add Rack-appropriate commands inside each selected plan. Use floor layout, elevations and capacity table with one shared inspector and object identity. Keep metric/unknown/provenance labels and source/version guards. Use a physical room Polygon and metre coordinates; do not turn Network/Power graph spacing into physical feasibility.
 
-The current local full-hall sample is explicitly synthetic: 32 racks with mixed equipment, exclusions and resource assumptions. Its size/appearance is not evidence that teacher topology or engineering data was reused.
+The local hall samples are explicitly synthetic: the original32-rack plan is preserved, and a separate128-rack, eight-row plan contains944 installed devices plus eight unassigned devices, exclusions and resource assumptions. Cabinets and installed devices both scale by four; actual checked utilization produces80 high-load and48 normal cabinet colors. See [demonstration setup](../../../RACK_HALL_DEMO.md). Their size/appearance is not evidence that teacher topology or engineering data was reused.
 
 ## Non-Transferable Conclusions
 

@@ -1,0 +1,6 @@
+
+> ai-network-infra-simulator@0.1.0 rack:demo:hall
+> node --env-file-if-exists=.env scripts/rack-hall-demo.mjs 4c11ab8d-5d57-4ad8-ad55-ac08574fba46 4b8f7bf3-9015-455f-8bc8-ef3520f0d748 --upgrade-large-equipment
+
+{"name":"Large Hall Demo · 128 Racks / 8 Equipment Rows","planId":"879a2cbc-87d4-4c7a-93c3-ca435e3f34f3","version":3,"retainedExisting":true,"message":"Existing demo retained exactly; no layout or candidate changed."}
+{"unchangedOldPlans":2,"sourceUnchanged":true,"candidatesSaved":false}

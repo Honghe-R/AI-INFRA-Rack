@@ -1,0 +1,14 @@
+
+> @ai-infra/web@0.1.0 test
+> vitest run src/tests/rack-workbench.test.jsx
+
+
+ RUN  v2.1.9 C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/web
+
+ ✓ src/tests/rack-workbench.test.jsx (7 tests) 36ms
+
+ Test Files  1 passed (1)
+      Tests  7 passed (7)
+   Start at  23:40:22
+   Duration  996ms (transform 165ms, setup 0ms, collect 446ms, tests 36ms, environment 0ms, prepare 231ms)
+

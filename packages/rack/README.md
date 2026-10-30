@@ -25,6 +25,7 @@ Public exports:
 - `checkRackPlacement(room, model, placement)`: single-rack room/obstacle checks with rule IDs, evidence and unchecked scope.
 - `checkRackLayout(input)`: checks supplied rack/model inventories in one declared project/plan, reuses single-rack rules and reports each overlapping pair once.
 - `MAX_LAYOUT_RACKS` / `MAX_LAYOUT_MODELS`: explicit inventory limits (256 each).
+- `MAX_EQUIPMENT_DEVICES` / `MAX_EQUIPMENT_RACK_LIMITS`: saved inventory limits (2,048 devices/256 records), defined in `src/limits.js`. Regenerate the browser mirror with `node scripts/rack-sync-limits.mjs` from the repository root; `--check` verifies parity without runtime frontend-to-backend imports. Algorithm search budgets and HTTP body bounds are independent.
 - `MAX_ROOM_OBSTACLES`: input bound (256); larger inventories must not be silently truncated.
 - `SPATIAL_RULES`: stable identifiers for the two implemented spatial rules.
 - `RackInputError`: stable `RACK_INPUT_INVALID` code and a field/reason detail for invalid input.

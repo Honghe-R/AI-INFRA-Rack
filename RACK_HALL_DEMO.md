@@ -1,4 +1,66 @@
-# 多排机房演示（第十九轮）
+# Rack Hall Demonstrations
+
+## Larger demonstration — updated 2026-10-31, round33
+
+Open `http://localhost:5193/` → **Northern DC Campus** → **Rack**, refresh plans if needed, and select **Large Hall Demo · 128 Racks / 8 Equipment Rows**. Choose **Expand workbench** for the large floor view.
+
+| Item | Large hall | Preserved original hall |
+| --- | --- | --- |
+| Racks | 128, rows A–H, 16 per row | 32, rows A–D, eight per row |
+| Installed / unassigned devices | 944 / 8 | 236 / 8 |
+| Total inventory | 952 | 244 |
+| Locked / movable racks | 96 / 32 | 24 / 8 |
+| Installed power / cooling | 960 kW each | 240 kW each |
+| Assumed room budgets | 966 kW each | 246 kW each |
+| Power utilization | 54%–98.75%,80 high-load/48 normal | 54%–98.75%,20 high-load/12 normal |
+
+The larger example is a separate plan. Local ID: `879a2cbc-87d4-4c7a-93c3-ca435e3f34f3`, upgraded from saved version2 to3. Round33 expanded its inventory in place after checking that its equipment was still the exact generated round32 fixture and saving a backup; rack geometry and constraints were preserved. Other plans were unchanged. The original plan's current name is **Full Hall Demo · 32 Racks / Mixed Equipment Rows**; the runner also recognizes its legacy name below.
+
+### Equipment and layout
+
+All cabinets are assumed42U, alternating800mm/600mm widths,1,200mm depth. Equipment density now matches the32-rack example: both cabinets and installed inventory scale by four. These remain teaching assumptions, not production load certification. Profiles repeat after four rows:
+
+| Rows | Per-rack contents | Installed devices |
+| --- | --- | --- |
+| A, E | Three GPU servers and one ToR switch | 128 |
+| B, F | Ten compute servers and one ToR switch | 352 |
+| C, G | One GPU server, four compute servers and one ToR switch | 192 |
+| D, H | Repeated network/compute/inference profiles from the original demo | 272 |
+
+Installed totals:144 GPU servers,576 compute servers,224 switches. Row names describe this example, not persistent zones or network links. Per-rack power limits vary4–12kW with1,000kg weight limits. Front/rear bands remain1m/0.6m with alternating faces. Four no-placement rectangles reserve central/north/south aisles and staging. The API checks the real HALL Polygon, including holes.
+
+### View and demonstrate
+
+1. **Floor layout** shows128 cabinets. Color by **Power** uses actual checked power/limit ratios:80 cabinets at or above80%,48 below80%, none over limit. The threshold and palette are unchanged. Dense views hide labels that cannot fit; selection always reveals the label. Hover titles/search retain every identity. Select B01: ten compute servers plus a switch,21/42U occupied,8.3/10kW. G01: GPU plus four compute servers and a switch,13/42U,6.5/8kW.
+2. **Rack elevations** and **Capacity table** use the same plan and selection.
+3. **Equipment allocation** admits two pending GPUs. Four compute servers exceed the remaining budget, the100U device has no eligible position and one device has unknown resources. Preview does not save.
+4. **Layout options**,2m grid, rotations disabled, COMPARE: two stageable candidates,32 movable racks relocated,96 locked placements and all equipment retained. Compare before applying: bounded greedy relocation does not guarantee a better or globally optimal layout.
+
+This occupies part of the approximately9,230m² room. Obstacle coverage remains UNKNOWN, eight devices remain unassigned and whole-plan validation remains NOT_RUN. Empty diagnostics do not certify connected egress, airflow, electrical distribution or network cabling.
+
+### Reproduce locally
+
+Pulling code does not transfer the local database. Prepare an isolated Rack stack, synthetic Facility/Catalog and source plan, then run:
+
+```powershell
+npm run rack:demo:hall -- <local-project-uuid> <source-plan-uuid> --large
+```
+
+Omit `--large` to create/retain the32-rack example. The runner checks the isolated environment/synthetic source, uses ordinary authorized APIs and compares other active scoped plans before/after. Existing matching demos are retained exactly, including edits. A40×40m minimum extent is required; actual Polygon feasibility is checked separately. No reset/seed, migration or teacher access.
+
+For an existing sparse round32 demo, explicitly upgrade only its generated equipment:
+
+```powershell
+npm run rack:demo:hall -- <local-project-uuid> <original-source-plan-uuid> --upgrade-large-equipment
+```
+
+Use the same source plan as creation. The upgrade refuses changed equipment or rack identities/models, preserves current positions/constraints and writes a pre-upgrade JSON backup before a versioned API save. An already upgraded inventory is a no-op. Ordinary `--large` still retains existing plans without upgrading them.
+
+Saved inventory capacity is now2,048 devices, while saved racks remain256. Domain limits live in `packages/rack/src/limits.js`; update browser mirrors with `node scripts/rack-sync-limits.mjs` and check with `--check`. Browser runtime imports no backend package. The existing1MiB HTTP body cap still applies; the fixture and the integration-test2,048-device body fit it. Relocation still allows64 movable racks, allocation64 unlocked targets/128 pending devices, demand design32 generated racks. These separate search budgets were not needed to run this128-rack/944-installed-device example and remain bounded.
+
+[Round33 evidence](records/2026-10-30-rack-density-upgrade/commands.md): full Rack domain tests, fixture/parity tests, DB/HTTP boundary checks, upgrade/readback/preview preservation, browser color/capacity/elevation checks and a successful Web build. A single local relocation comparison took14.6s; this is not a scaling benchmark or SLA. The full Web suite has one inherited import-boundary failure, recorded separately. [Round32 evidence](records/2026-10-30-rack-large-hall/commands.md) describes the superseded sparse fixture.
+
+## Historical round19 record
 
 第二十轮更新：Rack layout 已改为点阵工作台与右侧 Inspector。现在点“设备区”或“整个房间”自动适配，点“展开工作台”同时展开画布和详情；原 Fit racks / Expand map 控件仍用于 Space rules 和算法候选图。最新操作见 [RACK_VISUAL_WORKBENCH.md](RACK_VISUAL_WORKBENCH.md)。
 

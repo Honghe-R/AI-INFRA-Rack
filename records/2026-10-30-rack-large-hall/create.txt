@@ -1,0 +1,104 @@
+
+> ai-network-infra-simulator@0.1.0 rack:demo:hall
+> node --env-file-if-exists=.env scripts/rack-hall-demo.mjs 4c11ab8d-5d57-4ad8-ad55-ac08574fba46 4b8f7bf3-9015-455f-8bc8-ef3520f0d748 --large
+
+{
+  "name": "Large Hall Demo · 128 Racks / 8 Equipment Rows",
+  "planId": "879a2cbc-87d4-4c7a-93c3-ca435e3f34f3",
+  "version": 2,
+  "racks": 128,
+  "installedDevices": 384,
+  "inventoryDevices": 392,
+  "unassignedDevices": 8,
+  "lockedRacks": 96,
+  "powerKw": 336,
+  "roomLimitKw": 342,
+  "spatialStatus": "INCOMPLETE",
+  "equipmentStatus": "INCOMPLETE",
+  "validationState": "NOT_RUN",
+  "allocation": {
+    "assigned": 2,
+    "remaining": 6,
+    "reasons": [
+      "NO_ELIGIBLE_POSITION",
+      "ROOM_BUDGET_EXCEEDED",
+      "ROOM_BUDGET_EXCEEDED",
+      "ROOM_BUDGET_EXCEEDED",
+      "ROOM_BUDGET_EXCEEDED",
+      "UNKNOWN_DEVICE_RESOURCE"
+    ]
+  },
+  "layoutCandidates": [
+    {
+      "algorithmId": "row-scan-v1",
+      "canStage": true,
+      "movedRacks": 32,
+      "unplaced": 0
+    },
+    {
+      "algorithmId": "largest-first-v1",
+      "canStage": true,
+      "movedRacks": 32,
+      "unplaced": 0
+    }
+  ],
+  "note": "Single local smoke timings, not a scaling benchmark or production capacity claim.",
+  "timings": [
+    {
+      "method": "GET",
+      "endpoint": "/plans/:id/layout",
+      "durationMs": 86.67
+    },
+    {
+      "method": "GET",
+      "endpoint": "/catalog",
+      "durationMs": 31.19
+    },
+    {
+      "method": "GET",
+      "endpoint": "/plans?limit=50&scenario_id=4ee0094b-9f4e-4e45-8c3e-244fe83348d2&revision_id=c5b4b888-e66e-4ffa-bb0e-2dd738ed5f4d",
+      "durationMs": 29.72
+    },
+    {
+      "method": "GET",
+      "endpoint": "/plans/:id/layout",
+      "durationMs": 31.69
+    },
+    {
+      "method": "GET",
+      "endpoint": "/plans/:id/layout",
+      "durationMs": 55.87
+    },
+    {
+      "method": "POST",
+      "endpoint": "/plans",
+      "durationMs": 114.79
+    },
+    {
+      "method": "GET",
+      "endpoint": "/plans/:id/layout",
+      "durationMs": 39.42
+    },
+    {
+      "method": "POST",
+      "endpoint": "/plans/:id/layout/check",
+      "durationMs": 712.56
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/plans/:id/layout",
+      "durationMs": 713.86
+    },
+    {
+      "method": "POST",
+      "endpoint": "/plans/:id/layout/equipment-options",
+      "durationMs": 489.9
+    },
+    {
+      "method": "POST",
+      "endpoint": "/plans/:id/layout/options",
+      "durationMs": 14138.55
+    }
+  ]
+}
+{"unchangedOldPlans":2,"sourceUnchanged":true,"candidatesSaved":false}

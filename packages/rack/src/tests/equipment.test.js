@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { normalizeEquipment, checkEquipment, EMPTY_EQUIPMENT } from '../equipment.js';
+import { MAX_EQUIPMENT_DEVICES } from '../limits.js';
 
 const rackId = randomUUID(),
   otherRackId = randomUUID(),
@@ -68,7 +69,7 @@ test('equipment rejects malformed, missing, injected and unbounded fields', () =
     doc([], { projectId: randomUUID() }),
     doc([], { coverage: 'COMPLETE' }),
     doc([], { source: { kind: 'REFERENCE', reference: 'x' } }),
-    doc([], { devices: Array.from({ length: 513 }, () => device()) }),
+    doc([], { devices: Array.from({ length: MAX_EQUIPMENT_DEVICES + 1 }, () => device()) }),
   ])
     assert.throws(() => normalizeEquipment(input, placements));
   for (const patch of [
@@ -206,10 +207,22 @@ test('model capacity fallback and report incompleteness are scoped to declared i
   assert.ok(complete.uncheckedRules.includes('GLOBAL_ASSET_IDENTITY'));
   assert.equal(complete.racks[0].capacities.weightKg.limitSource, 'MODEL');
 });
-test('512-device inventory is checked fully with bounded totals and no mutation', () => {
-  const devices = Array.from({ length: 512 }, (_, i) => device({ heightU: 1, rackId: null, startU: null }));
+test('full supported inventory is checked with bounded totals and no mutation', () => {
+  const devices = Array.from({ length: MAX_EQUIPMENT_DEVICES }, (_, i) => device({ heightU: 1, rackId: null, startU: null }));
   const input = doc(devices);
   const copy = structuredClone(input);
-  assert.equal(report(input).devicesChecked, 512);
+  assert.equal(report(input).devicesChecked, MAX_EQUIPMENT_DEVICES);
   assert.deepEqual(input, copy);
+});
+
+test('full supported installed inventory preserves every slot and capacity across 128 cabinets', () => {
+  const racks = Array.from({length:128}, () => ({rackId:randomUUID(), modelId}));
+  const perRack = MAX_EQUIPMENT_DEVICES / racks.length;
+  const devices = racks.flatMap(r => Array.from({length:perRack}, (_, i) => device({rackId:r.rackId,heightU:1,startU:i+1})));
+  const input = doc(devices, {coverage:'DECLARED_COMPLETE',rackLimits:racks.map(r => limit(r.rackId,{maxWeightKg:1000,maxPowerKw:100,maxCoolingKw:100}))});
+  const result = report(input,racks);
+  assert.equal(result.installedDevices,MAX_EQUIPMENT_DEVICES);
+  assert.equal(result.unassignedDeviceIds.length,0);
+  assert.deepEqual(result.diagnostics,[]);
+  assert.ok(result.racks.every(r => r.occupiedU === perRack && r.freeU === 42-perRack && r.capacities.powerKw.total === perRack));
 });

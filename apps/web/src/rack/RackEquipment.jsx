@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { RackRoomCapacity } from './RackRoomCapacity.jsx';
 import { deviceFromCatalog, detachCatalogDevice, modelKey } from '../catalog/catalog-state.js';
+import { MAX_EQUIPMENT_DEVICES } from './limits.generated.js';
 
 const dimensions = [
   ['weightKg', 'maxWeightKg', 'Weight', 'kg'],
@@ -132,9 +133,9 @@ export function RackEquipment({
       </label>
       <div hidden={mode === 'capacity'} data-equipment-panel="devices">
       <div className="rack-actions">
-        <h4>Devices · {e.devices.length}/512</h4>
+        <h4>Devices · {e.devices.length}/{MAX_EQUIPMENT_DEVICES}</h4>
         <button
-          disabled={!editable || e.devices.length >= 512}
+          disabled={!editable || e.devices.length >= MAX_EQUIPMENT_DEVICES}
           onClick={() => {
             const deviceId = crypto.randomUUID();
             patch({
@@ -166,8 +167,8 @@ export function RackEquipment({
             {catalog.models.map((item) => <option key={modelKey(item)} value={modelKey(item)}>{item.name} · v{item.version}</option>)}
           </select></label>
           {catalogModel && <p className="rack-muted">ASSUMED · {catalogModel.specification.heightU} U · {display(catalogModel.specification.weightKg)} kg · {display(catalogModel.specification.powerKw)} kW power · {display(catalogModel.specification.coolingKw)} kW cooling. Unknown values stay unknown.</p>}
-          <button disabled={!editable || !catalogModel || e.devices.length >= 512} onClick={() => {
-            if (!editable || !catalogModel || e.devices.length >= 512) return;
+          <button disabled={!editable || !catalogModel || e.devices.length >= MAX_EQUIPMENT_DEVICES} onClick={() => {
+            if (!editable || !catalogModel || e.devices.length >= MAX_EQUIPMENT_DEVICES) return;
             const deviceId = crypto.randomUUID();
             patch({ devices: [...e.devices, deviceFromCatalog(catalogModel, deviceId)] });
             setSelectedId(deviceId);

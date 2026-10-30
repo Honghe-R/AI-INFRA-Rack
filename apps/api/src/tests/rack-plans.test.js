@@ -10,7 +10,7 @@ import { createRouter } from '../router.js';
 import { registerRackRoutes } from '../routes/rack.js';
 import { createRackPlanService } from '../services/rack-plans.js';
 import { createRackLayoutService } from '../services/rack-layout.js';
-import { getRackCatalog } from '@ai-infra/rack';
+import { getRackCatalog, MAX_EQUIPMENT_DEVICES } from '@ai-infra/rack';
 import { plannerGeometry, normalizeEditableLayout } from '@ai-infra/rack';
 import { pickRackPosition } from '../services/rack-planner-geometry.js';
 import { createRackAssistantSurface } from '../services/rack-assistant.js';
@@ -832,6 +832,23 @@ test('Rack save waits for a concurrent source update and rejects its obsolete in
 const constraintsInput=(patch={})=>({obstacleCoverage:'UNKNOWN',source:{kind:'ASSUMED',reference:'Integration test planning assumption'},obstacles:[],clearance:null,...patch});
 const equipmentInput=(devices=[],patch={})=>({coverage:'UNKNOWN',source:{kind:'ASSUMED',reference:'Test-only equipment and capacity assumptions'},devices,rackLimits:[],...patch});
 const testDevice=(rackId,patch={})=>({deviceId:randomUUID(),name:'Test server',heightU:2,weightKg:20,powerKw:1,coolingKw:1,rackId,startU:rackId?1:null,...patch});
+
+test('Rack larger inventory saves at the shared bound and rejects overflow without changes', {skip}, async()=>fixture(async f=>server(f.people,async request=>{
+  const {url,layout}=await prepared(f,request);
+  const devices=Array.from({length:MAX_EQUIPMENT_DEVICES},()=>testDevice(null));
+  const body={...layoutBody(layout,[]),equipment:equipmentInput(devices)};
+  assert.ok(Buffer.byteLength(JSON.stringify(body))<1024*1024);
+  const checked=await request(`${url}/check`,{body,user:'viewer'});
+  assert.equal(checked.status,200,JSON.stringify(checked.body.error));
+  assert.equal(checked.body.data.equipmentReport.devicesChecked,MAX_EQUIPMENT_DEVICES);
+  const saved=await request(url,{method:'PUT',body,version:1,user:'editor'});
+  assert.equal(saved.status,200,JSON.stringify(saved.body.error));
+  const read=await request(url,{user:'viewer'});
+  assert.deepEqual(read.body.data.equipment.devices,devices);
+  const overflow={...body,equipment:equipmentInput([...devices,testDevice(null)])};
+  assert.equal((await request(url,{method:'PUT',body:overflow,version:2,user:'editor'})).status,400);
+  assert.deepEqual((await request(url)).body.data,saved.body.data);
+})));
 
 test('Rack equipment persists atomically, restores exact retries, preserves omitted equipment and rejects old versions', {skip}, async()=>fixture(async f=>server(f.people,async request=>{
   const {url,layout}=await prepared(f,request);assert.equal(layout.equipment.coverage,'UNKNOWN');assert.deepEqual(layout.equipment.devices,[]);

@@ -1,0 +1,205 @@
+
+> @ai-infra/web@0.1.0 test
+> vitest run
+
+
+ RUN  v2.1.9 C:/Users/RHH/Desktop/AI-INFRA-Rack/apps/web
+
+ ✓ src/tests/ui-actions.test.js (21 tests) 11ms
+ ✓ src/tests/canvas-palette-mount.test.js (5 tests) 5ms
+ ✓ src/tests/authoring-state.test.js (21 tests) 13ms
+ ✓ src/tests/canvas-state.test.js (25 tests) 14ms
+ ✓ src/tests/dev-identity.test.js (13 tests) 6ms
+ ✓ src/tests/entity-resolver.test.js (16 tests) 10ms
+ ✓ src/tests/markdown.test.js (16 tests) 10ms
+ ✓ src/tests/api-client.test.js (12 tests) 14ms
+ ✓ src/tests/geometry-placement.test.js (13 tests) 19ms
+ ✓ src/tests/assistant-state.test.js (14 tests) 67ms
+ ✓ src/tests/facility-overlay.test.js (18 tests) 9ms
+ ✓ src/tests/facility-verification.test.js (17 tests) 21ms
+ ✓ src/tests/ui-context.test.js (14 tests) 8ms
+ ✓ src/tests/verification-surface.test.jsx (23 tests) 142ms
+ ✓ src/tests/assistant-session.test.js (41 tests) 53ms
+ ✓ src/tests/account-control-render.test.jsx (12 tests) 36ms
+ ✓ src/tests/open-views.test.js (14 tests) 9ms
+ ✓ src/tests/toolbar-structure.test.jsx (9 tests) 30ms
+ ✓ src/tests/basemap-canvas.test.jsx (22 tests) 211ms
+ ✓ src/tests/facility-authoring-render.test.jsx (20 tests) 58ms
+ ✓ src/tests/canvas-move.test.js (8 tests) 8ms
+ ✓ src/tests/permission-client.test.js (13 tests) 9ms
+ ✓ src/tests/assistant-tool-surface-render.test.jsx (19 tests) 70ms
+ ✓ src/tests/site-facility-canvas-render.test.jsx (14 tests) 98ms
+ ✓ src/tests/shell-layout.test.js (7 tests) 5ms
+ ✓ src/tests/assistant-render.test.jsx (50 tests) 121ms
+ ✓ src/tests/bottom-drawer.test.js (9 tests) 7ms
+ ✓ src/tests/asset-state.test.js (10 tests) 10ms
+ ✓ src/tests/import-picker.test.jsx (10 tests) 43ms
+ ✓ src/tests/move-geometry.test.js (7 tests) 9ms
+ ✓ src/tests/canvas-selection.test.js (6 tests) 5ms
+ ✓ src/tests/open-project.test.js (11 tests) 8ms
+ ✓ src/tests/staged-geometry.test.js (6 tests) 7ms
+ ✓ src/tests/rack-plan-commands.test.jsx (7 tests) 46ms
+ ✓ src/tests/text-contrast.test.js (3 tests) 4ms
+ ✓ src/tests/rack-catalog.test.jsx (7 tests) 34ms
+ ✓ src/tests/rack-equipment.test.jsx (6 tests) 38ms
+ ✓ src/tests/launcher-position.test.js (5 tests) 6ms
+ ✓ src/tests/canvas-search-render.test.jsx (7 tests) 29ms
+ ✓ src/tests/rack-workbench.test.jsx (7 tests) 79ms
+ ✓ src/tests/drag-placement.test.js (5 tests) 3ms
+ ✓ src/tests/rack-constraints.test.jsx (5 tests) 18ms
+ ✓ src/tests/canvas-palette-render.test.jsx (6 tests) 20ms
+ ✓ src/tests/facility-search.test.js (7 tests) 6ms
+ ✓ src/tests/tool-registry.test.js (8 tests) 5ms
+ ✓ src/tests/rack-sections.test.jsx (4 tests) 19ms
+ ✓ src/tests/rack-editor.test.jsx (4 tests) 14ms
+ ✓ src/tests/project-access.test.jsx (5 tests) 14ms
+ ✓ src/tests/rack-inputs.test.jsx (3 tests) 19ms
+ ✓ src/tests/assistant-connection.test.jsx (4 tests) 17ms
+ ✓ src/tests/canvas-basemap-default.test.jsx (1 test) 26ms
+ ✓ src/tests/rack-options.test.jsx (4 tests) 13ms
+ ✓ src/tests/workspace-context.test.js (6 tests) 5ms
+ ✓ src/tests/asset-permission-scope.test.jsx (4 tests) 21ms
+ ✓ src/tests/rack-demand-design.test.jsx (3 tests) 21ms
+ ✓ src/tests/rack-surface.test.jsx (5 tests) 14ms
+ ✓ src/tests/rack-floorplan.test.jsx (4 tests) 24ms
+ ✓ src/tests/move-geometry-parity.test.js (2 tests) 29ms
+ ✓ src/tests/rack-allocation.test.jsx (3 tests) 16ms
+ ✓ src/tests/rack-hall-inventory.test.jsx (3 tests) 36ms
+ ✓ src/tests/rack-room-budget.test.jsx (4 tests) 23ms
+ ✓ src/tests/assets-render.test.jsx (8 tests) 36ms
+ ✓ src/tests/shell-render.test.jsx (31 tests) 173ms
+ ❯ src/tests/import-boundaries.test.js (3 tests | 1 failed) 2724ms
+   × the workspace shell imports nothing from the backend 780ms
+     → apps/web must not import a backend package; move what it needs into the shell instead:
+  apps\web\src\rack\edit-layout-state.js: @ai-infra/rack/limits
+  apps\web\src\rack\rack-commands.js: @ai-infra/rack/limits
+  apps\web\src\rack\RackEquipment.jsx: @ai-infra/rack/limits
+  apps\web\src\tests\rack-equipment.test.jsx: @ai-infra/rack/limits
+  apps\web\src\tests\rack-plan-commands.test.jsx: @ai-infra/rack/limits
+  apps\web\src\tests\rack-room-budget.test.jsx: @ai-infra/rack
++ actual - expected
+
++ [
++   {
++     file: 'apps\\web\\src\\rack\\edit-layout-state.js',
++     specifier: '@ai-infra/rack/limits'
++   },
++   {
++     file: 'apps\\web\\src\\rack\\rack-commands.js',
++     specifier: '@ai-infra/rack/limits'
++   },
++   {
++     file: 'apps\\web\\src\\rack\\RackEquipment.jsx',
++     specifier: '@ai-infra/rack/limits'
++   },
++   {
++     file: 'apps\\web\\src\\tests\\rack-equipment.test.jsx',
++     specifier: '@ai-infra/rack/limits'
++   },
++   {
++     file: 'apps\\web\\src\\tests\\rack-plan-commands.test.jsx',
++     specifier: '@ai-infra/rack/limits'
++   },
++   {
++     file: 'apps\\web\\src\\tests\\rack-room-budget.test.jsx',
++     specifier: '@ai-infra/rack'
++   }
++ ]
+- []
+
+   ✓ no package imports an application 1941ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/tests/import-boundaries.test.js > the workspace shell imports nothing from the backend
+AssertionError: apps/web must not import a backend package; move what it needs into the shell instead:
+  apps\web\src\rack\edit-layout-state.js: @ai-infra/rack/limits
+  apps\web\src\rack\rack-commands.js: @ai-infra/rack/limits
+  apps\web\src\rack\RackEquipment.jsx: @ai-infra/rack/limits
+  apps\web\src\tests\rack-equipment.test.jsx: @ai-infra/rack/limits
+  apps\web\src\tests\rack-plan-commands.test.jsx: @ai-infra/rack/limits
+  apps\web\src\tests\rack-room-budget.test.jsx: @ai-infra/rack
++ actual - expected
+
++ [
++   {
++     file: 'apps\\web\\src\\rack\\edit-layout-state.js',
++     specifier: '@ai-infra/rack/limits'
++   },
++   {
++     file: 'apps\\web\\src\\rack\\rack-commands.js',
++     specifier: '@ai-infra/rack/limits'
++   },
++   {
++     file: 'apps\\web\\src\\rack\\RackEquipment.jsx',
++     specifier: '@ai-infra/rack/limits'
++   },
++   {
++     file: 'apps\\web\\src\\tests\\rack-equipment.test.jsx',
++     specifier: '@ai-infra/rack/limits'
++   },
++   {
++     file: 'apps\\web\\src\\tests\\rack-plan-commands.test.jsx',
++     specifier: '@ai-infra/rack/limits'
++   },
++   {
++     file: 'apps\\web\\src\\tests\\rack-room-budget.test.jsx',
++     specifier: '@ai-infra/rack'
++   }
++ ]
+- []
+
+
+- Expected
++ Received
+
+- Array []
++ Array [
++   Object {
++     "file": "apps\\web\\src\\rack\\edit-layout-state.js",
++     "specifier": "@ai-infra/rack/limits",
++   },
++   Object {
++     "file": "apps\\web\\src\\rack\\rack-commands.js",
++     "specifier": "@ai-infra/rack/limits",
++   },
++   Object {
++     "file": "apps\\web\\src\\rack\\RackEquipment.jsx",
++     "specifier": "@ai-infra/rack/limits",
++   },
++   Object {
++     "file": "apps\\web\\src\\tests\\rack-equipment.test.jsx",
++     "specifier": "@ai-infra/rack/limits",
++   },
++   Object {
++     "file": "apps\\web\\src\\tests\\rack-plan-commands.test.jsx",
++     "specifier": "@ai-infra/rack/limits",
++   },
++   Object {
++     "file": "apps\\web\\src\\tests\\rack-room-budget.test.jsx",
++     "specifier": "@ai-infra/rack",
++   },
++ ]
+
+ ❯ src/tests/import-boundaries.test.js:125:10
+    123| 
+    124|   const packages = imports.filter((entry) => entry.specifier.startsWit…
+    125|   assert.deepEqual(
+       |          ^
+    126|     packages,
+    127|     [],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+ Test Files  1 failed | 63 passed (64)
+      Tests  1 failed | 689 passed (690)
+   Start at  23:59:16
+   Duration  5.26s (transform 8.32s, setup 0ms, collect 34.10s, tests 4.68s, environment 21ms, prepare 26.22s)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path C:\Users\RHH\Desktop\AI-INFRA-Rack\apps\web
+npm error workspace @ai-infra/web@0.1.0
+npm error location C:\Users\RHH\Desktop\AI-INFRA-Rack\apps\web
+npm error command failed
+npm error command C:\Windows\system32\cmd.exe /d /s /c vitest run

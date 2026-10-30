@@ -1,5 +1,9 @@
 # Rack 基础设计与本轮边界
 
+Latest supplement (2026-10-31, round33): [Hall demonstrations](RACK_HALL_DEMO.md) now scale both cabinets and installed inventory by four:128 racks/944 installed/eight pending, with80 high-load and48 normal racks. Saved inventory capacity is2,048 devices, shared with the browser through a generated mirror. Existing search budgets remain separate. The exact sparse demo was backed up and upgraded through normal versioned APIs, preserving geometry and other plans. See round33 evidence in PROGRESS.md.
+
+Latest supplement (2026-10-30, round32): [Hall demonstrations](RACK_HALL_DEMO.md) include a separate128-rack/eight-row synthetic plan with384 installed and eight pending devices. Existing32-rack/user plans are preserved; normal API geometry/resource checks and candidate previews passed. Existing input/algorithm limits remain unchanged. Evidence: PROGRESS.md and records/2026-10-30-rack-large-hall.
+
 Latest supplement (2026-10-30, round31): [Authentication and Access Control](doc/tools/rack/access-control.md) separates Rack editing from plan delete/restore and adds scoped Project access management with member versions, atomic events, last-administrator protection and revocation checks. Migration012 was applied to the isolated Rack DB. Runtime/test evidence and remaining production-login limitations are in PROGRESS.md.
 
 最新补充（2026-10-29，第二十五轮）：[Assistant 首次配置](RACK_ASSISTANT_CONNECTION.md) 在原 Ask about Rack 内保存每账号默认连接，支持后端外置加密凭证、测试、修改/删除、请求与会话隔离。无迁移；本机仅合成凭证验收并已删除，真实模型质量尚未验收。下方历轮状态以当轮记录为准。

@@ -8,7 +8,7 @@ This document distinguishes enforced implementation limits from proposed operati
 
 | Concern | Current bound | Source |
 | --- | --- | --- |
-| Saved layout | 256 racks, 512 devices, 256 rack-limit records | Domain normalization |
+| Saved layout | 256 racks, 2,048 devices, 256 rack-limit records; independent1MiB default HTTP body cap | Domain normalization; generated browser mirror |
 | Declared exclusions | 64 rectangles | Spatial normalization |
 | Room geometry | 64 rings, 4,096 points, 10,000m extent per axis | Room localization |
 | Plan list | 20 default, 50 max/page | Plan service |
@@ -32,7 +32,7 @@ Proposed course-scale experiments:
 4. Compare baseline/heuristic under identical inputs using feasibility, placed-device count, rack count, envelope area and search work.
 5. Report no-result cases, unknown inputs and pathological geometry; do not present one happy-path timing as a benchmark.
 
-Initial target (proposed): keep ordinary plan inspection/check feedback comfortably interactive at the 32-rack course example, while bounded planning may take seconds. A numeric responsiveness commitment should be selected only after the above measurements. No completed large-scale experiment is claimed.
+Initial target (proposed): keep ordinary plan inspection/check feedback comfortably interactive, while bounded planning may take seconds. Round33 exercised a128-rack/944-installed-device example through check/save/readback/allocation/relocation and browser views, plus a2,048-device HTTP persistence boundary and128-rack/2,048-installed-device domain check. One local comparison took14.6s. This is smoke evidence, not repeated scaling/load measurement, an SLA or a complete experiment. A numeric responsiveness commitment should be selected only after the above measurements.
 
 ## Concurrency, Availability and Durability
 

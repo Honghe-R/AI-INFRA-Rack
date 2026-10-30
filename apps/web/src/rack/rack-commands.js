@@ -1,5 +1,6 @@
 import { beginLayoutDraft, validateEditorPlacements, validateEditorConstraints, validateEditorEquipment } from './edit-layout-state.js';
 import { deviceFromCatalog } from '../catalog/catalog-state.js';
+import { MAX_EQUIPMENT_DEVICES } from './limits.generated.js';
 
 export const RACK_COMMANDS = [
   { commandId: 'rack_add', label: 'Add rack', permission: 'rack.write' },
@@ -49,8 +50,8 @@ export function addPlanObject(layout, draft, kind, values, catalog, makeId = () 
       ...Object.fromEntries(['xM', 'yM', 'widthM', 'depthM'].map(key => [key, Number(values[key])])) });
   } else if (kind === 'rack_device') {
     const quantity = Number(values.quantity);
-    if (!Number.isSafeInteger(quantity) || quantity < 1 || quantity > 128 || next.equipment.devices.length + quantity > 512)
-      throw new Error('Add 1–128 devices at a time, within the 512-device plan limit.');
+    if (!Number.isSafeInteger(quantity) || quantity < 1 || quantity > 128 || next.equipment.devices.length + quantity > MAX_EQUIPMENT_DEVICES)
+      throw new Error(`Add 1–128 devices at a time, within the ${MAX_EQUIPMENT_DEVICES}-device plan limit.`);
     const model = catalog?.models.find(m => `${m.modelId}@${m.version}` === values.catalogKey);
     if (!model) throw new Error('Choose an available versioned equipment model.');
     for (let i = 0; i < quantity; i++) {

@@ -1,6 +1,7 @@
 import { record, fail, text, uuid } from './input.js';
 import { assertCatalogDevice } from './catalog.js';
 import { normalizeRoomBudget, checkRoomBudget } from './room-budget.js';
+import { MAX_EQUIPMENT_DEVICES, MAX_EQUIPMENT_RACK_LIMITS } from './limits.js';
 
 export const EMPTY_EQUIPMENT = Object.freeze({
   coverage: 'UNKNOWN',
@@ -39,10 +40,10 @@ export function normalizeEquipment(input, placements) {
     kind: 'ASSUMED',
     reference: text(input.source.reference, 'equipment.source.reference', 512),
   });
-  if (!Array.isArray(input.devices) || input.devices.length > 512)
-    fail('equipment.devices', 'must be an array of at most 512 devices');
-  if (!Array.isArray(input.rackLimits) || input.rackLimits.length > 256)
-    fail('equipment.rackLimits', 'must be an array of at most 256 rack limits');
+  if (!Array.isArray(input.devices) || input.devices.length > MAX_EQUIPMENT_DEVICES)
+    fail('equipment.devices', `must be an array of at most ${MAX_EQUIPMENT_DEVICES} devices`);
+  if (!Array.isArray(input.rackLimits) || input.rackLimits.length > MAX_EQUIPMENT_RACK_LIMITS)
+    fail('equipment.rackLimits', `must be an array of at most ${MAX_EQUIPMENT_RACK_LIMITS} rack limits`);
   const racks = new Set(placements.map((p) => p.rackId));
   const ids = new Set();
   const devices = Array.from(input.devices, (d) => {

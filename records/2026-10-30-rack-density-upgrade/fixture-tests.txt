@@ -1,0 +1,70 @@
+TAP version 13
+# Subtest: hall fixture is deterministic with unique pinned identities and leaves source/catalog unchanged
+ok 1 - hall fixture is deterministic with unique pinned identities and leaves source/catalog unchanged
+  ---
+  duration_ms: 6.6255
+  type: 'test'
+  ...
+# Subtest: hall fixture has valid installed U/resources, mixed loading and an exact 6kW room margin
+ok 2 - hall fixture has valid installed U/resources, mixed loading and an exact 6kW room margin
+  ---
+  duration_ms: 4.7713
+  type: 'test'
+  ...
+# Subtest: real allocator admits only two pending GPUs, retaining unknown, oversized and room-blocked devices
+ok 3 - real allocator admits only two pending GPUs, retaining unknown, oversized and room-blocked devices
+  ---
+  duration_ms: 5.3124
+  type: 'test'
+  ...
+# Subtest: small/unknown rooms and missing catalog models are refused before writing demo input
+ok 4 - small/unknown rooms and missing catalog models are refused before writing demo input
+  ---
+  duration_ms: 2.1471
+  type: 'test'
+  ...
+# Subtest: large fixture keeps deterministic identities and inputs, fits saved-plan and planner bounds
+ok 5 - large fixture keeps deterministic identities and inputs, fits saved-plan and planner bounds
+  ---
+  duration_ms: 22.0917
+  type: 'test'
+  ...
+# Subtest: large fixture has valid resources/U positions and an explicit 6 kW room margin
+ok 6 - large fixture has valid resources/U positions and an explicit 6 kW room margin
+  ---
+  duration_ms: 17.8325
+  type: 'test'
+  ...
+# Subtest: large fixture exercises real allocation without changing locked racks or baseline
+ok 7 - large fixture exercises real allocation without changing locked racks or baseline
+  ---
+  duration_ms: 21.5428
+  type: 'test'
+  ...
+# Subtest: large fixture refuses unsupported rooms, rack models and missing pinned equipment
+ok 8 - large fixture refuses unsupported rooms, rack models and missing pinned equipment
+  ---
+  duration_ms: 1.1412
+  type: 'test'
+  ...
+# Subtest: explicit density upgrade preserves geometry and constraints, refuses edited equipment and is repeatable
+ok 9 - explicit density upgrade preserves geometry and constraints, refuses edited equipment and is repeatable
+  ---
+  duration_ms: 74.2084
+  type: 'test'
+  ...
+# Subtest: browser inventory bounds match authoritative domain bounds without a runtime backend import
+ok 10 - browser inventory bounds match authoritative domain bounds without a runtime backend import
+  ---
+  duration_ms: 2.7071
+  type: 'test'
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 10
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 288.8533

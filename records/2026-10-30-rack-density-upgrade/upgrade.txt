@@ -1,0 +1,101 @@
+
+> ai-network-infra-simulator@0.1.0 rack:demo:hall
+> node --env-file-if-exists=.env scripts/rack-hall-demo.mjs 4c11ab8d-5d57-4ad8-ad55-ac08574fba46 4b8f7bf3-9015-455f-8bc8-ef3520f0d748 --upgrade-large-equipment
+
+{"equipmentUpgraded":true,"oldVersion":2,"newVersion":3,"oldDevices":392,"newDevices":952,"backup":"/C:/Users/RHH/Desktop/AI-INFRA-Rack/records/2026-10-30-rack-density-upgrade/before-879a2cbc-87d4-4c7a-93c3-ca435e3f34f3-v2.json"}
+{
+  "name": "Large Hall Demo · 128 Racks / 8 Equipment Rows",
+  "planId": "879a2cbc-87d4-4c7a-93c3-ca435e3f34f3",
+  "version": 3,
+  "racks": 128,
+  "installedDevices": 944,
+  "inventoryDevices": 952,
+  "unassignedDevices": 8,
+  "lockedRacks": 96,
+  "powerKw": 960,
+  "roomLimitKw": 966,
+  "highLoadRacks": 80,
+  "spatialStatus": "INCOMPLETE",
+  "equipmentStatus": "INCOMPLETE",
+  "validationState": "NOT_RUN",
+  "allocation": {
+    "assigned": 2,
+    "remaining": 6,
+    "reasons": [
+      "NO_ELIGIBLE_POSITION",
+      "ROOM_BUDGET_EXCEEDED",
+      "ROOM_BUDGET_EXCEEDED",
+      "ROOM_BUDGET_EXCEEDED",
+      "ROOM_BUDGET_EXCEEDED",
+      "UNKNOWN_DEVICE_RESOURCE"
+    ]
+  },
+  "layoutCandidates": [
+    {
+      "algorithmId": "row-scan-v1",
+      "canStage": true,
+      "movedRacks": 32,
+      "unplaced": 0
+    },
+    {
+      "algorithmId": "largest-first-v1",
+      "canStage": true,
+      "movedRacks": 32,
+      "unplaced": 0
+    }
+  ],
+  "note": "Single local smoke timings, not a scaling benchmark or production capacity claim.",
+  "timings": [
+    {
+      "method": "GET",
+      "endpoint": "/plans/:id/layout",
+      "durationMs": 154.84
+    },
+    {
+      "method": "GET",
+      "endpoint": "/catalog",
+      "durationMs": 22.06
+    },
+    {
+      "method": "GET",
+      "endpoint": "/plans?limit=50&scenario_id=4ee0094b-9f4e-4e45-8c3e-244fe83348d2&revision_id=c5b4b888-e66e-4ffa-bb0e-2dd738ed5f4d",
+      "durationMs": 32.73
+    },
+    {
+      "method": "GET",
+      "endpoint": "/plans/:id/layout",
+      "durationMs": 41.29
+    },
+    {
+      "method": "GET",
+      "endpoint": "/plans/:id/layout",
+      "durationMs": 66.52
+    },
+    {
+      "method": "GET",
+      "endpoint": "/plans/:id/layout",
+      "durationMs": 28.07
+    },
+    {
+      "method": "POST",
+      "endpoint": "/plans/:id/layout/check",
+      "durationMs": 566.75
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/plans/:id/layout",
+      "durationMs": 696.6
+    },
+    {
+      "method": "POST",
+      "endpoint": "/plans/:id/layout/equipment-options",
+      "durationMs": 524.86
+    },
+    {
+      "method": "POST",
+      "endpoint": "/plans/:id/layout/options",
+      "durationMs": 14599.39
+    }
+  ]
+}
+{"unchangedOldPlans":2,"sourceUnchanged":true,"candidatesSaved":false}

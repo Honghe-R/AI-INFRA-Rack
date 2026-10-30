@@ -60,7 +60,7 @@ Clearance is null or `{frontM,rearM}`, each zero or 0.001–10m. Orientation det
 
 ## Equipment and Capacity
 
-`Equipment = {coverage,source,devices,rackLimits,roomBudget?}` accepts up to 512 devices/256 limit records. Coverage is UNKNOWN or DECLARED_COMPLETE.
+`Equipment = {coverage,source,devices,rackLimits,roomBudget?}` accepts up to 2,048 devices/256 limit records. Coverage is UNKNOWN or DECLARED_COMPLETE. Inventory bounds are defined in `packages/rack/src/limits.js`; `scripts/rack-sync-limits.mjs` generates the dependency-free browser mirror. HTTP body size remains independently bounded at1MiB by default. Candidate-search limits are separate from total saved inventory.
 
 `Device = {deviceId,name,heightU,weightKg,powerKw,coolingKw,rackId,startU,catalogRef?}`. Height is 1–100U. Unassigned means both rackId/startU null. Installed means a rack in this plan and inclusive interval `[startU,startU+heightU-1]`; no overlap/out-of-range interval. Unknown resources remain null.
 

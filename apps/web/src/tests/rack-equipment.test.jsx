@@ -2,6 +2,7 @@ import { test } from 'vitest';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { RackEquipment, RackElevation } from '../rack/RackEquipment.jsx';
+import { MAX_EQUIPMENT_DEVICES } from '../rack/limits.generated.js';
 import {
   beginLayoutDraft,
   layoutCheckBody,
@@ -21,6 +22,14 @@ const device = {
   rackId: 'r',
   startU: 1,
 };
+
+test('editor accepts larger inventory and rejects beyond the shared domain bound', () => {
+  const devices = Array.from({length: MAX_EQUIPMENT_DEVICES}, (_, i) => ({ ...device, deviceId: `d-${i}`, rackId: null, startU: null }));
+  assert.equal(validateEditorEquipment({ ...defaultEditorEquipment(), devices }, [rack]), null);
+  assert.match(validateEditorEquipment({ ...defaultEditorEquipment(), devices: [...devices, { ...device, deviceId: 'excess' }] }, [rack]), /2048/);
+  const html = renderToStaticMarkup(<RackEquipment equipment={{...defaultEditorEquipment(),devices:[]}} placements={[]} models={[]} editable={false}/>);
+  assert.match(html, /\/2048/);
+});
 test('equipment draft is a deep copy and full save/check bodies carry exact assignments and capacity assumptions', () => {
   const equipment = {
     ...defaultEditorEquipment(),
