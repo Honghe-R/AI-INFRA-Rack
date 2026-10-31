@@ -48,7 +48,7 @@ Services normalize inputs; PostGIS adapters check actual Polygon topology. Domai
 | rack_check_saved_layout | No properties | Shared spatial/equipment check summaries; diagnostic caps |
 | rack_generate_layout_options | grid_step_m?, allow_rotation?, strategy? | Existing-rack relocation summaries; no candidate save body |
 
-Every descriptor declares access read, confirmation none, surfaces rack and requiredFunctions rack.read + facility.read. The handler reasserts both permissions. Context scope is resolved by the server; model arguments cannot override plan/project/revision. Exact rack names are a convenience only when unique; ambiguous matches require returned IDs.
+The five tools above declare access read, confirmation none, surfaces rack and requiredFunctions rack.read + facility.read. The handler reasserts both permissions. Context scope is resolved by the server; model arguments cannot override plan/project/revision. Exact rack names are a convenience only when unique; ambiguous matches require returned IDs.
 
 ## Bounding, Freshness and Determinism
 
@@ -60,7 +60,7 @@ Relocation compares deterministic input-order and largest-first strategies. Allo
 
 ## Relationship to Assistant Integration
 
-Browser options can return ordinary candidate bodies for explicit staging/save. Chat exposes only summaries, so a model cannot synthesize a write by returning a candidate body. There are no chat capabilities for creating racks, quantity-driven design, equipment allocation, save, deletion, publication or formal validation. There are no Rack-specific UI-action types or entity-reference kinds yet.
+Browser options can return ordinary candidate bodies for explicit staging/save. Chat exposes only summaries, so a model cannot synthesize a write by returning a candidate body. The [Assistant edit tools](assistant-edits.md) add write-authorized previews and confirmed exact-proposal saves for cabinet/assignment/clearance/assumed-budget edits. Quantity-driven design, automatic allocation, plan deletion/publication and formal validation remain unavailable through chat. There are no Rack-specific UI-action types or entity-reference kinds yet.
 
 ## Audit, Redaction and Failure
 

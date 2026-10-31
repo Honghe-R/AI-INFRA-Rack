@@ -1,5 +1,11 @@
 # Rack 基础设计与本轮边界
 
+Latest supplement (2026-10-31, round36): [Assistant Edits](doc/tools/rack/assistant-edits.md)
+adds typed server-validated previews and confirmed atomic saves for cabinet,
+assignment, clearance and assumed-budget edits. Migration014 stores durable
+owner/version-bound proposals. See round36 evidence; real-model/browser acceptance
+and proposal retention remain open. Earlier read-only descriptions are historical.
+
 Latest supplement (2026-10-31, round35): [Saved Checks and Reports](doc/tools/rack/check-history-and-reports.md)
 adds version-bound persistent scoped evidence, freshness/history and JSON/CSV
 planning downloads (migration013). [Delivery status](RACK_DELIVERY_STATUS.md)

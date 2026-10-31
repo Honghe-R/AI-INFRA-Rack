@@ -10,6 +10,8 @@ import { createRouter } from '../router.js';
 import { registerRackRoutes } from '../routes/rack.js';
 import { createRackPlanService } from '../services/rack-plans.js';
 import { createRackLayoutService } from '../services/rack-layout.js';
+import { createRackAssistantEdits } from '../services/rack-assistant-edits.js';
+import { createExecutionContext } from '@ai-infra/assistant';
 import { getRackCatalog, MAX_EQUIPMENT_DEVICES } from '@ai-infra/rack';
 import { plannerGeometry, normalizeEditableLayout } from '@ai-infra/rack';
 import { pickRackPosition } from '../services/rack-planner-geometry.js';
@@ -705,6 +707,89 @@ function designRequest(layout, patch={}) {
       rackModelId:layout.models[0].modelId,maxRacks:8,rackLimits:{maxWeightKg:800,maxPowerKw:12,maxCoolingKw:12},
       gapM:.2,sourceReference:'HTTP test assumptions',constraints:{...layout.constraints,clearance:{frontM:1,rearM:.6}},...patch}};
 }
+
+function assistantEditRig(f,layout,user='admin') {
+  const guard=createPermissionGuard({evaluator:createEvaluator({repository}),repository});
+  const authorize=createPermissionAuthorizer({guard}),layouts=createRackLayoutService({pool});
+  const edits=createRackAssistantEdits({pool,layouts,authorize});
+  const ctx=createExecutionContext({userId:f.people[user].userId,requestId:randomUUID(),workspaceId:layout.projectId,
+    scenarioId:layout.scenarioId,revisionId:layout.facilityInput.revisionId,
+    rackContext:{planId:layout.planId,version:layout.version,clientVersion:layout.version,hasUnsavedDraft:false}});
+  return {edits,ctx,layouts,authorize};
+}
+test('Assistant edit preview, confirmation, atomic save and replay use real Rack services', {skip},async()=>fixture(async f=>server(f.people,async request=>{
+  const {url,layout}=await prepared(f,request),rig=assistantEditRig(f,layout);
+  const args={base_version:layout.version,operations:[{type:'ADD_RACK',model_id:layout.models[0].modelId,name:'Assistant rack',x_m:3,y_m:3}]};
+  const surface=createRackAssistantSurface({layouts:rig.layouts,plans:createRackPlanService({pool}),authorize:rig.authorize,edits:rig.edits});
+  let step=0;
+  const provider={name:'scripted-edit-test',async complete(input){
+    let message;
+    if(step++===0) message={role:'assistant',content:null,tool_calls:[{id:'preview',type:'function',function:{name:'rack_preview_changes',arguments:JSON.stringify(args)}}]};
+    else if(step===2){const preview=JSON.parse(input.messages.at(-1).content);assert.equal(preview.canApply,true);
+      message={role:'assistant',content:null,tool_calls:[{id:'apply',type:'function',function:{name:'rack_apply_changes',arguments:JSON.stringify({proposal_id:preview.proposalId})}}]};}
+    else message={role:'assistant',content:'Saved the exact confirmed Rack proposal.'};
+    return{choices:[{message}]};
+  }};
+  const host=createAssistantHost({provider,surfaces:[surface.surface],guides:[surface.guide],capabilities:surface.capabilities,
+    authorize:rig.authorize,resolveScope:async()=>({surface:'rack',workspaceId:layout.projectId,scenarioId:layout.scenarioId,
+      revisionId:layout.facilityInput.revisionId,rackContext:rig.ctx.rackContext})});
+  const turn={messages:[{role:'user',content:'Add a rack at (3,3) metres.'}],contextKey:'test|rack|edit',context:{userId:f.people.admin.userId,surface:'rack'}};
+  const preview=await host.orchestrator.runTurn(turn);
+  assert.equal(preview.status,'confirmation_required');assert.notEqual(preview.draftChanged,true);
+  assert.deepEqual((await request(url)).body.data,layout);
+  const pending=preview.pendingConfirmations[0];assert.match(pending.summary,/Add rack.*Assistant rack/);
+  const accepted=await host.orchestrator.runTurn({...turn,confirmedCalls:[{callId:pending.callId,name:pending.toolName,arguments:pending.arguments}]});
+  assert.equal(accepted.status,'ok');assert.equal(accepted.draftChanged,true);
+  const saved=(await request(url)).body.data;assert.equal(saved.version,layout.version+1);assert.equal(saved.placements.length,1);assert.equal(saved.placements[0].name,'Assistant rack');
+  const replay=await rig.edits.apply(rig.ctx,pending.arguments);assert.equal(replay.replayed,true);assert.equal(replay.appliedVersion,saved.version);
+  assert.equal((await request(url)).body.data.version,saved.version);
+  await assert.rejects(rig.edits.confirmable(rig.ctx,pending.arguments),e=>e.code==='RACK_PROPOSAL_APPLIED');
+})));
+
+test('Assistant edits reject scope, permissions, dirty/stale inputs and conflicts; concurrent apply saves once', {skip},async()=>fixture(async f=>server(f.people,async request=>{
+  const {url,layout}=await prepared(f,request),{edits,ctx}=assistantEditRig(f,layout);
+  const args={base_version:layout.version,operations:[{type:'ADD_RACK',model_id:layout.models[0].modelId,name:'New rack',x_m:3,y_m:3}]};
+  const viewer=assistantEditRig(f,layout,'viewer');await assert.rejects(viewer.edits.preview(viewer.ctx,args),e=>e.status===403);
+  await assert.rejects(edits.preview({...ctx,rackContext:{...ctx.rackContext,hasUnsavedDraft:true}},args),e=>e.code==='RACK_ASSISTANT_DIRTY_DRAFT');
+  await assert.rejects(edits.preview(ctx,{...args,base_version:99}),e=>e.status===412);
+  await assert.rejects(edits.preview(ctx,{...args,operations:[{type:'ADD_RACK',model_id:layout.models[0].modelId,name:'Bad',x_m:'3',y_m:3}]}),e=>e.status===400);
+  const outside=await edits.preview(ctx,{...args,operations:[{...args.operations[0],x_m:500}]});assert.equal(outside.canApply,false);assert.equal(outside.proposalId,undefined);
+  const p=await edits.preview(ctx,args),apply={proposal_id:p.proposalId};
+  const editor=assistantEditRig(f,layout,'editor');await assert.rejects(editor.edits.apply(editor.ctx,apply),e=>e.status===404);
+  const foreign={...ctx,rackContext:{...ctx.rackContext,planId:randomUUID()}};await assert.rejects(edits.apply(foreign,apply),e=>e.status===404);
+  const results=await Promise.all([edits.apply(ctx,apply),edits.apply(ctx,apply)]);
+  assert.equal(results.filter(r=>r.replayed).length,1);assert.equal((await request(url)).body.data.version,layout.version+1);
+  const saved=(await request(url)).body.data,rig2=assistantEditRig(f,saved);
+  const overlap=await rig2.edits.preview(rig2.ctx,{base_version:saved.version,operations:[{...args.operations[0],name:'Overlap'}]});assert.equal(overlap.canApply,false);
+  const move=await rig2.edits.preview(rig2.ctx,{base_version:saved.version,operations:[{type:'MOVE_RACK',rack:'New rack',x_m:3,y_m:7}]});
+  assert.equal(move.canApply,true);
+  await pool.query("UPDATE rack_assistant_proposals SET expires_at=now()-interval '1 minute' WHERE proposal_id=$1",[move.proposalId]);
+  await assert.rejects(rig2.edits.apply(rig2.ctx,{proposal_id:move.proposalId}),e=>e.code==='RACK_PROPOSAL_EXPIRED');
+  const stale=await rig2.edits.preview(rig2.ctx,{base_version:saved.version,operations:[{type:'MOVE_RACK',rack:'New rack',x_m:3,y_m:7}]});
+  assert.equal((await request(url.replace(/\/layout$/,''),{method:'PATCH',body:{contract_version:1,name:'Concurrent rename'},version:saved.version})).status,200);
+  await assert.rejects(rig2.edits.apply(rig2.ctx,{proposal_id:stale.proposalId}),e=>e.status===412);
+})));
+
+test('Assistant device/clearance/budget edits preserve save rules and roll back proposal state on changed inputs', {skip},async()=>fixture(async f=>server(f.people,async request=>{
+  const {url,layout}=await prepared(f,request),r=rack(3,3),deviceId=randomUUID();
+  const body={...layoutBody(layout,[r]),equipment:{...layout.equipment,devices:[{deviceId,name:'Server',heightU:2,weightKg:10,powerKw:1,coolingKw:1,rackId:null,startU:null}]}};
+  const saved=(await request(url,{method:'PUT',body,version:layout.version})).body.data,{edits,ctx}=assistantEditRig(f,saved);
+  const preview=await edits.preview(ctx,{base_version:saved.version,operations:[{type:'ASSIGN_DEVICE',device:'Server',rack:r.rackId,start_u:1},
+    {type:'SET_CLEARANCE',front_m:.5,rear_m:.5},{type:'SET_ROOM_BUDGET',max_power_kw:3,max_cooling_kw:3,reference:'User planning assumption'}]});
+  assert.equal(preview.canApply,true);
+  await pool.query('UPDATE revision_etags SET etag=$1 WHERE project_id=$2',[randomUUID(),f.a.projectId]);
+  await assert.rejects(edits.apply(ctx,{proposal_id:preview.proposalId}),e=>e.code==='RACK_SOURCE_STALE');
+  assert.deepEqual((await request(url)).body.data.equipment,saved.equipment);
+  assert.equal((await pool.query('SELECT applied_version FROM rack_assistant_proposals WHERE proposal_id=$1',[preview.proposalId])).rows[0].applied_version,null);
+  await pool.query('UPDATE revision_etags SET etag=$1 WHERE project_id=$2',[f.a.etag,f.a.projectId]);
+  await edits.apply(ctx,{proposal_id:preview.proposalId});
+  const applied=(await request(url)).body.data;
+  assert.equal(applied.equipment.devices[0].rackId,r.rackId);assert.equal(applied.constraints.clearance.frontM,.5);assert.equal(applied.equipment.roomBudget.maxPowerKw,3);
+  const next=assistantEditRig(f,applied);
+  const bad=await next.edits.preview(next.ctx,{base_version:applied.version,operations:[{type:'ASSIGN_DEVICE',device:'Server',rack:r.rackId,start_u:42}]});assert.equal(bad.canApply,false);
+  const over=await next.edits.preview(next.ctx,{base_version:applied.version,operations:[{type:'SET_ROOM_BUDGET',max_power_kw:0,max_cooling_kw:3,reference:'Explicit zero'}]});assert.equal(over.canApply,false);
+  await assert.rejects(next.edits.preview(next.ctx,{base_version:applied.version,operations:[{type:'REMOVE_RACK',rack:r.rackId}]}),/installed device/);
+})));
 test('demand design uses real concave Polygon/holes, is deterministic and read-only, then saves through the ordinary transaction', {skip},async()=>fixture(async f=>server(f.people,async request=>{
   const {url,layout}=await prepared(f,request),body=designRequest(layout);
   const result=await request(`${url}/design-options`,{body,user:'viewer'});assert.equal(result.status,200,JSON.stringify(result.body));

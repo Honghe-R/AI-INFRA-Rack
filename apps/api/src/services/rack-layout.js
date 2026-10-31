@@ -316,8 +316,9 @@ export function createRackLayoutService({ pool }) {
         throw error;
       });
     },
-    async get({ projectId, planId }) {
+    async get({ projectId, planId, transactionClient = null }) {
       scope(projectId, planId);
+      if (transactionClient) return read(transactionClient, projectId, planId);
       return withTenant(pool, projectId, (client) => read(client, projectId, planId), { readOnly: true });
     },
     async check({ projectId, planId, body }) {
@@ -356,7 +357,7 @@ export function createRackLayoutService({ pool }) {
         { readOnly: true },
       );
     },
-    async mutate({ projectId, planId, actorId, body, key, ifMatch, operation }) {
+    async mutate({ projectId, planId, actorId, body, key, ifMatch, operation, transactionClient = null }) {
       scope(projectId, planId);
       bodyFields(
         body,
@@ -373,7 +374,7 @@ export function createRackLayoutService({ pool }) {
         throw new RackInputError('If-Match', 'must be a quoted positive integer version');
       const version = Number(ifMatch.slice(1, -1));
       const hash = createHash('sha256').update(JSON.stringify({ operation, version, body })).digest('hex');
-      return withTenant(pool, projectId, async (client) => {
+      const execute = async (client) => {
         const exists = await client.query(
           'SELECT plan_id FROM rack_plans WHERE project_id=$1 AND plan_id=$2 FOR UPDATE',
           [projectId, planId],
@@ -495,7 +496,8 @@ export function createRackLayoutService({ pool }) {
           [projectId, planId, key, hash, saved.version, actorId],
         );
         return { layout: saved, replayed: false, appliedVersion: saved.version };
-      });
+      };
+      return transactionClient ? execute(transactionClient) : withTenant(pool, projectId, execute);
     },
   };
 }

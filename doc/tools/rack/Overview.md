@@ -60,7 +60,7 @@ The inherited blueprint also assigns room/row concerns to Floorplan. This course
 flowchart LR
   UI[React Rack workbench] --> HTTP[Rack HTTP routes]
   Chat[Ask about Rack] --> Host[Shared Assistant host]
-  Host --> Tools[Five Rack read/computation tools]
+  Host --> Tools[Rack read tools and confirmed proposal edits]
   HTTP --> Services[Plan and layout services]
   Tools --> Services
   Services --> Domain[Pure rack domain package]
@@ -101,6 +101,7 @@ Domain functions normalize values, check equipment and generate deterministic pr
 | [Import Mapping](import-adapters.md) | Current normalized inputs and future file/vendor adapters |
 | [Assistant Integration](assistant-integration.md) | Capabilities, grounding, personal API setup and security |
 | [Authentication and Access Control](access-control.md) | Role matrix, lifecycle authority, scoped membership administration and audit |
+| [Assistant Edits](assistant-edits.md) | Typed edits, checked server previews, confirmation and atomic save |
 | [Saved Checks and Reports](check-history-and-reports.md) | Saved-version evidence, freshness, history and JSON/CSV downloads |
 | [Non-Functional Requirements](non-functional-requirements.md) | Limits, performance experiments and operational risks |
 | [Decisions and Open Questions](decisions.md) | Implemented choices and unresolved policies |

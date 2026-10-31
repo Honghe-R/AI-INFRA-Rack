@@ -94,6 +94,7 @@ function AppBody({ projects, projectsPending, projectsError, projectsNotice, sce
   const { resolved } = useUiContext();
   const context = workspace.workspaceContext;
   const [openError, setOpenError] = useState(null);
+  const [rackRefreshToken, setRackRefreshToken] = useState(0);
   const [openNotice, setOpenNotice] = useState(null);
   // The scenarios read while opening a project stay available, so the context bar
   // offers real choices instead of an empty control.
@@ -190,7 +191,7 @@ function AppBody({ projects, projectsPending, projectsError, projectsNotice, sce
       if (actions.length === 0 && !changed) continue;
       if (dispatchedTurnsRef.current.has(turn.turnId)) continue;
       dispatchedTurnsRef.current.add(turn.turnId);
-      if (changed) effects.reloadEnvelope();
+      if (changed) { effects.reloadEnvelope(); setRackRefreshToken(n => n + 1); }
       if (actions.length > 0) uiActionHandler(actions, { currentContextKey: context ? contextKey(context) : null });
     }
   }, [assistant.turns, uiActionHandler, context, effects]);
@@ -535,6 +536,7 @@ function AppBody({ projects, projectsPending, projectsError, projectsNotice, sce
           }
           if (tab.toolId === 'rack') {
             return <RackSurface key={tab.tabId} client={assetClient} context={tab.workspaceContext}
+              assistantRefreshToken={rackRefreshToken}
               routeState={tab.routeState}
               onRouteChange={patch => workspace.setRouteState(tab.tabId, patch)}
               onDirtyChange={dirty => workspace.setDirty(tab.tabId, dirty, dirty ? 'Rack changes have not been saved.' : null)} />;

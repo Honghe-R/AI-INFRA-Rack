@@ -29,7 +29,7 @@ export function RackSurface(props) {
     facilityPending={facility.pending} facilityUnavailable={facility.unavailable} />;
 }
 
-function RackWorkspace({ client, context, routeState = {}, onRouteChange, onDirtyChange, canWrite, canReadFacility, canDelete, canRestore, canManage, accessPending,
+function RackWorkspace({ client, context, routeState = {}, assistantRefreshToken = 0, onRouteChange, onDirtyChange, canWrite, canReadFacility, canDelete, canRestore, canManage, accessPending,
   writePending, writeUnavailable, facilityPending, facilityUnavailable }) {
   const { projectId, scenarioId, revisionId } = context;
   const section = rackSection(routeState.functionId);
@@ -83,7 +83,7 @@ function RackWorkspace({ client, context, routeState = {}, onRouteChange, onDirt
       if (!controller.signal.aborted) setList({ pending: false, data: null, error });
     });
     return () => controller.abort();
-  }, [client, projectId, scenarioId, revisionId, cursor, deleted, refresh]);
+  }, [client, projectId, scenarioId, revisionId, cursor, deleted, refresh, assistantRefreshToken]);
 
   useEffect(() => {
     if (!canReadFacility) { setSource({ pending: false, data: null, error: null }); return undefined; }
@@ -108,7 +108,7 @@ function RackWorkspace({ client, context, routeState = {}, onRouteChange, onDirt
       if (!controller.signal.aborted) setDetail({ pending: false, data: null, error });
     });
     return () => controller.abort();
-  }, [client, projectId, scenarioId, revisionId, selectedId, refresh]);
+  }, [client, projectId, scenarioId, revisionId, selectedId, refresh, assistantRefreshToken]);
 
   const sourceInfo = roomSource(source.data, context);
   const rooms = sourceInfo.rooms;
@@ -244,7 +244,7 @@ function RackWorkspace({ client, context, routeState = {}, onRouteChange, onDirt
             {!draft && !detail.data.deletedAt && <div hidden={section.functionId === 'plans'}><RackEditor key={detail.data.planId} client={client} plan={detail.data} context={context}
               section={section.functionId} onNavigate={navigate}
               commandRequest={routeState.rackCommand} onCommandConsumed={() => onRouteChange({ rackCommand: null })}
-              canWrite={canWrite} canReadFacility={canReadFacility} refresh={refresh} draft={editDraft}
+              canWrite={canWrite} canReadFacility={canReadFacility} refresh={`${refresh}:${assistantRefreshToken}`} draft={editDraft}
               onDraftChange={value => onRouteChange({ rackEditDraft: value })}
               onSaved={version => { setNotice(`Saved layout loaded · v${version}`); reload(); }} /></div>}
             <details open={section.functionId === 'plans'} className="rack-plan-metadata"><summary>Saved plan details</summary>

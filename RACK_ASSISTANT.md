@@ -1,5 +1,11 @@
 # Rack Assistant 工具接线
 
+Current supplement (2026-10-31, round36): [Assistant Edits](doc/tools/rack/assistant-edits.md)
+adds rack_preview_changes and rack_apply_changes with edit permission, server-owned
+checked proposals, chat confirmation and ordinary atomic save. Seven capabilities
+are registered; viewers retain the original five reads. Earlier read-only descriptions
+below retain their historical scope. Real-provider acceptance remains pending.
+
 2026-10-29，第二十五轮：[首次配置与持久连接](RACK_ASSISTANT_CONNECTION.md) 已接入同一个 Ask about Rack 面板。每个账号首次保存一条默认个人连接，以后自动使用；Key 只在明确的配置保存请求中提交，后端外置加密存储，不回填浏览器。连接可修改、测试和删除；没有个人连接时沿用可用的管理员部署配置。本机只用合成凭证验收并已删除，真实模型对话仍待用户本地配置后验收。
 
 2026-10-29，第二十四轮：新增 [Agent 与个人 API 接入调研](RACK_ASSISTANT_RESEARCH.md)，给出个人连接设置、凭证存储、会话隔离与分步验收建议。本轮仅调研和文档；下文部署级接线保持原状，个人连接设置页尚未实现，未配置真实模型。

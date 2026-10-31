@@ -12,6 +12,7 @@ import { createStorage } from '@ai-infra/storage';
 import { createRackAssistantSurface } from './services/rack-assistant.js';
 import { createRackLayoutService } from './services/rack-layout.js';
 import { createRackPlanService } from './services/rack-plans.js';
+import { createRackAssistantEdits } from './services/rack-assistant-edits.js';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -41,7 +42,9 @@ export async function createAssistantHostFor({ config, pool, secrets, guard, log
   });
   const authorize = createPermissionAuthorizer({ guard });
   if (pool) {
-    const rack = createRackAssistantSurface({ layouts: createRackLayoutService({ pool }), plans: createRackPlanService({ pool }), authorize });
+    const layouts = createRackLayoutService({ pool });
+    const rack = createRackAssistantSurface({ layouts, plans: createRackPlanService({ pool }), authorize,
+      edits: createRackAssistantEdits({ pool, layouts, authorize }) });
     catalog.surfaces.push(rack.surface);
     catalog.guides.push(rack.guide);
     catalog.capabilities = [...catalog.capabilities, ...rack.capabilities];

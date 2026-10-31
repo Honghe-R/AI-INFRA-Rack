@@ -16,7 +16,7 @@ is not required to demonstrate physical cabinet planning.
 | User journey | Create → demand/manual edit → preview → stage/save → reload → rename/delete/restore | [Journey](RACK_USER_JOURNEY.md) |
 | Visualization | Room dot grid, placement editing, cabinet/device inspector, U elevations, load coloring and capacity table | Existing workbench;128 racks/944 installed devices in local demo |
 | API and contracts | Scoped versioned APIs, snapshot/source guards, exact retries and structured diagnostics | [API contracts](doc/tools/rack/backend-api-contracts.md) |
-| Assistant | Five saved-data read/computation tools; per-user persistent encrypted provider connection | [Integration](doc/tools/rack/assistant-integration.md); real-provider acceptance pending |
+| Assistant | Five saved-data read/computation tools plus checked previews/confirmed edits; per-user persistent encrypted provider connection | [Integration](doc/tools/rack/assistant-integration.md); real-provider acceptance pending |
 | Authentication/permissions | Inherited identity/RBAC plus Rack read/write/delete/restore; project member roles, concurrency, last-admin guard and access events | [Access control](doc/tools/rack/access-control.md); dev identity switcher is not production login |
 | Check evidence and export | Saved-version check records, current/historical freshness, JSON plan report, equipment CSV | [Saved Checks and Reports](doc/tools/rack/check-history-and-reports.md) |
 | Performance/scalability | Explicit input/search ceilings; repeated32/128-cabinet HTTP samples; algorithm/check complexity discussion | [Performance evidence](records/2026-10-31-rack-delivery-gaps/performance.md) |

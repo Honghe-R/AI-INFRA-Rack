@@ -13,11 +13,11 @@ This document follows the Site and Facility Assistant specification's structure 
 | Surface key/version | rack / 1 |
 | Guide key/version | rack-guide / 1 |
 | Entry functions | rack.read and facility.read in the resolved project |
-| Capabilities | Five, all read/computation |
+| Capabilities | Five read/computation tools; write-authorized preview plus confirmed application |
 | Digest | null; no Rack workspace digest generator |
 | Rack UI actions | Empty list |
 | Rack entity-reference kinds | No Rack-specific kinds registered |
-| Persistence authority | Ordinary Rack UI/API save only |
+| Persistence authority | Ordinary checked save; Assistant applies only server-owned confirmed proposals |
 
 The host retains Facility and Rack projections in the shared registry, but surface selection must not offer Facility mutation tools while answering Rack questions. Executable handlers, SQL, secret-store internals and credentials never belong in the model descriptor payload.
 
@@ -43,7 +43,7 @@ Read metadata names saved version/snapshot/source, saved-only scope, client dirt
 
 ### Capabilities Not Declared
 
-There are no Rack model tools for create/rename/delete/restore/save, equipment allocation, quantity-driven design, continuous aisle planning, formal validation, publication, vendor import or cross-tool mutations. Those browser-only or planned functions cannot be inferred from the existence of a similar service. In particular, chat cannot automatically apply a returned option to the canvas.
+The [Assistant Edits contract](assistant-edits.md) adds rack_preview_changes and rack_apply_changes: explicit cabinet add/remove/move, existing-device assignment, clearance and assumed room budget changes. Preview requires rack.write; apply additionally uses the existing confirmation card and ordinary checked atomic save. Quantity-driven design, automatic allocation, plan lifecycle, unlocking, formal validation/publication and cross-tool mutations remain unavailable through chat. Relocation candidate summaries are still not directly applied.
 
 ## Selection and Authorization
 
@@ -76,7 +76,7 @@ Use saved-only scope, integer Rack version, fixed snapshot, source status, dirty
 
 ### guardrails
 
-Never claim a save, application, formal validation or engineering feasibility without the corresponding actual operation; the current Rack projection cannot perform them. Never claim globally optimal packing or verified aisles. A smaller rack-body envelope is not released usable floor area. Temporary chat candidates do not automatically appear in the editor. On failure, explain the actual error and retain ordinary planning as the fallback workflow, without invented results or Facility write tools.
+Claim a save only after rack_apply_changes returns persisted:true and its appliedVersion. Saved proposals bind the exact version, owner and input, and expire after30 minutes. No tool establishes formal validation or engineering feasibility. Never claim globally optimal packing or verified aisles. A smaller rack-body envelope is not released usable floor area. Temporary chat candidates do not automatically appear in the editor. On failure, explain the actual error and retain ordinary planning as the fallback workflow, without invented results or Facility write tools.
 
 ## UI-Action Registry and Entity References
 
@@ -129,7 +129,7 @@ The shared composer can handle attachments through platform asset controls, but 
 
 ## Read-Only Behavior, Errors and Redaction
 
-Read-only users can ask grounded questions under both read permissions. The model is unable to save regardless of write permission because no write tool is registered. Setup/storage/DNS/quota/model/limit errors remain errors; do not substitute fake replies. Provider response bodies and key-bearing text are not echoed. Rotated credentials and concurrent model calls require request-local redaction.
+Read-only users can ask grounded questions under both read permissions. Viewers cannot preview or apply edits. Editors/admins can apply only validated server proposals through the confirmation card; the ordinary save rechecks permissions at tool entry, source/version/snapshot, locks and all declared rules. Setup/storage/DNS/quota/model/limit errors remain errors; do not substitute fake replies. Provider response bodies and key-bearing text are not echoed. Rotated credentials and concurrent model calls require request-local redaction.
 
 ## Audit Expectations
 
@@ -140,7 +140,7 @@ Use the shared host's credential-free tool/turn/session audit path. Preserve pri
 - First setup → save → refresh/restart reuse → blank-key edit → replacement/test → delete works without exposing the key.
 - Another user cannot open, test, modify or chat with the owner's connection.
 - Revoked permission, foreign scope, unexpected fields and stale connection/plan/session versions are rejected.
-- Scripted providers exercise actual Rack read/capacity/check/option services without any save or Facility mutation.
+- Scripted providers exercise actual Rack read/capacity/check/option services, plus edit preview → confirmation → checked atomic save. Viewer/denial/invalid operations do not save, and no Facility mutation is offered.
 - Unknown resources, pagination, diagnostics caps and ten-call/one-generation limits remain visible.
 - Endpoint tests cover private/mixed DNS, redirect, oversize, cancellation and explicit admin allowlist behavior.
 - Real provider acceptance must separately exercise tool round trips, Rack grounding, quota failures and response quality; synthetic success is not that evidence.
