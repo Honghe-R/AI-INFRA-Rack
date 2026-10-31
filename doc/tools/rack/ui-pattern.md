@@ -50,6 +50,24 @@ Add dialogs contribute to the shared draft. Equipment is version-pinned and init
 - An occupied rack cannot be removed until equipment and limit references are handled. Never silently orphan inventory.
 - Findings focus associated objects. Use textual status and lists alongside colors.
 
+### Bulk rack and device removal
+
+Rack layout/Overview and Devices & U slots expose separate bulk-removal panels.
+Users can search, filter, select individual rows or select all eligible filtered
+results across pages, review counts, then confirm removal into the shared draft.
+Lists render at most50 rows per page. Selection remains explicit across filters.
+Cancel changes no data. Save layout persists the resulting aggregate; Discard
+changes restores the saved state. No new delete API or database migration is used.
+
+Device removal deletes selected inventory entries, whether installed or pending.
+Rack removal deletes selected unlocked placements and their capacity-limit records,
+and unassigns their devices by clearing both rackId and startU. The review states
+the affected device count; it never silently deletes equipment. Locks in either
+the current draft or saved layout block rack removal, including an unsaved unlock.
+Unknown/stale selected IDs reject the whole action. Review becomes invalid if
+its underlying layout/equipment changes. Existing permission, source/version,
+in-flight command, normalization and atomic-save checks remain authoritative.
+
 ### View and Metric Semantics
 
 Floor layout, front elevations and capacity table share IDs and selection. U1 is at the bottom. Switching view cannot move objects. Unknown and Not checked are distinct from normal load. The rack-body envelope metric is an axis-aligned area, not certified freed usable floor space. Power/U coloring describes local checks, not circuit or airflow validation.

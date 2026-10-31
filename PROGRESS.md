@@ -1098,6 +1098,32 @@ Docker 可能保留已下载的镜像缓存，本轮没有清理全局 Docker �
 - Runtime probes: Web5193 and API8797 `/healthz` returned200. An invalid-mode request through the authenticated Web proxy returned400/`ASSISTANT_PERMISSION_MODE_INVALID`, confirming the running API loaded the policy without a model call. No interactive browser or real-model natural-language acceptance is claimed; visual placement and interpretation quality remain user acceptance work.
 - Worked only in the Rack copy. No teacher platform/original-directory access or changes; no staging, commits, pushes or remote changes. All modifications remain local for the user.
 
+## 2026-10-31: Round40 — 可直接用于汇报的中文完整内容
+
+- 用户要求从“准备哪些材料”的提纲改为覆盖全部评分项的具体汇报内容。重写根目录 [RACK_PRESENTATION_OUTLINE.md](RACK_PRESENTATION_OUTLINE.md)，提供20页主体，每页含可放入PPT的正文和具体讲解。补充设计思想、复用与新增边界、架构、完整操作链、数据实体／单位／版本、实际表与JSONB／对象／凭证存储、约束、三类算法、API、事务和幂等、Assistant装配／工具／三模式、认证权限、演示、性能、安全及未实现内容。
+- 核对Rack路由、布局服务、领域装箱／分配／Catalog、Assistant宿主／提案／连接／会话、SQL迁移和既有性能记录。以8GPU＋12计算服务器＋2交换机为贯穿案例，明确58U／960kg／34.2kW和功率下界3柜，区分领域合成矩形测试与实际机房布置。保留普通检查／装箱上限策略尚未统一、真实模型验收、正式登录和工程验证等边界。
+- 附录包含6份完整可解析JSON示例、请求头、状态与恢复表、14个具体技术问答、源码定位和评分项映射。没有虚构成员贡献，仅姓名／真实分工留待小组填写。没有创建PPTX或声称进行了幻灯片视觉验收。
+- 文档验证：20页主体数量核对，6个JSON代码块解析成功，全部Markdown本地链接存在，Git差异空白检查通过。性能和测试数量引用已有记录，没有重跑或宣称本轮重新完成性能／产品验收。仅修改本大纲和进度记录，没有改动业务代码、数据库、配置、老师目录或平台；未暂存、提交或推送。
+
+## 2026-10-31: Round41 — Assistant汇报架构与修改流程图
+
+- 在根目录 [汇报完整内容](RACK_PRESENTATION_OUTLINE.md)第14页新增Assistant集成架构Mermaid图，明确浏览器聊天HTTP入口、身份／上下文解析、宿主、Rack指令、个人连接、模型工具调用循环、7个工具、共享业务服务和实际持久化关系。
+- 第15页新增修改流程Mermaid图，包含无权限／Read only、读取、预览检查、持久化提案、Ask确认／拒绝、Full直接进入应用、重新检查、事务保存／回滚和前端刷新。区分保存提案与修改Plan布局，保留30分钟归属／版本绑定和重试语义。
+- 仅修改汇报Markdown与本记录，保留既有逐页正文和未提交改动。人工核对节点／箭头与第39轮实现、Markdown围栏及本地引用；未进行Mermaid渲染器或PPT视觉验收，也未运行产品测试。无业务代码、数据库、配置、老师目录／平台变化，未暂存、提交或推送。
+
+## 2026-10-31: Round42 — 精简Assistant汇报图
+
+- 按用户要求缩短第14／15页Mermaid节点和连线文字，保留HTTP入口与结果返回、上下文／加密连接、宿主与模型循环、工具与共享服务／数据库、会话存储关系。修改流程保留只读／越权拒绝、读取、预览失败、绑定提案、Ask确认／取消与Full分支、应用复核、事务回滚／保存及刷新。
+- 详细解释留在原逐页讲解中，图不再重复全部字段与检查清单。仅改汇报和进度Markdown；检查围栏与差异，没有产品代码／数据库／老师平台改动，没有提交或推送，也未声称完成图形渲染验收。
+
+## 2026-10-31: Round43 — Batch rack and device removal
+
+- Added English **Bulk remove racks** in Layout/Overview and **Bulk remove devices** in Devices & U slots. Search, location/lock filters, individual checkboxes, selection across all matching pages, 50-row pagination and a review/confirmation step replace repeated single-item deletion. Existing single-item actions remain available.
+- Added [shared draft transformations](apps/web/src/rack/bulk-removal.js) and [bulk selection panel](apps/web/src/rack/RackBulkRemoval.jsx), integrated through RackEditor/RackEquipment and documented in [UI patterns](doc/tools/rack/ui-pattern.md). Removing racks removes their rack-limit entries and keeps installed devices as unassigned inventory with rackId/startU cleared. Removing devices deletes the selected inventory entries and placements in U slots.
+- Draft and saved rack locks both block rack removal; unlock and save first. Parent handlers recheck editability/current data, reject unknown or duplicate IDs atomically, and invalidate confirmation when its input data changes. Changes use the existing shared draft and checked Save layout flow, including permissions, version/source checks and atomic persistence. Discard restores saved data; no new API or migration.
+- Verification: full Web suite **66 files / 706 tests passed**, including 9 new bulk-removal cases covering reference cleanup, preservation/non-mutation, mixed locks, stale/invalid selection, ordinary save-body identity, filters, pagination, permission rendering and escaping. Web production build passed with inherited esbuild/oxc and bundle-size warnings. Git whitespace checks passed. No interactive browser acceptance or live plan deletion claimed.
+- Worked only in the Rack copy; existing presentation edits preserved. No database/demo-data changes, teacher directory/platform changes, staging, commits, pushes or remote changes. Actual browser interaction remains a user walkthrough item.
+
 ## 后续记录格式（第十七轮后沿用）
 
 每轮追加一个日期标题，至少写清：

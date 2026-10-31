@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { RackRoomCapacity } from './RackRoomCapacity.jsx';
 import { deviceFromCatalog, detachCatalogDevice, modelKey } from '../catalog/catalog-state.js';
 import { MAX_EQUIPMENT_DEVICES } from './limits.generated.js';
+import { RackBulkRemoval } from './RackBulkRemoval.jsx';
+import { bulkRemoval } from './bulk-removal.js';
 
 const dimensions = [
   ['weightKg', 'maxWeightKg', 'Weight', 'kg'],
@@ -176,6 +178,12 @@ export function RackEquipment({
           <p className="rack-muted">Creates an unassigned device in this draft. Choose its rack and starting U, then save the layout.</p>
         </> : <p className="rack-muted">Catalog unavailable. Devices can still use explicit custom assumptions.</p>}
       </fieldset>
+      <RackBulkRemoval kind="devices" placements={placements} equipment={e} editable={editable} onApply={ids => {
+        if (!editable) throw new Error('This draft is not editable.');
+        const result = bulkRemoval({ kind: 'devices', ids, placements, equipment: e });
+        onChange(result.equipment);
+        if (ids.includes(selectedId)) setSelectedId(null);
+      }} />
       <label>
         Selected device
         <select value={d?.deviceId ?? ''} onChange={(event) => selectDevice(event.target.value)}>

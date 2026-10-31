@@ -11,6 +11,8 @@ import { RackAllocation } from './RackAllocation.jsx';
 import { RackWorkbench } from './RackWorkbench.jsx';
 import { RackAddDialog } from './RackAddDialog.jsx';
 import { RackCheckHistory } from './RackCheckHistory.jsx';
+import { RackBulkRemoval } from './RackBulkRemoval.jsx';
+import { bulkRemoval } from './bulk-removal.js';
 import { RACK_COMMANDS, rackCommandReason, addPlanObject } from './rack-commands.js';
 import {
   beginLayoutDraft,
@@ -206,6 +208,14 @@ export function RackEditor({
     canWrite && snapshot && draft && !busy && !draft.attempt && !stale && !versionConflict,
   );
   const models = layout.models;
+  function removeRacks(ids) {
+    if (!editable) throw new Error('This draft is not editable.');
+    const result = bulkRemoval({ kind: 'racks', ids, placements, equipment, savedPlacements: layout.placements });
+    onDraftChange({ ...draft, placements: result.placements, equipment: result.equipment });
+    if (ids.includes(selectedId)) setSelectedId(null);
+    setError(null);
+    setNotice(`Removed ${result.removedCount} racks from the draft; ${result.unassignedCount} devices kept as unassigned. Save layout to persist.`);
+  }
   function removeSelectedRack() {
     if (!editable || !selected || selectedPositionLocked ||
         equipment.devices.some(device => device.rackId === selectedId)) return;
@@ -448,6 +458,8 @@ export function RackEditor({
             feedback={error || inputError || (checkState.error ? rackError(checkState.error) :
               checkState.pending || checkState.body !== checkKey ? 'Checking the current layout…' :
               currentReport?.diagnostics.length || equipmentReport?.diagnostics.length ? 'Checks found conflicts. Resolve them before saving.' : notice)} />}
+          {['layout','overview'].includes(section) && <RackBulkRemoval key={`${layout.planId}:${snapshot.snapshotId}`} kind="racks"
+            placements={placements} savedPlacements={layout.placements} equipment={equipment} editable={editable} onApply={removeRacks} />}
           <div hidden={section !== 'constraints'} data-rack-panel="layout">
           <RoomFloorplan
             key={snapshot.snapshotId}
