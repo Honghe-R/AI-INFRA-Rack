@@ -105,6 +105,7 @@ export function createOrchestrator({
       rackContext: chatContext.rackContext ?? null,
       requestId: turnRequestId,
       sessionId,
+      signal,
     });
 
     // 3. Quota pre-check: fail open on an accounting outage, never on authorization.
@@ -231,9 +232,11 @@ export function createOrchestrator({
         readOnly: chatContext.readOnly,
         authorize: authorizeAtScope,
       });
-      const rackReadOnly = chatContext.surface === 'rack' && (operationMode === 'read_only' || chatContext.readOnly);
+      const developerMode = chatContext.surface === 'rack_developer';
+      const rackAgent = chatContext.surface === 'rack';
+      const rackReadOnly = ['rack', 'rack_developer'].includes(chatContext.surface) && (operationMode === 'read_only' || chatContext.readOnly);
       const selected = rackReadOnly
-        ? authorizedTools.filter(tool => tool.access === 'read' && !tool.requiredFunctions.includes('rack.write'))
+        ? authorizedTools.filter(tool => tool.access === 'read' && (developerMode || tool.name.startsWith('dev_') || !tool.requiredFunctions.includes('rack.write')))
         : authorizedTools;
       const modelTools = toolRegistry.modelTools(selected);
       const host = toolRegistry.createHost({ selected, executionContext });
@@ -257,7 +260,7 @@ export function createOrchestrator({
           digestNotice: digestMeta?.notice ?? null,
           tools: modelTools,
           uiActions,
-        }) + (chatContext.surface === 'rack' ? rackPermissionInstruction(rackReadOnly ? 'read_only' : operationMode) : ''),
+        }) + (chatContext.surface === 'rack' ? rackPermissionInstruction(rackReadOnly ? 'read_only' : operationMode) : developerMode ? `\nActive Development mode: ${rackReadOnly ? 'read_only' : operationMode}. Ask requires confirmation; Full authorizes sandbox writes/commands only. No live checkout or data edits.` : ''),
       };
 
       /**
@@ -270,7 +273,10 @@ export function createOrchestrator({
        * unwinds), `{ confirmationRequired }` when the gate stopped the call, and `{ done: true }`
        * otherwise.
        */
+      let rackCalls = 0;
       async function runToolCall(call, round, { forceConfirmed = false } = {}) {
+        if (rackAgent && ++rackCalls > 16)
+          throw new LlmError('RACK_AGENT_CALL_LIMIT', 'This Rack task reached its 16-tool-call budget. Completed actions remain recorded; continue with a smaller request.', { status: 429 });
         const toolName = call.function?.name ?? call.name;
         const capability = selected.find((candidate) => candidate.name === toolName) ?? null;
         const callStartedAt = now();
@@ -286,8 +292,9 @@ export function createOrchestrator({
          * id names one call and a new call cannot present it.
          */
         const confirmedByName = !forceConfirmed && confirmed.has(toolName);
-        const autoConfirmed = chatContext.surface === 'rack' && !chatContext.readOnly && operationMode === 'full'
-          && capability?.name === 'rack_apply_changes' && capability.access === 'write';
+        const autoConfirmed = !chatContext.readOnly && operationMode === 'full' && capability?.access === 'write'
+          && (rackAgent && ['rack_apply_changes','rack_create_plan','rack_rename_plan','rack_delete_plan','rack_restore_plan','dev_edit_file','dev_delete_file','dev_run_command'].includes(capability.name)
+            || developerMode && ['dev_edit_file', 'dev_delete_file', 'dev_run_command'].includes(capability.name));
         const preConfirmed = autoConfirmed || forceConfirmed || confirmedByName || confirmed.has(call.id);
         if (confirmedByName) confirmed.delete(toolName);
         let args;
@@ -466,7 +473,8 @@ export function createOrchestrator({
         emit(onEvent, { type: 'round', round: deniedRound });
       }
 
-      for (let iteration = 1; iteration <= effective.maxIterations; iteration += 1) {
+      const maxIterations = developerMode ? Math.min(effective.maxIterations, 6) : rackAgent ? Math.min(effective.maxIterations, 8) : effective.maxIterations;
+      for (let iteration = 1; iteration <= maxIterations; iteration += 1) {
         if (transcript.length > effective.maxMessages) {
           throw new LlmError('ASSISTANT_MESSAGE_BUDGET', 'The conversation exceeded the message budget.', { status: 408 });
         }
@@ -481,6 +489,7 @@ export function createOrchestrator({
           requestId: turnRequestId,
           signal,
           ...(model ? { model } : {}),
+          ...(developerMode || rackAgent ? { modelOptions: { max_tokens: 900 } } : {}),
         });
 
         const choice = response.choices[0] ?? {};
@@ -556,7 +565,7 @@ export function createOrchestrator({
         .join('; ');
       const budgetError = new LlmError(
         'ASSISTANT_ITERATION_BUDGET',
-        `The turn used its ${effective.maxIterations}-round budget without answering. What it did — ${loopSummary || 'no tool calls'}.`,
+        `The turn used its ${maxIterations}-round budget without answering. What it did — ${loopSummary || 'no tool calls'}.`,
         {
           status: 408,
           details: rounds.map((entry) => ({ iteration: entry.iteration, calls: (entry.calls ?? []).map((call) => ({ name: call.name, outcome: call.outcome })) })),
@@ -817,7 +826,8 @@ async function finalize({
   // Derived from the rounds rather than tracked beside them, so a turn that wrote is
   // described by the same record the transcript discloses. A confirmed call runs in its own
   // round, before any model round, so it counts here exactly like a model-proposed one.
-  const draftChanged = rounds.some((entry) => (entry.calls ?? []).some((call) => call.wrote === true));
+  const draftChanged = chatContext.surface !== 'rack_developer'
+    && rounds.some((entry) => (entry.calls ?? []).some((call) => call.wrote === true && !call.name?.startsWith('dev_')));
 
   // The model's requested UI actions are validated against the surface's allow-list.
   // A rejected one becomes a notice; it is never dispatched and never silently kept.

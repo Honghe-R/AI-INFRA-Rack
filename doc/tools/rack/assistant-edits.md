@@ -1,5 +1,14 @@
 # Assistant Edits
 
+Round55 extension: [Unified Rack Agent](unified-agent.md) and
+[Assistant Integration](assistant-integration.md) extend this proposal/save protocol
+to device batches, batch removal, saved locks, limits, exclusion zones and
+DESIGN/RELOCATE/ALLOCATE proposals. New racks default locked; unlocking must be
+saved before moving/deleting previously locked racks. Apply includes saved
+read-back/check evidence. Plan lifecycle uses separate versioned services. Private
+source changes never bypass the business protocol. Earlier examples below retain
+their original six-operation scope.
+
 ## Workflow
 
 ### User-selected operation mode

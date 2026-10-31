@@ -118,6 +118,7 @@ export function createExecutionContext({
   sessionId,
   readOnly = false,
   rackContext = null,
+  signal = null,
 }) {
   if (!userId) throw new LlmError('ASSISTANT_CONTEXT_INVALID', 'An initiating user is required.', { status: 500 });
   if (!requestId) throw new LlmError('ASSISTANT_CONTEXT_INVALID', 'A request id is required.', { status: 500 });
@@ -134,5 +135,6 @@ export function createExecutionContext({
     ...(rackContext ? { rackContext: Object.freeze({ ...rackContext }) } : {}),
     requestId,
     sessionId,
+    signal,
   });
 }

@@ -13,6 +13,10 @@ import { createRackAssistantSurface } from './services/rack-assistant.js';
 import { createRackLayoutService } from './services/rack-layout.js';
 import { createRackPlanService } from './services/rack-plans.js';
 import { createRackAssistantEdits } from './services/rack-assistant-edits.js';
+import { createDeveloperWorkspace } from './services/developer-workspace.js';
+import { createDeveloperSurface } from './services/developer-assistant.js';
+import { createRackKnowledge, rackAgentDigest } from './services/rack-knowledge.js';
+import { createRackAgentActions, createRackRoomReader, targetRackCapabilities } from './services/rack-agent-actions.js';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -41,13 +45,22 @@ export async function createAssistantHostFor({ config, pool, secrets, guard, log
     guide: projection?.guide ?? null,
   });
   const authorize = createPermissionAuthorizer({ guard });
+  const developer = createDeveloperWorkspace({ authorize });
   if (pool) {
     const layouts = createRackLayoutService({ pool });
-    const rack = createRackAssistantSurface({ layouts, plans: createRackPlanService({ pool }), authorize,
+    const plans = createRackPlanService({ pool });
+    const rack = createRackAssistantSurface({ layouts, plans, authorize,
       edits: createRackAssistantEdits({ pool, layouts, authorize }) });
     catalog.surfaces.push(rack.surface);
     catalog.guides.push(rack.guide);
-    catalog.capabilities = [...catalog.capabilities, ...rack.capabilities];
+    catalog.capabilities = [...catalog.capabilities, ...targetRackCapabilities(rack.capabilities,{layouts,authorize}),
+      ...createRackKnowledge({authorize}).capabilities,
+      ...createRackAgentActions({plans,rooms:createRackRoomReader({pool}),authorize}).capabilities];
+    if (developer.enabled) {
+      const development = createDeveloperSurface(developer);
+      catalog.surfaces.push(development.surface); catalog.guides.push(development.guide);
+      catalog.capabilities.push(...development.capabilities);
+    }
   }
   const storage = createStorageOrNull(config, logger);
 
@@ -61,9 +74,8 @@ export async function createAssistantHostFor({ config, pool, secrets, guard, log
     uiActions: catalog.uiActions,
     resolveScope: createAssistantScopeResolver({ pool, authorize }),
     authorize,
-    // The site_facility surface declares no digest, so the orchestrator performs
-    // no context query and `buildDigest` stays null.
-    buildDigest: null,
+    // Rack gets server scope/permissions. Facility keeps its null digest.
+    buildDigest: input => rackAgentDigest(input, authorize),
     limits: {
       maxIterations: config.assistantMaxIterations,
       maxMessages: config.assistantMaxMessages,
@@ -95,6 +107,7 @@ export async function createAssistantHostFor({ config, pool, secrets, guard, log
     ...host,
     redact,
     connections,
+    developer,
     ...(connections ? {
       async resolveTurn({ userId, connectionId, connectionVersion }) {
         const personal = await connections.get(userId);
@@ -226,9 +239,17 @@ export function createAssistantScopeResolver({ pool, authorize = null }) {
       rackContext = { planId: null, version: null, clientVersion: hint.clientVersion ?? null, hasUnsavedDraft: hint.hasUnsavedDraft === true };
       if (hint.planId != null) {
         if (typeof hint.planId !== 'string' || !UUID.test(hint.planId)) throw errors.notFound();
-        const layout = await createRackLayoutService({ pool }).get({ projectId, planId: hint.planId });
+        let layout;
+        try { layout = await createRackLayoutService({ pool }).get({ projectId, planId: hint.planId }); }
+        catch (error) {
+          if (error.code !== 'RACK_PLAN_DELETED') throw error;
+          // Keep a deleted selection usable for scoped restoration, while layout
+          // tools themselves continue refusing deleted data.
+          layout = await createRackPlanService({ pool }).get({ projectId, planId: hint.planId });
+          if (!layout.deletedAt) throw error;
+        }
         if (!revision || layout.scenarioId !== revision.scenario_id || layout.facilityInput.revisionId !== revision.revision_id) throw errors.notFound('Rack plan not found in this workspace.');
-        rackContext = { ...rackContext, planId: layout.planId, version: layout.version };
+        rackContext = { ...rackContext, planId: layout.planId, version: layout.version, deleted: Boolean(layout.deletedAt) };
       }
     }
     return {
@@ -252,7 +273,7 @@ export function createAssistantScopeResolver({ pool, authorize = null }) {
       displayName: rows[0].name ?? projectId,
       // A validated or published revision is immutable, so a scope that names one is
       // read-only whatever the client claimed.
-      readOnly: revision ? revision.lifecycle_state !== 'DRAFT' : context.readOnly === true,
+      readOnly: context.surface === 'rack_developer' ? context.readOnly === true : revision ? revision.lifecycle_state !== 'DRAFT' : context.readOnly === true,
       ...(rackContext ? { rackContext } : {}),
     };
   };

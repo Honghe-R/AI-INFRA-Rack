@@ -1,5 +1,10 @@
 # Rack 基础设计与本轮边界
 
+Latest supplement (2026-10-31, round55): [Unified Rack Agent](doc/tools/rack/unified-agent.md)
+combines project knowledge, scope/permissions, checked edits, automatic design,
+Plan lifecycle and authorized private source tools in one conversation. No task
+selector is required. See PROGRESS.md for verification and remaining acceptance.
+
 Latest supplement (2026-10-31, round39): [Assistant operation modes](doc/tools/rack/assistant-edits.md#user-selected-operation-mode)
 adds Read only, Ask for permission (default) and Full authorization inside Ask
 about Rack. Full skips only the individual apply card; proposal, account and save

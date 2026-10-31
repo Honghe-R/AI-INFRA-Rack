@@ -37,11 +37,21 @@ export function useAssistantSession({
   contextToken = null,
 }) {
   const effectiveAttachmentPolicy = toolId === 'rack' ? RACK_ATTACHMENT_POLICY : attachmentPolicy;
+  const [developer, setDeveloper] = useState(null);
+  const activeAssistantTool = toolId;
+  useEffect(() => {
+    setDeveloper(null);
+    if (toolId !== 'rack' || !workspaceContext?.projectId || !client?.request) return;
+    const controller = new AbortController();
+    client.request(`/api/v1/assistant/developer/status?project_id=${encodeURIComponent(workspaceContext.projectId)}`, { signal: controller.signal })
+      .then(r => { if (!controller.signal.aborted) setDeveloper(r.data); }).catch(() => {});
+    return () => controller.abort();
+  }, [toolId, workspaceContext?.projectId, client]);
 
   const effectsRef = useRef(effects);
   effectsRef.current = effects;
   const latest = useRef(null);
-  latest.current = { workspaceContext, routeFunctionId, attachmentPolicy: effectiveAttachmentPolicy, contextToken, toolId, toolRouteState };
+  latest.current = { workspaceContext, routeFunctionId, attachmentPolicy: effectiveAttachmentPolicy, contextToken, toolId: activeAssistantTool, toolRouteState };
 
   const [state, setState] = useState(null);
   const [uiActionNotices, setUiActionNotices] = useState([]);
@@ -51,7 +61,7 @@ export function useAssistantSession({
   const [connectionError, setConnectionError] = useState(null);
   const [connectionNonce, setConnectionNonce] = useState(0);
   const transport = useMemo(() => createAssistantTransport(client, provider), [client, provider?.connectionId, provider?.version]);
-  const key = connectionSessionKey(assistantSessionKey(workspaceContext, toolId, toolRouteState), provider, model);
+  const key = connectionSessionKey(assistantSessionKey(workspaceContext, activeAssistantTool, toolRouteState), provider, model);
   const modeScope = `${key}|${model ?? ''}|${connectionNonce}|${workspaceContext?.lifecycleState ?? ''}`;
   const [modeChoice, setModeChoice] = useState(null);
   const permissionMode = modeChoice?.scope === modeScope && modeChoice.client === client ? modeChoice.value : 'ask';
@@ -299,6 +309,8 @@ export function useAssistantSession({
     provider,
     models: provider?.models ?? [],
     model,
+    developer: toolId === 'rack' ? developer : null,
+    developerPatchUrl: toolId === 'rack' && developer?.enabled ? `/api/v1/assistant/developer/patch?project_id=${encodeURIComponent(workspaceContext.projectId)}` : null,
     onModelChange,
     permissionMode: toolId === 'rack' ? permissionMode : null,
     onPermissionModeChange: toolId === 'rack' ? (value) => {
@@ -469,6 +481,11 @@ export function contextFor(workspaceContext, options = {}) {
     toolRouteState = null,
   } = options;
 
+  if (toolId === 'rack_developer') return {
+    surface: 'rack_developer', tool_id: 'rack', projectId: workspaceContext.projectId,
+    scenarioId: workspaceContext.scenarioId, revisionId: workspaceContext.revisionId,
+    readOnly: false, available_actions: [], selection_refs: [], attachment_policy: RACK_ATTACHMENT_POLICY,
+  };
   if (toolId === 'rack') {
     const route = toolRouteState ?? {};
     return {
@@ -525,7 +542,7 @@ export function contextFor(workspaceContext, options = {}) {
 export function assistantSessionKey(context, toolId = 'site_facility', route = null) {
   if (!context) return null;
   const base = workspaceContextKey(context);
-  return toolId === 'rack' ? `${base}|rack|${route?.rackPlanId ?? 'unselected'}` : base;
+  return toolId === 'rack_developer' ? `${base}|rack_developer` : toolId === 'rack' ? `${base}|rack|${route?.rackPlanId ?? 'unselected'}` : base;
 }
 
 export function connectionSessionKey(base, connection, model) {

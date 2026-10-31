@@ -17,8 +17,19 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
  * `uiActions`, `entities`, `usage`, `trace` — and `status` distinguishes a
  * completed turn from one that stopped at a confirmation gate.
  */
-export function registerAssistantRoutes(router, { orchestrator, sessionService = null, usageService = null, provider = null, models = [], redact = (value) => value, connections = null, resolveTurn = null }) {
+export function registerAssistantRoutes(router, { orchestrator, sessionService = null, usageService = null, provider = null, models = [], redact = (value) => value, connections = null, resolveTurn = null, developer = null }) {
   if (!orchestrator) throw new Error('registerAssistantRoutes requires an assistant orchestrator.');
+  const developerContext = ctx => ({ workspaceId: ctx.query.project_id, initiatedBy: { userId: ctx.user.userId }, requestId: ctx.correlationId });
+  router.get('/api/v1/assistant/developer/status', async ctx => {
+    if (!developer?.enabled) return { data: { enabled: false } };
+    return { data: await developer.status(developerContext(ctx)) };
+  });
+  router.get('/api/v1/assistant/developer/patch', async ctx => {
+    if (!developer?.enabled) throw new ApiError('DEVELOPER_DISABLED', 'Development Agent is disabled.', { status: 503 });
+    const result = await developer.export(developerContext(ctx));
+    ctx.response.writeHead(200, { 'content-type': 'text/plain; charset=utf-8', 'content-disposition': 'attachment; filename="rack-development.patch"', 'cache-control': 'no-store' });
+    ctx.response.end(result.patch);
+  });
 
   /**
    * What is serving this assistant.

@@ -39,7 +39,7 @@ The inherited blueprint also assigns room/row concerns to Floorplan. This course
 | --- | --- | --- |
 | Traceability | Source/model versions, algorithm IDs, fingerprints, commands, saved checks and JSON/CSV planning reports | Durable candidate history and accepted cross-tool handoffs |
 | Collaboration | Authentication, RBAC, isolation, optimistic concurrency | Presence and draft merging |
-| Assistant | Five read/computation tools and personal model connection | Demand/allocation projection and real-model acceptance |
+| Assistant | Unified knowledge, scope/permissions, checked edits, design/allocation, lifecycle and personal model connection | Real-model acceptance; source promotion stays manual |
 | Recovery | Soft deletion, restore, exact retry | Retention policy and restore drills |
 | Handoff | Documented input/output boundaries | Accepted Network/Power/Thermal/Verify exports |
 
@@ -100,6 +100,8 @@ Domain functions normalize values, check equipment and generate deterministic pr
 | [Constraint Catalog](constraint-catalog.md) | Diagnostics and unchecked scope |
 | [Import Mapping](import-adapters.md) | Current normalized inputs and future file/vendor adapters |
 | [Assistant Integration](assistant-integration.md) | Capabilities, grounding, personal API setup and security |
+| [Development Agent](developer-agent.md) | Private source workspace, code tools, offline container tests and reviewable patches |
+| [Unified Rack Agent](unified-agent.md) | One conversation, grounded knowledge, authorized operations and verification |
 | [Authentication and Access Control](access-control.md) | Role matrix, lifecycle authority, scoped membership administration and audit |
 | [Assistant Edits](assistant-edits.md) | Typed edits, checked server previews, confirmation and atomic save |
 | [Saved Checks and Reports](check-history-and-reports.md) | Saved-version evidence, freshness, history and JSON/CSV downloads |

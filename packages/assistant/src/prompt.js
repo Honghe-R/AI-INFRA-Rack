@@ -28,7 +28,11 @@ export function composeSystemPrompt({
   tools = [],
   uiActions = [],
 } = {}) {
-  const parts = [basePrompt];
+  const effectiveBase = ['rack', 'rack_developer'].includes(guide?.surface) && basePrompt === BASE_PROMPT
+    ? BASE_PROMPT.replace('Never reveal internal identifiers, implementation\ncommands, credentials, or file paths.',
+      'For Rack assistance, show relative source paths, sandbox commands and test diagnostics when useful. Never reveal credentials, private host paths or internal account identifiers.')
+    : basePrompt;
+  const parts = [effectiveBase];
 
   if (guide) {
     parts.push(

@@ -22,6 +22,8 @@ import { mkdtemp, mkdir, rm } from 'node:fs/promises';
 import { join, resolve, sep } from 'node:path';
 import { createAssistantHost } from '@ai-infra/assistant';
 import { registerAssistantRoutes } from '../routes/assistant.js';
+import { createRackAgentActions, createRackRoomReader, targetRackCapabilities } from '../services/rack-agent-actions.js';
+import { createRackKnowledge, rackAgentDigest } from '../services/rack-knowledge.js';
 
 const skip = process.env.DATABASE_URL ? false : 'DATABASE_URL is not set';
 let pool, repository;
@@ -717,6 +719,60 @@ function assistantEditRig(f,layout,user='admin') {
     rackContext:{planId:layout.planId,version:layout.version,clientVersion:layout.version,hasUnsavedDraft:false}});
   return {edits,ctx,layouts,authorize};
 }
+
+test('Unified Rack Agent creates, designs, saves and verifies a Plan in one scripted conversation; lifecycle permissions remain separate', {skip},async()=>fixture(async f=>{
+  await addBoundary(f.a);
+  const guard=createPermissionGuard({evaluator:createEvaluator({repository}),repository});
+  const authorize=createPermissionAuthorizer({guard}),layouts=createRackLayoutService({pool}),plans=createRackPlanService({pool});
+  const edits=createRackAssistantEdits({pool,layouts,authorize});
+  const rackSurface=createRackAssistantSurface({layouts,plans,edits,authorize});
+  const actions=createRackAgentActions({plans,rooms:createRackRoomReader({pool}),authorize});
+  const capabilities=[...targetRackCapabilities(rackSurface.capabilities,{layouts,authorize}),...actions.capabilities,...createRackKnowledge({authorize}).capabilities];
+  let iteration=0,createdId;
+  const provider={async complete(input){
+    iteration++;assert.equal(input.modelOptions.max_tokens,900);
+    const result=name=>JSON.parse(input.messages.findLast(m=>m.role==='tool'&&m.name===name).content);
+    let name,args;
+    if(iteration===1){name='rack_list_rooms';args={};}
+    else if(iteration===2){const room=result('rack_list_rooms').items[0];name='rack_create_plan';args={name:'Unified integration design',room:room.roomId,source_etag:room.sourceEtag};}
+    else if(iteration===3){createdId=result('rack_create_plan').planId;name='rack_read_plan';args={plan_id:createdId};}
+    else if(iteration===4){const plan=result('rack_read_plan');name='rack_preview_automatic_design';args={plan_id:createdId,kind:'DESIGN',base_version:plan.version,
+      demand:{groups:[{modelId:'demo-gpu-4u',version:1,quantity:8},{modelId:'demo-tor-1u',version:1,quantity:2}],rackModelId:plan.models[0].modelId,maxRacks:8,
+        rackLimits:{maxWeightKg:800,maxPowerKw:12,maxCoolingKw:12},gapM:.2,sourceReference:'Scripted local test assumptions'}};}
+    else if(iteration===5){const preview=result('rack_preview_automatic_design');assert.equal(preview.canApply,true,JSON.stringify(preview));name='rack_apply_changes';args={plan_id:createdId,proposal_id:preview.proposalId};}
+    else {const saved=result('rack_apply_changes');assert.equal(saved.persisted,true);assert.equal(saved.verification.matchesAppliedVersion,true);
+      return {choices:[{message:{role:'assistant',content:'Plan created, designed, saved and independently checked. Scope remains NOT_RUN for whole-plan validation.'}}]};}
+    return {choices:[{message:{role:'assistant',tool_calls:[{id:`local-${iteration}`,type:'function',function:{name,arguments:JSON.stringify(args)}}]}}]};
+  }};
+  const host=createAssistantHost({provider,surfaces:[rackSurface.surface],guides:[rackSurface.guide],capabilities,authorize,
+    resolveScope:createAssistantScopeResolver({pool,authorize}),buildDigest:input=>rackAgentDigest(input,authorize)});
+  const answer=await host.orchestrator.runTurn({permissionMode:'full',contextKey:'unified-local-fixture',context:{surface:'rack',userId:f.people.admin.userId,
+    projectId:f.a.projectId,scenarioId:f.a.scenarioId,revisionId:f.a.revisionId},messages:[{role:'user',content:'Create a Plan with 8 GPU servers and 2 switches; use the stated synthetic test limits.'}]});
+  assert.equal(iteration,6);assert.equal(answer.draftChanged,true);
+  const saved=await layouts.get({projectId:f.a.projectId,planId:createdId});
+  assert.equal(saved.version,2);assert.equal(saved.equipment.devices.length,10);assert.ok(saved.placements.every(p=>p.locked));
+  const checks=await layouts.check({projectId:f.a.projectId,planId:createdId,body:{contract_version:1,snapshot_id:saved.snapshot.snapshotId,placements:saved.placements,constraints:saved.constraints,equipment:saved.equipment}});
+  assert.equal(checks.report.diagnostics.length,0);assert.equal(checks.equipmentReport.diagnostics.length,0);
+  const rig=assistantEditRig(f,saved),more=await rig.edits.preview(rig.ctx,{base_version:saved.version,operations:[
+    ...saved.placements.map(p=>({type:'SET_RACK_LOCK',rack:p.rackId,locked:false})),
+    {type:'ADD_DEVICE',name:'Extra compute',quantity:2,catalog_model_id:'demo-compute-2u',catalog_version:1}]});
+  assert.equal(more.canApply,true);await rig.edits.apply(rig.ctx,{proposal_id:more.proposalId});
+  const updated=await layouts.get({projectId:f.a.projectId,planId:createdId}),allocation=assistantEditRig(f,updated);
+  const preview=await allocation.edits.previewGenerated(allocation.ctx,{base_version:updated.version,kind:'ALLOCATE'});
+  assert.equal(preview.canApply,true,JSON.stringify(preview));await allocation.edits.apply(allocation.ctx,{proposal_id:preview.proposalId});
+  const final=await layouts.get({projectId:f.a.projectId,planId:createdId});assert.equal(final.equipment.devices.length,12);assert.ok(final.equipment.devices.every(d=>d.rackId));
+  const act=(name,ctx,args)=>actions.capabilities.find(t=>t.name===name).handler(ctx,args);
+  const viewer=assistantEditRig(f,final,'viewer');
+  await assert.rejects(act('rack_create_plan',viewer.ctx,{name:'Forbidden',room:f.a.hallId,source_etag:f.a.etag}),e=>e.status===403);
+  const editor=assistantEditRig(f,final,'editor');
+  await assert.rejects(act('rack_delete_plan',editor.ctx,{base_version:final.version}),e=>e.status===403);
+  const admin=assistantEditRig(f,final).ctx;
+  const deleted=await act('rack_delete_plan',admin,{base_version:final.version});assert.equal(deleted.deleted,true);
+  const deletedScope=await createAssistantScopeResolver({pool,authorize})({context:{surface:'rack',userId:f.people.admin.userId,projectId:f.a.projectId,
+    scenarioId:f.a.scenarioId,revisionId:f.a.revisionId,rackContext:{planId:createdId}}});
+  assert.equal(deletedScope.rackContext.deleted,true,'A deleted selection must still allow asking to restore it.');
+  const restored=await act('rack_restore_plan',admin,{base_version:deleted.appliedVersion});assert.equal(restored.deleted,false);
+}));
 for (const permissionMode of ['ask', 'full']) test(`Assistant ${permissionMode} edit preview, atomic save and replay use real Rack services`, {skip},async()=>fixture(async f=>server(f.people,async request=>{
   const {url,layout}=await prepared(f,request),rig=assistantEditRig(f,layout);
   const args={base_version:layout.version,operations:[{type:'ADD_RACK',model_id:layout.models[0].modelId,name:'Assistant rack',x_m:3,y_m:3}]};
@@ -760,7 +816,7 @@ for (const permissionMode of ['ask', 'full']) test(`Assistant ${permissionMode} 
 
 test('Assistant edits reject scope, permissions, dirty/stale inputs and conflicts; concurrent apply saves once', {skip},async()=>fixture(async f=>server(f.people,async request=>{
   const {url,layout}=await prepared(f,request),{edits,ctx}=assistantEditRig(f,layout);
-  const args={base_version:layout.version,operations:[{type:'ADD_RACK',model_id:layout.models[0].modelId,name:'New rack',x_m:3,y_m:3}]};
+  const args={base_version:layout.version,operations:[{type:'ADD_RACK',model_id:layout.models[0].modelId,name:'New rack',x_m:3,y_m:3,locked:false}]};
   const viewer=assistantEditRig(f,layout,'viewer');await assert.rejects(viewer.edits.preview(viewer.ctx,args),e=>e.status===403);
   await assert.rejects(edits.preview({...ctx,rackContext:{...ctx.rackContext,hasUnsavedDraft:true}},args),e=>e.code==='RACK_ASSISTANT_DIRTY_DRAFT');
   await assert.rejects(edits.preview(ctx,{...args,base_version:99}),e=>e.status===412);

@@ -2,6 +2,13 @@
 
 ## Purpose
 
+Unified Agent update (2026-10-31, round55): Ask about Rack is one conversation;
+users no longer select Planning or Development. Knowledge, saved design operations
+and private code tools are supplied according to account permissions. The legacy
+rack_developer surface remains for earlier-session compatibility. See
+[Unified Agent](unified-agent.md) and [source execution](developer-agent.md).
+Code patches require manual review/application; business changes use checked services.
+
 Ask about Rack helps users understand saved layouts, resource constraints, findings and bounded relocation options. It is a projection of [Tool Surface](tool-surface.md), not an independent planner or a privileged database agent. Natural-language fluency does not establish engineering validity or permission to mutate a plan.
 
 This document follows the Site and Facility Assistant specification's structure while describing the actual Rack implementation. Baseline: 2026-10-30. Source owners are `apps/api/src/services/rack-assistant.js`, `assistant-host.js`, `routes/assistant.js`, the connection/endpoint services and the existing Web composer/session components.
@@ -13,8 +20,8 @@ This document follows the Site and Facility Assistant specification's structure 
 | Surface key/version | rack / 1 |
 | Guide key/version | rack-guide / 1 |
 | Entry functions | rack.read and facility.read in the resolved project |
-| Capabilities | Five read/computation tools; write-authorized preview plus mode-controlled application |
-| Digest | null; no Rack workspace digest generator |
+| Capabilities | 16 knowledge/business descriptors; 8 extra private source tools for authorized local administrators |
+| Digest | Bounded server project, selected Plan/version, draft hint and effective permissions |
 | Rack UI actions | Empty list |
 | Rack entity-reference kinds | No Rack-specific kinds registered |
 | Persistence authority | Ordinary checked save; Assistant applies only server-owned confirmed proposals |
@@ -32,18 +39,49 @@ The host retains Facility and Rack projections in the shared registry, but surfa
 | rack_query_capacity | offset?; rack?: string 1–160 | Shared equipment checker, rack U/resources and plan-wide room totals |
 | rack_check_saved_layout | Empty object | Authoritative Polygon checks and shared equipment checks for saved content |
 | rack_generate_layout_options | grid_step_m?: 0.1–5; allow_rotation?: boolean; strategy?: COMPARE/INPUT_ORDER/LARGEST_FIRST | Same relocation planner as UI; baseline/candidate summaries, parameters, reports and next-step guidance |
+| rack_search_knowledge | query: string up to 120 characters | Up to 16 ranked current Rack documentation/core-source excerpts with path and line |
+| rack_read_knowledge | path; start_line?; line_count? up to 80 | Allowlisted excerpt, SHA-256 and truncation metadata |
+| rack_get_catalog | Empty object | Synthetic device model IDs, versions, composition and declared demands |
+| rack_list_rooms | offset? | HALL names/IDs and current Facility source tokens, 20/page |
 
-All schemas reject additional properties. All descriptors use access read, confirmation none and both required read functions. `rack` accepts an exact display name or a returned UUID; duplicate exact names are refused as ambiguous, not arbitrarily resolved. Other tools do not resolve model-provided scope IDs.
+All schemas reject additional properties. These descriptors use access read,
+confirmation none and both required read functions. Exact duplicate names are
+refused. Plan read/check/edit tools accept optional plan_id, resolved inside the
+existing project/scenario/revision; it never changes authorization scope. Lists
+accept deleted:true for recovery. Knowledge uses a server allowlist, not arbitrary paths.
 
 ### Schema and Result Caps
 
-One turn permits at most ten Rack calls and one relocation generation, including a provider emitting many calls in one iteration. Rack paging returns totals and nextOffset/nextCursor. Diagnostic categories and referenced device lists are bounded to 20 with explicit counts/truncation. Shared host configuration further limits orchestration/result budgets; these are deployment settings, not unlimited Rack guarantees.
+Unified Rack permits at most 8 model rounds, 16 calls and 900 output tokens per
+completion (or lower configured limits). Existing aggregate tools also retain
+10-call and one-generation budgets. Source tools retain 12 calls and 2 commands,
+each at most 60 seconds. These are execution/output limits, not total input-token
+or monetary caps. Pagination and diagnostic truncation remain explicit.
 
 Read metadata names saved version/snapshot/source, saved-only scope, client dirty-state hint, validationState NOT_RUN and transient/persistence status. Relocation summaries omit the candidate save body. A zero-length bounded result must not be described as proof that an entity or defect does not exist outside the examined page/scope.
 
-### Capabilities Not Declared
+### Checked Writes and Remaining Gaps
 
-The [Assistant Edits contract](assistant-edits.md) adds rack_preview_changes and rack_apply_changes: explicit cabinet add/remove/move, existing-device assignment, clearance and assumed room budget changes. Preview requires rack.write; apply uses the existing confirmation card in Ask mode, or explicit Full authorization, and ordinary checked atomic save. Quantity-driven design, automatic allocation, plan lifecycle, unlocking, formal validation/publication and cross-tool mutations remain unavailable through chat. Relocation candidate summaries are still not directly applied.
+`rack_preview_changes` / `rack_apply_changes` support rack move/add/remove, catalog
+or custom device batches, explicit device/rack batch removal, assignment, saved
+locks, rack limits, exclusion zones, clearance and room assumptions. New racks
+default locked. Removing occupied racks needs explicit unassignment, preserving
+devices. Previously locked racks must be unlocked and saved before move/delete.
+
+`rack_preview_automatic_design` generates server proposals from DESIGN, RELOCATE or
+ALLOCATE using existing services. DESIGN needs an empty Plan and explicit demand/
+limits; generated racks default locked. Partial allocation requires allow_partial.
+Apply rechecks owner/version/source/input/permissions and saves atomically, then
+returns independent saved read-back/check metadata. An unavailable verification
+cannot undo or conceal an already committed save.
+
+`rack_create_plan`, `rack_rename_plan`, `rack_delete_plan`, `rack_restore_plan` use
+existing lifecycle services. Create/rename require rack.write; delete rack.delete;
+restore rack.restore. Identity is server-bound, with version preconditions and
+canonical user-scoped retry keys. Identical create arguments reuse the creation
+identity; use a different name for an intentionally separate Plan. Formal validation,
+publication, member/Facility mutations, live source promotion and cross-tool design
+remain unavailable.
 
 ## Selection and Authorization
 
@@ -51,8 +89,8 @@ The Rack composer adds **Read only**, **Ask for permission** (default) and
 **Full authorization**. See [operation-mode contract](assistant-edits.md#user-selected-operation-mode).
 Each request carries `permission_mode`; the server validates it before opening a
 provider connection. Read only removes preview/apply, even for explicitly replayed
-confirmed calls. Full automatically confirms only `rack_apply_changes` after a
-server preview, while preserving every account, proposal and save check. It grants
+confirmed calls. Full confirms the explicit layout apply, lifecycle and private
+code write/command allowlist while preserving account/proposal/service checks. It grants
 no extra tools or role. Scope/model/connection changes, a new chat and reload reset
 the in-memory choice; it is never saved with API credentials or inferred from chat.
 Other tool surfaces keep their existing behavior.
@@ -70,7 +108,10 @@ Draft presence is only a hint. The tools do not inspect unsaved coordinates, new
 
 ### instructions
 
-Answer using tools from the current turn. Read before calculating or explaining. If no plan is selected, list plans and ask the user to select one in Rack. Do not request hidden UUIDs from a user who can select an object in the UI. Follow pagination when a complete answer requires more records.
+Search/read current project docs/core source for architecture, API, storage and
+algorithm explanations. Read saved data for design facts. Resolve Plan names from
+the scoped list and optional plan_id; ask for ambiguity or missing requirements.
+Users do not choose a technical task mode. Follow pagination.
 
 ### operatingPrinciples
 
@@ -78,7 +119,10 @@ U, weight, power and cooling are separate dimensions. Unknown/null is neither ze
 
 ### workflow
 
-Read plan → query capacity/check scope → explain named objects and findings → optionally generate relocation options. Report parameters, saved version, metric definition and unresolved issues. To apply an idea, direct the user to Layout options to generate with those parameters, inspect the map, confirm staging and Save layout.
+Read/clarify → preview explicit or algorithm-generated changes → explain findings
+and assumptions → execute under confirmation policy → report saved version and
+read-back checks. Lifecycle operations use their own checked services. Code tasks
+use private source tools and patches; they do not edit live Plan data.
 
 ### stateSignals
 
@@ -94,7 +138,12 @@ Rack currently declares no UI-action types and no Rack-specific entity-reference
 
 ## Grounding and Workspace Digest
 
-The surface digest is null. The guide and server context identify the workspace, but the model must call tools for design facts. `rack_read_plan` supplies fixed source/model references and bounded inventory; capacity/check tools compute from the saved aggregate. Do not send full room geometry or all inventory preemptively when a narrow query suffices. Tool-result provenance and unknowns must survive summarization.
+The digest states server-resolved project, selected Plan/version, draft hint and
+effective permissions; it is a turn-start snapshot. Knowledge tools read current
+allowlisted Rack specs/core code with citations, without training, embeddings or
+external retrieval. Private source snapshots can be older than current code.
+Current design facts still require business tools. Keep inventory/results bounded
+and preserve unknowns. Missing geometry blocks design until room input is configured.
 
 ## First-Use Model Connection and Agent Management
 

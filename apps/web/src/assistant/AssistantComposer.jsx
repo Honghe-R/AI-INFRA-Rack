@@ -50,6 +50,8 @@ export function AssistantComposer({
   model = null,
   onModelChange = null,
   permissionMode = null,
+  developer = null,
+  developerPatchUrl = null,
   onPermissionModeChange = null,
   connectionClient = null,
   connectionPending = false,
@@ -568,7 +570,7 @@ export function AssistantComposer({
               <select
                 className="assistant__permission-mode"
                 aria-label="Assistant operation mode"
-                title="Controls confirmation for Rack edits. Account permissions and layout checks always apply."
+                title="Controls confirmation for authorized operations. Account permissions always apply. Code edits stay in a private workspace."
                 value={permissionMode}
                 disabled={streaming || restoring}
                 onChange={(event) => onPermissionModeChange(event.target.value)}
@@ -578,6 +580,7 @@ export function AssistantComposer({
                 <option value="full">Full authorization</option>
               </select>
             ) : null}
+            {developer?.enabled && developerPatchUrl && <a className="assistant__usage" href={developerPatchUrl} download="rack-development.patch">Download code patch</a>}
             <button
               type="button"
               ref={usageButtonRef}
@@ -613,6 +616,8 @@ export function AssistantComposer({
           </div>
         </div>
 
+        {developer?.enabled && <p className="assistant__scope">Code changes use a private workspace and require patch review. Plan changes use checked saves.
+          {!developer?.runtimeReady && ' Sandbox setup required: npm run rack:developer:setup.'}</p>}
         {usageOpen ? (
           <TokenUsagePopover
             usage={usage}

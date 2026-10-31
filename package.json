@@ -30,6 +30,7 @@
     "rack:setup": "node scripts/rack-setup.mjs",
     "rack:account": "node --env-file-if-exists=.env scripts/rack-account.mjs",
     "rack:auth:test": "node --test scripts/tests/rack-auth.test.mjs",
+    "rack:developer:setup": "node --env-file-if-exists=.env scripts/rack-developer-setup.mjs",
     "ui:shot": "node scripts/ui-shot.mjs"
   },
   "engines": {

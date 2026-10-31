@@ -32,7 +32,8 @@ function fixture() {
 
 test('API host registers Rack read tools and guarded edit tools alongside Facility', async () => {
   const host = await createAssistantHostFor({ config: { llmEndpoint: 'http://127.0.0.1:1', llmModel: 'scripted-test', llmApiKeySecret: 'TEST_KEY' }, pool: { query() { throw new Error('No database reads during registration'); } }, secrets: { get: async () => null }, guard: null });
-  assert.equal(host.toolRegistry.describe().filter(t => t.surfaces.includes('rack')).length, 7);
+  const names=host.toolRegistry.describe().filter(t=>t.surfaces.includes('rack')).map(t=>t.name);
+  for(const name of ['rack_read_plan','rack_preview_changes','rack_apply_changes','rack_preview_automatic_design','rack_search_knowledge','rack_read_knowledge','rack_list_rooms','rack_create_plan','rack_delete_plan','rack_restore_plan']) assert.ok(names.includes(name),name);
   assert.ok(host.contextResolver.surfaces().some(s => s.key === 'rack' && s.version === 1));
   assert.deepEqual(host.contextResolver.guides().find(g => g.surface === 'rack').requiredEntryFunctions, ['rack.read', 'facility.read']);
 });
