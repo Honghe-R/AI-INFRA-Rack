@@ -47,6 +47,16 @@ Add dialogs contribute to the shared draft. Equipment is version-pinned and init
 - Select an elevation/list device for host, U interval, resources and provenance.
 - Drag unlocked racks in edit mode; snap uses metres. Arrow-key nudge and rotation affect the selected rack.
 - A previously locked rack must be unlocked and saved before movement/model change/deletion. Auto allocation excludes locked target racks.
+- Manual Add rack and quick-add create position-locked racks by default. The Add
+  rack dialog exposes a checked Position lock option that can be turned off.
+  The Inspector and selected-rack form expose the current per-rack switch;
+  editing it requires the normal editable draft. An unchecked switch with an
+  effective saved lock shows Unlock pending until Save layout succeeds. For a
+  new unsaved rack, turning the switch off allows placement before its first save.
+- Quantity-based Auto design offers Position lock for new racks, checked by
+  default when staging the candidate. This applies only to newly created racks;
+  algorithm preview geometry and existing-rack rearrangement locks are preserved.
+  Existing saved plans and backend/Assistant creation defaults are not rewritten.
 - An occupied rack cannot be removed until equipment and limit references are handled. Never silently orphan inventory.
 - Findings focus associated objects. Use textual status and lists alongside colors.
 

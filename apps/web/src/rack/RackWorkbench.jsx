@@ -32,6 +32,9 @@ export function RackInspector({rack, model, devices, selectedDevice, report, onD
     </> : rack ? <>
       <div className="rack-inspector-title"><Server size={24}/><h3>{rack.name}</h3><span className="rack-type-chip">Rack</span></div>
       <p className="rack-inspector-subtitle">{model?.name} · {positionLocked?'Position locked':'Position editable'}</p>
+      <label className="rack-lock-field"><input type="checkbox" checked={Boolean(rack.locked)} disabled={!editable || !onUpdate}
+        onChange={event => { if (editable && onUpdate) onUpdate({ locked: event.target.checked }); }}/>Position lock (on = locked)</label>
+      {!rack.locked && positionLocked && <p role="status" className="rack-muted">Unlock pending. Save layout before moving or deleting this rack.</p>}
       <Facts items={[
         ['Dimensions',`${fmt(model?.widthM)} × ${fmt(model?.depthM)} m`],['Height / Installed',`${model?.heightU??'?'} U / ${installed.length} devices`],
         ['Center position',`${fmt(rack.xM)}, ${fmt(rack.yM)} m`],['Orientation',`${rack.rotationDeg}°`],
@@ -42,7 +45,7 @@ export function RackInspector({rack, model, devices, selectedDevice, report, onD
         {onNavigate&&<button onClick={()=>onNavigate('capacity')}>Capacity details →</button>}
         {onRemove&&<button className="rack-danger" disabled={!editable||positionLocked||installed.length>0} onClick={onRemove}>Remove selected rack</button>}</div>
       {onRemove&&<p className="rack-muted">{installed.length?'Unassign or move equipment on the equipment page before removing this rack.':'Save the layout to persist rack removal. Use Discard changes to undo it before saving.'}</p>}
-      {positionLocked&&<p className="rack-muted"><LockKeyhole size={12}/> Unlock and save a previously locked rack before moving it.</p>}
+      {positionLocked&&<p className="rack-muted"><LockKeyhole size={12}/> Turn off Position lock above. Save layout to unlock a previously saved rack before moving or deleting it.</p>}
       <h4>Installed equipment <span>{installed.length}</span></h4>
       <p className="rack-muted">Select an equipment block or list entry for details · U1 is at the bottom</p>
       {model&&<div className="rack-mini-elevation" aria-label={`${rack.name} equipment elevation`}>

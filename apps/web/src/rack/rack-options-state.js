@@ -16,6 +16,7 @@ export function stageRackOption(layout, result, option, guards) {
   const reason = optionStageReason(layout, result, option, guards);
   if (reason) throw new Error(reason);
   return { planId: layout.planId, baseVersion: result.baseVersion, snapshotId: result.snapshotId,
-    placements: structuredClone(option.body.placements), constraints: structuredClone(option.body.constraints),
+    placements: structuredClone(option.body.placements).map(r => typeof guards.newRackLocked === 'boolean' && !layout.placements.some(old => old.rackId === r.rackId)
+      ? { ...r, locked: guards.newRackLocked } : r), constraints: structuredClone(option.body.constraints),
     equipment: structuredClone(option.body.equipment), attempt: null };
 }

@@ -42,7 +42,7 @@ export function addPlanObject(layout, draft, kind, values, catalog, makeId = () 
     if (!model) throw new Error('Choose an available rack model.');
     selectedId = makeId();
     next.placements.push({ rackId: selectedId, modelId: model.modelId, name: values.name.trim(),
-      xM: Number(values.xM), yM: Number(values.yM), rotationDeg: Number(values.rotationDeg), locked: false });
+      xM: Number(values.xM), yM: Number(values.yM), rotationDeg: Number(values.rotationDeg), locked: values.locked === undefined ? true : values.locked });
   } else if (kind === 'rack_zone') {
     if (next.constraints.obstacles.length >= 64) throw new Error('A plan supports at most 64 exclusion zones.');
     selectedId = makeId();

@@ -6,7 +6,7 @@ export function RackAddDialog({ kind, layout, draft, catalogState, blockedReason
   const [error, setError] = useState(null);
   const [values, setValues] = useState(() => ({ name: kind === 'rack_add' ? `Rack ${(draft?.placements ?? layout.placements).length + 1}` : `Exclusion zone ${(draft?.constraints ?? layout.constraints).obstacles.length + 1}`,
     modelId: layout.models[0]?.modelId ?? '', xM: Number((layout.snapshot.view.extentM.width / 2).toFixed(2)),
-    yM: Number((layout.snapshot.view.extentM.height / 2).toFixed(2)), rotationDeg: 0, widthM: 1, depthM: 1, quantity: 1, catalogKey: '' }));
+    yM: Number((layout.snapshot.view.extentM.height / 2).toFixed(2)), rotationDeg: 0, locked: true, widthM: 1, depthM: 1, quantity: 1, catalogKey: '' }));
   useEffect(() => { const previous = document.activeElement; dialog.current.showModal();
     return () => { if (previous?.isConnected) previous.focus(); }; }, []);
   const patch = (key, value) => setValues(v => ({ ...v, [key]: value }));
@@ -28,6 +28,7 @@ export function RackAddDialog({ kind, layout, draft, catalogState, blockedReason
         {kind === 'rack_add' && <label>Rack model<select required value={values.modelId} onChange={e => patch('modelId', e.target.value)}>{layout.models.map(m => <option key={m.modelId} value={m.modelId}>{m.name} · {m.heightU} U · {m.widthM} × {m.depthM} m</option>)}</select></label>}
         <div className="rack-form-fields">{['xM', 'yM', ...(kind === 'rack_zone' ? ['widthM', 'depthM'] : [])].map(key => <label key={key}>{({xM:'Center X (m)', yM:'Center Y (m)', widthM:'Width (m)', depthM:'Depth (m)'})[key]}<input type="number" required step="0.01" min={['widthM', 'depthM'].includes(key) ? '0.01' : '-10000'} max="10000" value={values[key]} onChange={e => patch(key, e.target.value)}/></label>)}</div>
         {kind === 'rack_add' && <label>Orientation<select value={values.rotationDeg} onChange={e => patch('rotationDeg', e.target.value)}>{[0,90,180,270].map(deg => <option key={deg} value={deg}>{deg}°</option>)}</select></label>}
+        {kind === 'rack_add' && <label className="rack-lock-field"><input type="checkbox" checked={values.locked} onChange={e => patch('locked', e.target.checked)}/>Position lock (on by default)</label>}
         <p className="rack-muted">Coordinates are in the room's local metric system. Initial positions are proposals; the backend checks boundaries, overlaps and maintenance clearances.</p>
       </>}
       {(error || blockedReason) && <p role="alert" className="rack-error">{blockedReason || error}</p>}

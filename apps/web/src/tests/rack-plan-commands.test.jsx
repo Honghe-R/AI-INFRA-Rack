@@ -13,6 +13,14 @@ const layout = {planId:'p',version:3,snapshot:{snapshotId:'s',view:{extentM:{wid
 const catalog = {models:[{modelId:'gpu',version:2,name:'GPU',specification:{heightU:4,weightKg:80,powerKw:3,coolingKw:3}}]};
 const rackValues = {modelId:'m',name:'Rack <A>',xM:'3',yM:'4',rotationDeg:'90'};
 
+test('new racks default to position locked and allow an explicit unlocked choice', () => {
+  assert.equal(addPlanObject(layout,null,'rack_add',rackValues,catalog,()=>'r').draft.placements[0].locked,true);
+  assert.equal(addPlanObject(layout,null,'rack_add',{...rackValues,locked:false},catalog,()=>'r').draft.placements[0].locked,false);
+  const html=renderToStaticMarkup(<RackAddDialog kind="rack_add" layout={layout} draft={null} catalogState={{data:catalog}}/>);
+  assert.match(html,/type="checkbox" checked=""/);
+  assert.match(html,/Position lock \(on by default\)/);
+});
+
 test('batch additions cross the old limit but respect the shared inventory maximum', () => {
   const equipment = count => ({ ...defaultEditorEquipment(), devices: Array.from({length:count}, (_, i) => ({
     deviceId:`existing-${i}`,name:`Device ${i}`,heightU:1,weightKg:1,powerKw:1,coolingKw:1,rackId:null,startU:null })) });

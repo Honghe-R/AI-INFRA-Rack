@@ -15,6 +15,14 @@ const extent={width:100,height:80};
 const snapshot={room:{name:'Hall'},view:{extentM:extent,areaM2:7999,boundaryLocalM:{type:'Polygon',coordinates:[[[0,0],[100,0],[99,80],[0,80],[0,0]],[[1,1],[2,1],[2,2],[1,1]]]}},sourceGeometry:{}};
 const props={snapshot,placements:[rack],models:[model],constraints,equipment:{devices},selectedId:'r',isPositionLocked:()=>true,editable:false};
 
+test('inspector provides a write-gated position lock switch and explains pending saved unlocks',()=>{
+  const render = patch=>renderToStaticMarkup(<RackInspector rack={rack} model={model} devices={[]} positionLocked editable onUpdate={()=>{}} {...patch}/>);
+  assert.match(render({}),/type="checkbox" checked=""/);
+  assert.match(render({editable:false}),/type="checkbox" disabled="" checked=""/);
+  assert.match(render({rack:{...rack,locked:false}}),/Unlock pending. Save layout/);
+  assert.match(render({}),/Position lock \(on = locked\)/);
+});
+
 test('inspector only allows deleting an editable unlocked empty rack and explains installed device protection',()=>{
   const render=patch=>renderToStaticMarkup(<RackInspector rack={rack} model={model} devices={[]} editable onRemove={()=>{}} {...patch}/>);
   assert.match(render({}),/class="rack-danger">Remove selected rack/);

@@ -259,7 +259,7 @@ export function RackEditor({
       xM,
       yM,
       rotationDeg: 0,
-      locked: false,
+      locked: true,
     };
     onDraftChange({ ...draft, placements: [...placements, item] });
     setSelectedId(id);
@@ -595,7 +595,7 @@ export function RackEditor({
                         })
                       }
                     />
-                    Locked
+                    Position lock (on = locked)
                   </label>
                   <p className="rack-muted">
                     {selectedModel?.widthM} × {selectedModel?.depthM} m · {selectedModel?.heightU}U · Front

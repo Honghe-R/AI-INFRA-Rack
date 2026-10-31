@@ -1145,6 +1145,14 @@ Docker 可能保留已下载的镜像缓存，本轮没有清理全局 Docker �
 - Updated [UI specification](doc/tools/rack/ui-pattern.md). Full Web suite **67 files / 712 tests passed**, including batch unlock preservation, atomic invalid-selection rejection, saved-lock retention and eventual eligibility, visible action placement and lock guidance. Production build passed with inherited toolchain/bundle-size warnings; Git whitespace checks passed. No interactive browser acceptance or actual user/demo deletions/unlocks performed.
 - Existing presentation assets/outline changes preserved. Only the Rack copy changed; no API/schema/database or teacher-platform changes, staging, commits, pushes or remote changes.
 
+## 2026-10-31: Round47 — Position lock defaults and visible switch
+
+- Manual Add rack and quick-add now default new racks to position locked. The Add dialog includes a checked **Position lock (on by default)** option; users can disable it before creation. Quantity-based Auto design includes a checked new-rack lock option when staging, without changing algorithm placement or existing-rack rearrangements.
+- Added an editable **Position lock (on = locked)** checkbox directly to the canvas Inspector and clarified the selected-rack form label. Users can turn locks on/off using the shared draft; saved unlocks still require Save layout before movement/deletion. The Inspector explains pending unlocks. New unsaved racks can be unlocked and adjusted before their first save.
+- Documented behavior in [UI patterns](doc/tools/rack/ui-pattern.md). Existing saved rack states, backend normalization defaults and Assistant creation semantics are preserved; no migration or live demo-data change. New-design staging copies only newly created rack lock choices and leaves candidate data unmodified.
+- Validation: full Web **67 files / 715 tests passed**, including manual default/explicit unlock, checked creation form, Inspector write gate/pending state, new-rack stage choice and preservation/non-mutation. Production build passed with inherited toolchain/bundle warnings; Git whitespace checks passed. No actual browser interaction claimed.
+- Only the Rack copy changed; prior local presentation/feature changes preserved. No teacher folder/platform access or changes, staging, commit, push or remote changes.
+
 ## 后续记录格式（第十七轮后沿用）
 
 每轮追加一个日期标题，至少写清：

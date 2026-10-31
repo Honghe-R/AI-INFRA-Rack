@@ -10,6 +10,16 @@ const option={canStage:true,unplaced:[],report:{diagnostics:[]},equipmentReport:
   body:{placements:[{rackId:'r',xM:1}],constraints:{clearance:null},equipment:{devices:[{deviceId:'d',rackId:'r',startU:1}],rackLimits:[]}}};
 const result={projectId:'p',planId:'plan',baseVersion:2,snapshotId:'s',facilityInput:layout.facilityInput,candidates:[option]};
 const guards={canWrite:true,draft:null,confirmed:true};
+
+test('new-design lock choice applies only to new racks, leaving existing racks and candidate unchanged',()=>{
+  const c={...option,body:{...option.body,placements:[{rackId:'r',locked:false},{rackId:'new',locked:false}]}};
+  const r={...result,candidates:[c]};
+  const locked=stageRackOption(layout,r,c,{...guards,newRackLocked:true});
+  assert.equal(locked.placements[0].locked,false);
+  assert.equal(locked.placements[1].locked,true);
+  assert.equal(c.body.placements[1].locked,false);
+  assert.equal(stageRackOption(layout,r,c,{...guards,newRackLocked:false}).placements[1].locked,false);
+});
 test('staging preserves exact plan body in a new shared draft; preview is not a save',()=>{
   const draft=stageRackOption(layout,result,option,guards);
   assert.equal(draft.baseVersion,2);assert.equal(draft.snapshotId,'s');assert.equal(draft.attempt,null);

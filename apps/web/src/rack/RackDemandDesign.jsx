@@ -21,6 +21,7 @@ export function RackDemandDesign({client,layout,catalogState,draft,canWrite,onDr
   const [sourceReference,setSource]=useState('Course planning assumption; verify before deployment.');
   const [budgetEnabled,setBudgetEnabled]=useState(false),[budget,setBudget]=useState({maxPowerKw:'',maxCoolingKw:''});
   const [result,setResult]=useState(null),[index,setIndex]=useState(0),[confirmed,setConfirmed]=useState(false);
+  const [newRackLocked,setNewRackLocked]=useState(true);
   const [pending,setPending]=useState(false),[error,setError]=useState(null),[selectedId,setSelectedId]=useState(null);
   const controller=useRef(null);
   useEffect(()=>{controller.current?.abort();setPending(false);setResult(null);setError(null);setConfirmed(false);
@@ -28,7 +29,7 @@ export function RackDemandDesign({client,layout,catalogState,draft,canWrite,onDr
   const models=catalogState.data?.models??[],option=result?.candidates[index];
   const nonempty=layout.placements.length>0 || layout.equipment.devices.length>0 || layout.equipment.rackLimits.length>0;
   const total=models.reduce((n,m)=>n+Number(quantities[m.modelId]??0),0);
-  const guards={canWrite,draft,confirmed},reason=optionStageReason(layout,result,option,guards);
+  const guards={canWrite,draft,confirmed,newRackLocked},reason=optionStageReason(layout,result,option,guards);
   function changed(update){update();controller.current?.abort();setPending(false);setResult(null);setConfirmed(false);setError(null);}
   async function generate(event) {
     event.preventDefault();if(pending||draft||nonempty||layout.sourceStatus.status!=='UNCHANGED')return;
@@ -91,6 +92,7 @@ export function RackDemandDesign({client,layout,catalogState,draft,canWrite,onDr
           <ul>{[...option.report.diagnostics,...option.equipmentReport.diagnostics].map((d,i)=><li key={i}>{d.code}: {d.message}</li>)}</ul>
           <details><summary>Unchecked scope and assumptions</summary><p>{option.report.uncheckedRules.join(', ')}</p><p>Equipment and capacities are synthetic assumptions. The room budget applies only to this plan and does not reserve capacity across plans.</p></details>
           <label className="rack-option-check"><input type="checkbox" checked={confirmed} onChange={e=>setConfirmed(e.target.checked)}/>I have reviewed the candidate, assumptions and check coverage</label>
+          <label className="rack-option-check"><input type="checkbox" checked={newRackLocked} onChange={e=>setNewRackLocked(e.target.checked)}/>Position lock for new racks (on by default)</label>
           {reason&&<p className="rack-muted">{reason}</p>}
           <button className="rack-primary" disabled={Boolean(reason)} onClick={()=>{try{onDraftChange(stageRackOption(layout,result,option,guards));setConfirmed(false);onNavigate('layout');}catch(e){setError(e.message);}}}>Stage design as draft</button>
           <p className="rack-muted">Then choose Save layout. Saving rechecks permissions, versions, input sources, geometry and equipment capacity before an atomic write.</p>
