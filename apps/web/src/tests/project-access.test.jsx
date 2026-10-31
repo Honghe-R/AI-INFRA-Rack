@@ -4,6 +4,15 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { ProjectMemberList, RackAccessSummary, projectMemberIntent } from '../rack/ProjectAccess.jsx';
 import { RackPlanActions } from '../rack/RackPlanActions.jsx';
 import { createApiClient } from '../api/client.js';
+import { AccountInvitationForm } from '../rack/AccountInvitation.jsx';
+
+test('invitation form defaults to viewer, offers only project roles, and never asks the administrator for a password', () => {
+  const html = renderToStaticMarkup(<AccountInvitationForm values={{ login: '', name: '', roleKey: 'project-viewer' }} />);
+  assert.match(html, /Invite new account/); assert.match(html, /Account name/); assert.match(html, /Display name/);
+  assert.match(html, /selected="" value="project-viewer"|value="project-viewer" selected=""/);
+  assert.doesNotMatch(html, /type="password"|system-admin|organisation-admin/);
+  assert.match(html, /expires in 24 hours/); assert.match(html, /No email is sent/);
+});
 
 test('editor can rename but cannot delete or restore plans; lifecycle grants are independent', () => {
   const plan = { name: 'Example', placements: [] };

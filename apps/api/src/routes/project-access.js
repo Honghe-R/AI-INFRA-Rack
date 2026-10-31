@@ -5,6 +5,12 @@ export function registerProjectAccessRoutes(router, { pool, evaluator }) {
   const service = createProjectAccessService({ pool });
   const options = { permission: PLATFORM_KEYS.PROJECT_MEMBER_MANAGE, projectParam: 'projectId' };
   const base = '/api/v1/projects/:projectId';
+  router.post(`${base}/account-invitations`, async ctx => {
+    const data = await service.invite({ projectId: ctx.params.projectId, actorId: ctx.user.userId,
+      body: ctx.body, correlationId: ctx.correlationId });
+    evaluator.invalidate({ userId: data.userId });
+    return { status: data.changed ? 201 : 200, data };
+  }, options);
   router.get(`${base}/members`, async ctx => ({ data: await service.list({
     projectId: ctx.params.projectId, actorId: ctx.user.userId, query: ctx.query,
   }) }), options);

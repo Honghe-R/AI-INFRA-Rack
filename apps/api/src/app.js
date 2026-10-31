@@ -58,7 +58,7 @@ export function createApp({
       path = url.pathname;
       // Rack plans can be deleted and restored at the same URL. A cached 410
       // must not hide a restored plan; this also covers authorization/errors.
-      if (/^\/api\/v1\/projects\/[^/]+\/(?:rack|members|member-candidates)(?:\/|$)/.test(path) || path.startsWith('/api/v1/assistant/')) {
+      if (/^\/api\/v1\/projects\/[^/]+\/(?:rack|members|member-candidates|account-invitations)(?:\/|$)/.test(path) || path.startsWith('/api/v1/assistant/')) {
         response.setHeader('Cache-Control', 'no-store');
       }
 

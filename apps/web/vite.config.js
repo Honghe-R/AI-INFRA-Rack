@@ -150,6 +150,25 @@ function identityMiddleware() {
         store: accountStore, mint: mintSessionToken,
         allowedOrigins: (readEnv('RACK_AUTH_ORIGINS') ?? `http://localhost:${webPort},http://127.0.0.1:${webPort}`).split(',').map(s => s.trim()).filter(Boolean),
         secure: readEnv('RACK_AUTH_COOKIE_SECURE') === 'true',
+        authorizeInvitation: async (account, projectId) => {
+          if (typeof projectId !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(projectId))
+            throw Object.assign(new Error('Choose a valid project.'), { status: 400, code: 'INVALID_INVITATION' });
+          const endpoint = `${apiTarget}/api/v1/projects/${encodeURIComponent(projectId)}`;
+          const call = async (path, body) => {
+            const response = await fetch(endpoint + path, {
+              method: body ? 'POST' : 'GET',
+              headers: { authorization: `Bearer ${await mintSessionToken(account.subject)}`, ...(body ? { 'content-type': 'application/json' } : {}) },
+              ...(body ? { body: JSON.stringify(body) } : {}), signal: AbortSignal.timeout(5000),
+            });
+            const payload = await response.json().catch(() => null);
+            if (!response.ok) throw Object.assign(new Error(payload?.error?.message ?? 'Account invitation failed. Retry the same form.'),
+              { status: response.status, code: payload?.error?.code ?? 'INVITATION_FAILED' });
+            return payload.data;
+          };
+          // Fresh DB manager check before login lookup/reservation; creation rechecks in its transaction.
+          await call('/members?limit=1');
+          return body => call('/account-invitations', body);
+        },
         validateAccount: async account => {
           const response = await fetch(`${apiTarget}/api/v1/me/permissions`, { headers: { authorization: `Bearer ${await mintSessionToken(account.subject)}` }, signal: AbortSignal.timeout(5000) });
           if (response.status === 401 || response.status === 403) throw Object.assign(new Error('Account name or password is incorrect.'), { status: 401, code: 'INVALID_CREDENTIALS' });

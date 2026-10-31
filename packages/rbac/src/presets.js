@@ -12,6 +12,11 @@ import { FACILITY_KEYS as F, MAP_KEYS as M, PLATFORM_KEYS as P, RACK_KEYS as R }
  * system administrator holds the administration keys, not every content key.
  */
 export const ROLE_PRESETS = Object.freeze({
+  'organisation-member': Object.freeze({
+    name: 'Organisation member', scopeHint: 'organisation',
+    description: 'Discovers organisation project metadata without granting tool-content access.',
+    keys: Object.freeze([P.PROJECT_READ]),
+  }),
   'system-admin': Object.freeze({
     name: 'System administrator',
     scopeHint: 'system',

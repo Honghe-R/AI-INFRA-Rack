@@ -8,7 +8,7 @@ import { createRbacRepository, createEvaluator, createPermissionGuard, RACK_KEYS
 import { createRouter } from '../router.js';
 import { createApp } from '../app.js';
 import { registerProjectAccessRoutes } from '../routes/project-access.js';
-import { createProjectAccessService, normalizeProjectAccess } from '../services/project-access.js';
+import { createProjectAccessService, normalizeProjectAccess, normalizeAccountInvitation } from '../services/project-access.js';
 
 const skip = process.env.DATABASE_URL ? false : 'DATABASE_URL is not set';
 let pool, repository;
@@ -27,6 +27,7 @@ test('member mutation rejects arbitrary roles, statuses, versions and server-own
 
 async function fixture(fn) {
   const people = {}, projects = [], orgs = [];
+  const invited = new Set();
   const suffix = randomUUID();
   let server;
   try {
@@ -59,11 +60,13 @@ async function fixture(fn) {
     server = createServer(createApp({ router, pool, guard, authenticator, logger: createLogger({ level: 'error', sink: { log() {}, warn() {}, error() {} } }) }));
     await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
     const base = `http://127.0.0.1:${server.address().port}`;
-    const request = async (path, { user = 'admin', body } = {}) => {
-      const response = await fetch(`${base}/api/v1/projects/${path}`, { method: body ? 'PUT' : 'GET',
+    const request = async (path, { user = 'admin', body, method = body ? 'PUT' : 'GET' } = {}) => {
+      const response = await fetch(`${base}/api/v1/projects/${path}`, { method,
         headers: { 'x-test-user': user, 'connection': 'close', ...(body ? { 'content-type': 'application/json' } : {}) },
         ...(body ? { body: JSON.stringify(body) } : {}) });
-      return { status: response.status, payload: await response.json(), cache: response.headers.get('cache-control') };
+      const payload = await response.json();
+      if (path.endsWith('/account-invitations') && payload.data?.userId) invited.add(payload.data.userId);
+      return { status: response.status, payload, cache: response.headers.get('cache-control') };
     };
     const list = async () => (await request(`${projectId}/members`)).payload.data;
     const member = async key => (await list()).items.find(m => m.userId === people[key].userId);
@@ -83,9 +86,53 @@ async function fixture(fn) {
       await pool.query("DELETE FROM role_assignments WHERE scope_kind='organisation' AND scope_id=$1", [orgId]);
       await pool.query('DELETE FROM organizations WHERE organization_id=$1', [orgId]);
     }
-    if (Object.keys(people).length) await pool.query('DELETE FROM users WHERE user_id=ANY($1::uuid[])', [Object.values(people).map(p => p.userId)]);
+    if (Object.keys(people).length) await pool.query('DELETE FROM users WHERE user_id=ANY($1::uuid[])', [[...Object.values(people).map(p => p.userId), ...invited]]);
   }
 }
+
+test('account invitations accept only project roles and server-owned identity fields', () => {
+  const body = { request_id: randomUUID(), display_name: ' New User ', role_key: 'project-editor' };
+  assert.equal(normalizeAccountInvitation(body).name, 'New User');
+  for (const input of [null, [], { ...body, request_id: 'invalid' }, { ...body, display_name: '' },
+    { ...body, display_name: 'bad\nname' }, { ...body, role_key: 'system-admin' }, { ...body, subject: 'dev-user' },
+    { ...body, organisation_id: randomUUID() }]) assert.throws(() => normalizeAccountInvitation(input), { code: 'VALIDATION_FAILED' });
+});
+
+test('account creation is scoped, idempotent, audited and grants no organisation-wide tool access', { skip }, () => fixture(async f => {
+  const body = { request_id: randomUUID(), display_name: 'Invited engineer', role_key: 'project-editor' };
+  for (const user of ['editor', 'viewer', 'foreign', 'missing']) {
+    const denied = await f.request(`${f.projectId}/account-invitations`, { method: 'POST', body, user });
+    assert.equal(denied.status, user === 'missing' ? 401 : 403);
+  }
+  assert.equal((await f.request(`${f.foreignProject}/account-invitations`, { method: 'POST', body })).status, 403);
+  const first = await f.request(`${f.projectId}/account-invitations`, { method: 'POST', body });
+  assert.equal(first.status, 201); assert.equal(first.cache, 'no-store');
+  const account = first.payload.data;
+  assert.equal(account.subject, `rack-local:${body.request_id}`); assert.equal(account.organisationId, f.orgId);
+  const repeated = await f.request(`${f.projectId}/account-invitations`, { method: 'POST', body });
+  assert.equal(repeated.status, 200); assert.equal(repeated.payload.data.userId, account.userId);
+  assert.equal((await f.list()).events.length, 1);
+  const own = await repository.effectiveKeys({ userId: account.userId, projectId: f.projectId });
+  assert.ok(own.keys.includes('rack.write')); assert.ok(!own.keys.includes('project.member.manage'));
+  const org = await repository.effectiveKeys({ userId: account.userId, organisationId: f.orgId });
+  assert.deepEqual(org.keys, ['project.read']);
+  const member = (await f.list()).items.find(m => m.userId === account.userId);
+  assert.equal((await f.request(`${f.projectId}/members/${account.userId}`, { body: {
+    role_key: 'project-editor', status: 'SUSPENDED', expected_version: member.version,
+  } })).status, 200);
+  const suspended = await repository.effectiveKeys({ userId: account.userId, projectId: f.projectId });
+  assert.ok(!suspended.keys.includes('rack.read')); assert.ok(!suspended.keys.includes('facility.read'));
+  assert.equal((await f.request(`${f.projectId}/account-invitations`, { method: 'POST', body })).status, 409);
+  assert.equal((await f.request(`${f.projectId}/account-invitations`, { method: 'POST', body: { ...body, role_key: 'project-admin' } })).status, 409);
+}));
+
+test('invitation creation rejects stale managers before creating a user', { skip }, () => fixture(async f => {
+  const body = { request_id: randomUUID(), display_name: 'Never created', role_key: 'project-viewer' };
+  const service = createProjectAccessService({ pool });
+  await f.update('admin2', 'project-viewer');
+  await assert.rejects(service.invite({ projectId: f.projectId, actorId: f.people.admin2.userId, body, correlationId: randomUUID() }), { code: 'INSUFFICIENT_PERMISSION' });
+  assert.equal((await pool.query('SELECT user_id FROM users WHERE subject=$1', [`rack-local:${body.request_id}`])).rows.length, 0);
+}));
 
 test('member routes enforce authentication, manager role, foreign-project scope and no-store', { skip }, () => fixture(async f => {
   for (const user of ['viewer', 'editor', 'foreign', 'missing']) {
@@ -217,4 +264,9 @@ test('event insertion failure rolls back membership and assignment together', { 
   assert.equal(await f.member('candidate'), undefined);
   assert.equal((await pool.query("SELECT 1 FROM role_assignments WHERE user_id=$1 AND scope_kind='project' AND scope_id=$2", [f.people.candidate.userId, f.projectId])).rowCount, 0);
   assert.equal((await f.list()).events.length, 0);
+  const requestId = randomUUID();
+  await assert.rejects(service.invite({ projectId: f.projectId, actorId: f.people.admin.userId,
+    body: { request_id: requestId, display_name: 'Rollback account', role_key: 'project-editor' }, correlationId: null }));
+  assert.equal((await pool.query('SELECT user_id FROM users WHERE subject=$1', [`rack-local:${requestId}`])).rowCount, 0,
+    'An access-event failure rolls back identity, memberships and grants.');
 }));

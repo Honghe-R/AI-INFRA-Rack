@@ -18,8 +18,8 @@ async function fixture(run) {
   const activation = await store.provision(account);
   try {
     await run({ store, file, activation, account, advance: ms => { time += ms; }, now,
-      start: async validateAccount => {
-        const middleware = createRackAuthMiddleware({ store, mint: async subject => `signed:${subject}`, allowedOrigins: ['http://rack.test'], now, validateAccount });
+      start: async (validateAccount, authorizeInvitation) => {
+        const middleware = createRackAuthMiddleware({ store, mint: async subject => `signed:${subject}`, allowedOrigins: ['http://rack.test'], now, validateAccount, authorizeInvitation });
         server = createServer((req, res) => middleware(req, res, () => {
           res.setHeader('content-type', 'application/json');
           res.end(JSON.stringify({ token: req[RACK_GATEWAY_TOKEN] ?? null, clientSubject: req.headers['x-dev-subject'] ?? null, clientAuthorization: req.headers.authorization ?? null }));
@@ -114,3 +114,47 @@ test('bounded login limiter blocks repeated attempts and recovers after the wind
   limit('account'); limit('account'); assert.throws(() => limit('account'), { status: 429 });
   time = 101; assert.doesNotThrow(() => limit('account'));
 });
+
+test('pending invitations recover after remote failure/restart and never rebind or reset activated accounts', () => fixture(async f => {
+  const details = { login: 'new.editor', name: 'New Editor', projectId: '11111111-1111-4111-8111-111111111111',
+    roleKey: 'project-editor', requestId: '22222222-2222-4222-8222-222222222222', actorSubject: f.account.subject };
+  await assert.rejects(f.store.invite(details, async () => { throw new Error('Uncertain backend response'); }), /Uncertain/);
+  const reopened = createAccountStore({ file: f.file, now: f.now });
+  let seen;
+  const backend = async body => { seen = body; return { subject: `rack-local:${body.request_id}`, name: 'New Editor', organisationId: 'org-a' }; };
+  const invitation = await reopened.invite({ ...details, requestId: '33333333-3333-4333-8333-333333333333' }, backend);
+  assert.equal(seen.request_id, details.requestId, 'A pending reservation keeps its backend idempotency identity.');
+  const next = await reopened.invite(details, backend);
+  await assert.rejects(reopened.activate(invitation.token, password), { code: 'ACTIVATION_INVALID' });
+  await assert.rejects(reopened.invite({ ...details, actorSubject: 'other-manager' }, backend), { code: 'ACCOUNT_UNAVAILABLE' });
+  await assert.rejects(reopened.invite({ ...details, roleKey: 'project-admin' }, backend), { code: 'ACCOUNT_UNAVAILABLE' });
+  await reopened.activate(next.token, password);
+  assert.equal((await reopened.login('new.editor', password)).account.login, 'new.editor');
+  await assert.rejects(reopened.invite(details, backend), { code: 'ACCOUNT_UNAVAILABLE' });
+  const stored = await readFile(f.file, 'utf8'); assert.ok(!stored.includes(next.token)); assert.ok(!stored.includes(password));
+}));
+
+test('HTTP invitations require login, Origin and a live manager decision before reserving any login', () => fixture(async f => {
+  let allow = false, checked = 0;
+  const request = await f.start(null, async (account, projectId) => {
+    checked++; assert.equal(account.subject, f.account.subject); assert.equal(projectId, '11111111-1111-4111-8111-111111111111');
+    if (!allow) throw Object.assign(new Error('Manager access required.'), { status: 403, code: 'INSUFFICIENT_PERMISSION' });
+    return async body => ({ subject: `rack-local:${body.request_id}`, name: body.display_name, organisationId: 'org-a' });
+  });
+  const body = { login: 'new.viewer', name: 'New Viewer', projectId: '11111111-1111-4111-8111-111111111111',
+    roleKey: 'project-viewer', requestId: '22222222-2222-4222-8222-222222222222' };
+  assert.equal((await request('/__auth/invitations', body)).status, 401); assert.equal(checked, 0);
+  await f.store.activate(f.activation, password);
+  const login = await request('/__auth/login', { login: 'admin', password }), cookie = login.cookie.split(';')[0];
+  assert.equal((await request('/__auth/invitations', body, { cookie })).status, 403);
+  assert.equal(JSON.parse(await readFile(f.file, 'utf8')).accounts.length, 1);
+  allow = true;
+  assert.equal((await request('/__auth/invitations', body, { cookie, origin: 'http://evil.test' })).status, 403);
+  assert.equal((await request('/__auth/invitations', { ...body, actorSubject: 'forged' }, { cookie })).status, 400);
+  const result = await request('/__auth/invitations', body, { cookie });
+  assert.equal(result.status, 200); assert.equal(result.cache, 'no-store');
+  const link = new URL(result.body.data.activationUrl); assert.equal(link.origin, 'http://rack.test'); assert.equal(link.search, '');
+  const activation = new URLSearchParams(link.hash.slice(1)).get('activate');
+  assert.ok(activation); await f.store.activate(activation, password);
+  assert.equal((await request('/__auth/login', { login: 'new.viewer', password })).status, 200);
+}));

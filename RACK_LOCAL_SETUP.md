@@ -40,6 +40,12 @@ npm run dev
 npm run rack:account -- --subject dev-user --login admin
 ```
 
+After activating the administrator, open Rack **Project access → Invite new account**
+to create additional personal logins and choose a project role. Copy each private
+24-hour activation link for the intended member; they set their own password. This
+does not send email. The default localhost link works on the computer hosting this
+local instance; remote collaboration needs a reachable configured deployment.
+
 打开输出路径 `.local-runtime/auth/activate-admin.txt` 中的一次性链接，设置自己的密码，再以 `admin` 登录。链接24小时有效，只可成功使用一次；没有统一默认密码。登录保持8小时，左下角只显示本人账号，可点开退出。操作前请保存布局草稿，退出会丢弃未保存的浏览器状态。
 
 可以用同一命令为已有后端身份分别开通账号，例如 `--subject dev-editor --login editor` 或 `--subject dev-viewer --login viewer`，每个人通过自己的激活链接设置密码。该命令不会新增项目权限或修改设备／方案。账号文件和激活链接均在被Git忽略且禁止通过Web访问的 `.local-runtime/auth/` 下；激活后由操作者清理对应链接文件。完整契约和生产部署边界见 [Local sign-in](doc/tools/rack/local-sign-in.md)。

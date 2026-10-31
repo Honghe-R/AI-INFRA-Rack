@@ -74,6 +74,11 @@ test('lookup helpers fail closed for an unknown key', () => {
   assert.equal(getCatalogEntry('facility.read.typo'), null);
 });
 
+test('invited organisation membership grants discovery without tool-content or management permissions', () => {
+  assert.equal(ROLE_PRESETS['organisation-member'].scopeHint, 'organisation');
+  assert.deepEqual(ROLE_PRESETS['organisation-member'].keys, [PLATFORM_KEYS.PROJECT_READ]);
+});
+
 test('system keys are exactly the system-scoped entries', () => {
   assert.deepEqual([...SYSTEM_KEYS].sort(), [PLATFORM_KEYS.SYSTEM_ADMIN, PLATFORM_KEYS.SYSTEM_CATALOG_MANAGE].sort());
   for (const key of SYSTEM_KEYS) assert.equal(getCatalogEntry(key).scope, 'system');

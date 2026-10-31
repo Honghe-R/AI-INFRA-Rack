@@ -35,6 +35,26 @@ function present(row) {
 }
 const access = row => row ? { roleKey: row.role_key, status: row.status, version: row.access_version } : null;
 
+export function normalizeAccountInvitation(body) {
+  if (!body || typeof body !== 'object' || Array.isArray(body) ||
+      Object.keys(body).some(k => !['request_id', 'display_name', 'role_key'].includes(k)) ||
+      typeof body.request_id !== 'string' || !UUID.test(body.request_id) ||
+      typeof body.display_name !== 'string' || !body.display_name.trim() || body.display_name.length > 160 ||
+      /[\u0000-\u001f\u007f]/.test(body.display_name) || !PROJECT_ACCESS_ROLES.includes(body.role_key))
+    throw bad('Use a request UUID, a display name of 1–160 characters and a supported project role.');
+  return { requestId: body.request_id.toLowerCase(), name: body.display_name.trim(), roleKey: body.role_key };
+}
+
+async function checkedRole(client, roleKey) {
+  const role = (await client.query('SELECT role_id,scope_hint FROM roles WHERE role_key=$1 FOR SHARE', [roleKey])).rows[0];
+  const preset = ROLE_PRESETS[roleKey];
+  if (!role || !preset || role.scope_hint !== preset.scopeHint) throw bad('The requested role is unavailable.');
+  const keys = (await client.query('SELECT p.key FROM role_permissions rp JOIN permissions p ON p.permission_id=rp.permission_id WHERE rp.role_id=$1', [role.role_id])).rows;
+  if (keys.length !== preset.keys.length || keys.some(k => !preset.keys.includes(k.key)))
+    throw new ApiError('PROJECT_ROLE_CUSTOMIZED', 'This role has custom permissions. Ask a system administrator to review its delegation.', { status: 409 });
+  return role;
+}
+
 // Fresh DB evaluation of this one non-showcase management permission. This is
 // repeated after the project lock, so a queued request cannot use a revoked grant.
 async function requireManager(client, projectId, actorId) {
@@ -52,6 +72,40 @@ async function requireManager(client, projectId, actorId) {
 
 export function createProjectAccessService({ pool }) {
   return {
+    async invite({ projectId, actorId, body, correlationId }) {
+      const input = normalizeAccountInvitation(body), subject = `rack-local:${input.requestId}`;
+      return withTenant(pool, projectId, async client => {
+        // Serialize account creation with ordinary membership edits and recheck the actor.
+        const project = (await client.query('SELECT organization_id FROM projects WHERE project_id=$1 FOR UPDATE', [projectId])).rows[0];
+        if (!project) throw new ApiError('NOT_FOUND', 'Project not found.', { status: 404 });
+        await requireManager(client, projectId, actorId);
+        const role = await checkedRole(client, input.roleKey);
+        const discovery = await checkedRole(client, 'organisation-member');
+        await client.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))', [subject]);
+        let user = (await client.query('SELECT user_id,display_name,status FROM users WHERE subject=$1 FOR UPDATE', [subject])).rows[0];
+        if (user) {
+          const event = (await client.query(`SELECT after_access FROM project_access_events WHERE project_id=$1
+            AND target_user_id=$2 AND actor_user_id=$3 AND after_access->>'invitationRequestId'=$4`,
+          [projectId, user.user_id, actorId, input.requestId])).rows[0];
+          const current = (await client.query(`${memberSql} AND m.user_id=$2`, [projectId, user.user_id])).rows[0];
+          if (!event || user.status !== 'ACTIVE' || user.display_name !== input.name ||
+              current?.role_key !== input.roleKey || current?.status !== 'ACTIVE' || !current?.organisation_active ||
+              event.after_access.version !== current.access_version)
+            throw new ApiError('INVITATION_CONFLICT', 'The invitation or access has changed. Refresh members and contact the operator.', { status: 409 });
+          return { userId: user.user_id, subject, name: input.name, organisationId: project.organization_id, changed: false };
+        }
+        user = (await client.query('INSERT INTO users(subject,display_name) VALUES($1,$2) RETURNING user_id', [subject, input.name])).rows[0];
+        await client.query("INSERT INTO organization_memberships(organization_id,user_id,status) VALUES($1,$2,'ACTIVE')", [project.organization_id, user.user_id]);
+        await client.query("INSERT INTO project_memberships(project_id,user_id,status) VALUES($1,$2,'ACTIVE')", [projectId, user.user_id]);
+        await client.query(`INSERT INTO role_assignments(user_id,role_id,scope_kind,scope_id,created_by) VALUES
+          ($1,$2,'organisation',$3,$5),($1,$4,'project',$6,$5)`, [user.user_id, discovery.role_id, project.organization_id, role.role_id, actorId, projectId]);
+        const saved = (await client.query(`${memberSql} AND m.user_id=$2`, [projectId, user.user_id])).rows[0];
+        await client.query(`INSERT INTO project_access_events(project_id,target_user_id,actor_user_id,action,before_access,after_access,correlation_id)
+          VALUES($1,$2,$3,'ADD',NULL,$4,$5)`, [projectId, user.user_id, actorId,
+          { ...access(saved), invitationRequestId: input.requestId }, correlationId]);
+        return { userId: user.user_id, subject, name: input.name, organisationId: project.organization_id, changed: true };
+      });
+    },
     async list({ projectId, actorId, query = {} }) {
       const offset = integer(query.offset, 0, 0, 10000), limit = integer(query.limit, 20, 1, 100);
       return withTenant(pool, projectId, async client => {

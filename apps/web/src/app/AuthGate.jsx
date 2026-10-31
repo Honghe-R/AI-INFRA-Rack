@@ -45,7 +45,11 @@ export function AuthGate({ children }) {
     if (session?.mode !== 'password' || !session.account) return;
     const expired = () => { setSession({ mode: 'password', account: null }); setNotice('Your session ended. Sign in again.'); };
     const refresh = async () => {
-      try { const current = await authRequest('session'); if (!current.account) expired(); } catch { /* A transient network error does not discard the session. */ }
+      try {
+        const current = await authRequest('session');
+        if (!current.account) expired();
+        else if (current.account.login !== session.account.login) location.reload();
+      } catch { /* A transient network error does not discard the session. */ }
     };
     const timer = setInterval(refresh, 60000);
     globalThis.addEventListener('rack:session-expired', expired);

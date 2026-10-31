@@ -6,7 +6,7 @@ Status: implementation contract for the scoped access increment of 2026-10-30. R
 
 Authentication establishes an account identity. Authorization decides which operation that identity may perform in a project. Reuse the inherited identity verifier, permission catalog, role assignments and evaluator; Rack contributes its permission split, project access workflow and acceptance evidence. A person's job title is not an authorization rule.
 
-The local Rack platform now defaults to [personal password sign-in](local-sign-in.md), with one-use activation, salted password hashes, revocable browser sessions and a current-account-only menu. The authentication gateway obtains the subject from its server-side session and ignores browser impersonation headers. The backend still verifies its signed token and checks actual database permissions. Account provisioning does not grant roles. This is a local single-instance login implementation, not an enterprise identity-provider deployment.
+The local Rack platform now defaults to [personal password sign-in](local-sign-in.md), with one-use activation, salted password hashes, revocable browser sessions and a current-account-only menu. The authentication gateway obtains the subject from its server-side session and ignores browser impersonation headers. The backend still verifies its signed token and checks actual database permissions. Operator bootstrap preserves existing roles; administrator invitations create new accounts with an explicit project role and a minimal organisation discovery grant. This is a local single-instance login implementation, not an enterprise identity-provider deployment.
 
 The older development account switcher requires explicit RACK_AUTH_MODE=demo on a loopback development server. Its role labels are seed examples rather than effective permissions. OIDC/JWKS remains the production deployment seam; never expose development impersonation on a public deployment.
 
@@ -45,7 +45,7 @@ The project's actual organisation is authoritative. A body/query organisation id
 Open **Project access** in the Rack header. Only a user with `project.member.manage` sees this control. It manages project access, independently of which plan is selected.
 
 1. Read the paginated member list and the latest access events.
-2. Search eligible, active accounts in the project's own organisation. These are existing organisation accounts; there is no email invitation, sign-up or global user directory.
+2. Use **Invite new account** in password mode to create a personal login and select a project role. Privately deliver its one-use 24-hour activation link; no email is sent. Alternatively search eligible, active accounts already in the project's own organisation. There is no anonymous sign-up or global user directory.
 3. Add an account as Project viewer, Project editor or Project administrator.
 4. Change another member's direct project role, suspend their project membership, or reactivate it.
 5. Inspect the resulting member version and actor/time/action event. Refresh after any uncertain response or conflict before submitting a new change.
@@ -60,6 +60,7 @@ All routes are authenticated, require `project.member.manage`, use the path proj
 | --- | --- |
 | `GET /members?offset=0&limit=20` | Bounded member page plus latest 20 audit events |
 | `GET /member-candidates?q=...&limit=20` | Bounded active organisation account search |
+| `POST /account-invitations` | Create a server-owned local identity, organisation discovery and direct project membership in one transaction; see local sign-in for gateway credential provisioning |
 | `PUT /members/:userId` | Set direct project role/status with an optimistic precondition |
 
 Example mutation body:

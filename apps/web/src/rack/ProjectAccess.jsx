@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { rackError } from './rack-plan-state.js';
+import { AccountInvitation } from './AccountInvitation.jsx';
 
 export const PROJECT_ROLE_LABELS = Object.freeze({
   'project-viewer': 'Project viewer', 'project-editor': 'Project editor', 'project-admin': 'Project administrator',
@@ -83,7 +84,7 @@ export function ProjectAccess({ client, projectId, onClose }) {
   }
   const locked = busy || searching || state.pending || mustRefresh;
   return <section className="rack-card rack-project-access" aria-label="Project access">
-    <header className="rack-heading"><div><h2>Project access</h2><p>Manage existing organisation accounts in this project.</p></div>
+    <header className="rack-heading"><div><h2>Project access</h2><p>Invite personal accounts and manage access to this project.</p></div>
       <div className="rack-actions"><button disabled={busy || searching} onClick={reload}>Refresh members</button><button disabled={busy || searching} onClick={onClose}>Close access</button></div></header>
     <p className="rack-warning">Suspending project membership removes its direct grant. Organisation or global roles may still allow access. Your own access must be changed by another administrator.</p>
     {error && <p role="alert" className="rack-error">{error}</p>}{notice && <p role="status" className="rack-notice">{notice}</p>}
@@ -110,5 +111,6 @@ export function ProjectAccess({ client, projectId, onClose }) {
         </li>)}</ol>}
       </details>
     </>}
+    <AccountInvitation client={client} projectId={projectId} onCreated={reload} disabled={locked || !state.data} />
   </section>;
 }

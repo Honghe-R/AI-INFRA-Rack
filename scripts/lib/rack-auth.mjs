@@ -8,6 +8,7 @@ const OPTIONS = { N: 32768, r: 8, p: 1, maxmem: 64 * 1024 * 1024 };
 const SESSION_MS = 8 * 60 * 60 * 1000;
 const INVITE_MS = 24 * 60 * 60 * 1000;
 const COOKIE = 'rack_session';
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export const RACK_GATEWAY_TOKEN = Symbol('rack.gateway.token');
 const digest = value => createHash('sha256').update(value).digest('hex');
 const token = () => randomBytes(32).toString('base64url');
@@ -50,7 +51,7 @@ export function createAccountStore({ file, now = Date.now }) {
   async function update(fn) {
     await mkdir(dirname(file), { recursive: true });
     let lock;
-    for (let attempt = 0; attempt < 100; attempt++) {
+    for (let attempt = 0; attempt < 500; attempt++) {
       try { lock = await open(`${file}.lock`, 'wx', 0o600); break; }
       catch (e) { if (e.code !== 'EEXIST') throw e; await new Promise(resolve => setTimeout(resolve, 20)); }
     }
@@ -60,11 +61,55 @@ export function createAccountStore({ file, now = Date.now }) {
       const state = await read();
       const result = await fn(state);
       await writeFile(temp, JSON.stringify(state), { mode: 0o600, flag: 'wx' });
-      await rename(temp, file);
+      // Windows indexers can briefly hold the destination open. Preserve atomic
+      // replacement and retry bounded sharing violations instead of deleting it.
+      for (let attempt = 0; ; attempt++) {
+        try { await rename(temp, file); break; }
+        catch (error) {
+          if (!['EPERM', 'EACCES', 'EBUSY'].includes(error.code) || attempt >= 9) throw error;
+          await new Promise(resolve => setTimeout(resolve, 25 * (attempt + 1)));
+        }
+      }
       return result;
     } finally { await unlink(temp).catch(() => {}); await lock.close(); await unlink(`${file}.lock`); }
   }
   return {
+    async invite({ login: input, name, projectId, roleKey, requestId, actorSubject }, createMember) {
+      const login = normalizeLogin(input);
+      if (typeof name !== 'string' || !name.trim() || name.length > 160 || /[\u0000-\u001f\u007f]/.test(name) ||
+          typeof projectId !== 'string' || !UUID.test(projectId) || typeof requestId !== 'string' || !UUID.test(requestId) ||
+          !['project-viewer', 'project-editor', 'project-admin'].includes(roleKey) || !actorSubject)
+        throw fail(400, 'INVALID_INVITATION', 'Choose an account name, display name, project role and valid request ID.');
+      name = name.trim(); projectId = projectId.toLowerCase(); requestId = requestId.toLowerCase();
+      // Persist a reservation before the remote step so retries after uncertain responses
+      // or restarts use the same backend identity, without storing a raw activation token.
+      const reserved = await update(state => {
+        const existing = state.accounts.find(a => a.login === login);
+        if (existing) {
+          const i = existing.invitation;
+          if (existing.passwordHash || !i || i.actorSubject !== actorSubject || i.projectId !== projectId ||
+              i.roleKey !== roleKey || existing.name !== name)
+            throw fail(409, 'ACCOUNT_UNAVAILABLE', 'This account name is already in use or belongs to a different invitation.');
+          return { ...existing };
+        }
+        const account = { login, name, subject: `rack-local:${requestId}`,
+          invitation: { requestId, projectId, roleKey, actorSubject } };
+        if (state.accounts.some(a => a.subject === account.subject))
+          throw fail(409, 'INVITATION_CONFLICT', 'Use a new request ID for a different account.');
+        state.accounts.push(account);
+        return { ...account };
+      });
+      const backend = await createMember({ request_id: reserved.invitation.requestId, display_name: name, role_key: roleKey });
+      if (backend?.subject !== reserved.subject || !backend.organisationId || backend.name !== name)
+        throw new Error('Backend invitation did not match the reserved identity.');
+      const raw = token();
+      await update(state => {
+        const current = state.accounts.find(a => a.login === login && a.subject === reserved.subject);
+        if (!current || current.passwordHash) throw fail(409, 'ACCOUNT_UNAVAILABLE', 'This account is already activated.');
+        Object.assign(current, { organisationId: backend.organisationId, activationHash: digest(raw), activationExpires: now() + INVITE_MS });
+      });
+      return { login, token: raw, expiresAt: new Date(now() + INVITE_MS).toISOString() };
+    },
     async provision({ login: input, subject, name, organisationId }) {
       const login = normalizeLogin(input), raw = token();
       if (!subject || !name || !organisationId) throw new Error('A verified backend subject, name and organisation are required.');
@@ -131,7 +176,7 @@ export function createLoginLimiter({ now = Date.now, max = 8, windowMs = 300000 
     current.count++; buckets.set(key, current);
   };
 }
-export function createRackAuthMiddleware({ store, mint, allowedOrigins, secure = false, validateAccount = null, now = Date.now }) {
+export function createRackAuthMiddleware({ store, mint, allowedOrigins, secure = false, validateAccount = null, authorizeInvitation = null, now = Date.now }) {
   const limitIp = createLoginLimiter({ now, max: 24 }), limitAccount = createLoginLimiter({ now });
   const origins = new Set(allowedOrigins);
   const mutating = method => !['GET', 'HEAD', 'OPTIONS'].includes(method);
@@ -156,18 +201,28 @@ export function createRackAuthMiddleware({ store, mint, allowedOrigins, secure =
         const account = await store.session(raw);
         data = { mode: 'password', account: account ? publicAccount(account) : null };
       } else {
-        if (request.method !== 'POST' || !['/__auth/activate', '/__auth/login', '/__auth/logout'].includes(path))
+        if (request.method !== 'POST' || !['/__auth/activate', '/__auth/login', '/__auth/logout', '/__auth/invitations'].includes(path))
           throw fail(404, 'NOT_FOUND', 'The requested resource was not found.');
         if (!/^application\/json(?:;|$)/i.test(request.headers['content-type'] ?? '')) throw fail(415, 'JSON_REQUIRED', 'Use a JSON request.');
         let size = 0, chunks = [];
         for await (const chunk of request) { size += chunk.length; if (size > 8192) throw fail(413, 'BODY_TOO_LARGE', 'The request is too large.'); chunks.push(chunk); }
         try { body = JSON.parse(Buffer.concat(chunks).toString() || '{}'); } catch { throw fail(400, 'INVALID_JSON', 'Invalid JSON.'); }
         if (!body || typeof body !== 'object' || Array.isArray(body)) throw fail(400, 'INVALID_JSON', 'Use a JSON object.');
-        if (path !== '/__auth/logout') {
+        if (!['/__auth/logout', '/__auth/invitations'].includes(path)) {
           limitIp(request.socket.remoteAddress ?? 'unknown');
           limitAccount(`${path}:${digest(typeof body.login === 'string' ? body.login.trim().toLowerCase() : 'activation')}`);
         }
-        if (path === '/__auth/activate') data = await store.activate(body.token, body.password);
+        if (path === '/__auth/invitations') {
+          const account = await store.session(raw);
+          if (!account) throw fail(401, 'UNAUTHENTICATED', 'Sign in to continue.');
+          if (!authorizeInvitation) throw fail(503, 'INVITATIONS_UNAVAILABLE', 'Account invitations are unavailable in this deployment.');
+          if (Object.keys(body).some(k => !['login', 'name', 'projectId', 'roleKey', 'requestId'].includes(k)))
+            throw fail(400, 'INVALID_INVITATION', 'Unexpected invitation fields.');
+          const createMember = await authorizeInvitation(account, body.projectId);
+          const invitation = await store.invite({ ...body, actorSubject: account.subject }, createMember);
+          const link = new URL('/', request.headers.origin); link.hash = `activate=${invitation.token}`;
+          data = { login: invitation.login, activationUrl: link.href, expiresAt: invitation.expiresAt };
+        } else if (path === '/__auth/activate') data = await store.activate(body.token, body.password);
         else if (path === '/__auth/login') {
           const result = await store.login(body.login, body.password, validateAccount);
           await store.logout(raw);
