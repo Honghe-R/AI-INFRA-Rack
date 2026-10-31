@@ -53,6 +53,10 @@ Add dialogs contribute to the shared draft. Equipment is version-pinned and init
 ### Bulk rack and device removal
 
 Rack layout/Overview and Devices & U slots expose separate bulk-removal panels.
+Panels start expanded. A sticky action area above the list exposes **Delete
+selected racks/devices (N)**; this opens **Confirm deletion (N)** in the same
+area rather than below the long list. Both actions stage the reviewed change,
+and Save layout persists it. The first action only opens the review.
 Users can search, filter, select individual rows or select all eligible filtered
 results across pages, review counts, then confirm removal into the shared draft.
 Lists render at most50 rows per page. Selection remains explicit across filters.
@@ -67,6 +71,15 @@ the current draft or saved layout block rack removal, including an unsaved unloc
 Unknown/stale selected IDs reject the whole action. Review becomes invalid if
 its underlying layout/equipment changes. Existing permission, source/version,
 in-flight command, normalization and atomic-save checks remain authoritative.
+
+The Rack panel shows how many filtered racks are excluded by position locks.
+**Unlock filtered racks (N)** stages unlocks only for currently locked matching
+racks, retaining positions, equipment and all other fields. Users must Save
+layout before those racks become eligible for deletion; an unsaved unlock never
+bypasses saved-lock protection. Row hints distinguish a current position lock
+from an unlock pending save. Device deletion is not blocked by a rack position
+lock. Batch unlocking uses the ordinary shared draft/save contract and requires
+the same current editability checks as other edits.
 
 ### Rack capacity template catalog
 

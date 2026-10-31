@@ -40,9 +40,17 @@ export function removalItems(kind, placements, equipment, savedPlacements = plac
   for (const d of equipment.devices) if (d.rackId !== null) counts.set(d.rackId, (counts.get(d.rackId) ?? 0) + 1);
   return placements.map(r => ({
     id: r.rackId, name: r.name, blocked: Boolean(r.locked || locked.has(r.rackId)),
-    detail: `${counts.get(r.rackId) ?? 0} devices${r.locked || locked.has(r.rackId) ? ' · Locked' : ''}`,
+    detail: `${counts.get(r.rackId) ?? 0} devices${r.locked ? ' · Position locked — unlock and save before deletion' : locked.has(r.rackId) ? ' · Unlock pending — Save layout before deletion' : ''}`,
     search: `${r.name} ${r.rackId}`.toLowerCase(),
   }));
+}
+
+export function unlockRacks(placements, ids) {
+  if (!Array.isArray(ids) || !ids.length || new Set(ids).size !== ids.length ||
+      ids.some(id => !placements.some(r => r.rackId === id)))
+    throw new Error('The selected racks changed. Select them again.');
+  const selected = new Set(ids);
+  return placements.map(r => selected.has(r.rackId) ? { ...r, locked: false } : r);
 }
 
 export function filterRemovalItems(items, kind, query = '', filter = 'all') {

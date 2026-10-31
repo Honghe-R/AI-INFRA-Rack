@@ -12,7 +12,7 @@ import { RackWorkbench } from './RackWorkbench.jsx';
 import { RackAddDialog } from './RackAddDialog.jsx';
 import { RackCheckHistory } from './RackCheckHistory.jsx';
 import { RackBulkRemoval } from './RackBulkRemoval.jsx';
-import { bulkRemoval } from './bulk-removal.js';
+import { bulkRemoval, unlockRacks } from './bulk-removal.js';
 import { RACK_COMMANDS, rackCommandReason, addPlanObject } from './rack-commands.js';
 import {
   beginLayoutDraft,
@@ -208,6 +208,12 @@ export function RackEditor({
     canWrite && snapshot && draft && !busy && !draft.attempt && !stale && !versionConflict,
   );
   const models = layout.models;
+  function unlockFilteredRacks(ids) {
+    if (!editable) throw new Error('This draft is not editable.');
+    onDraftChange({ ...draft, placements: unlockRacks(placements, ids) });
+    setError(null);
+    setNotice(`Unlocked ${ids.length} racks in the draft. Save layout first, then select them for deletion.`);
+  }
   function removeRacks(ids) {
     if (!editable) throw new Error('This draft is not editable.');
     const result = bulkRemoval({ kind: 'racks', ids, placements, equipment, savedPlacements: layout.placements });
@@ -459,7 +465,7 @@ export function RackEditor({
               checkState.pending || checkState.body !== checkKey ? 'Checking the current layout…' :
               currentReport?.diagnostics.length || equipmentReport?.diagnostics.length ? 'Checks found conflicts. Resolve them before saving.' : notice)} />}
           {['layout','overview'].includes(section) && <RackBulkRemoval key={`${layout.planId}:${snapshot.snapshotId}`} kind="racks"
-            placements={placements} savedPlacements={layout.placements} equipment={equipment} editable={editable} onApply={removeRacks} />}
+            placements={placements} savedPlacements={layout.placements} equipment={equipment} editable={editable} onApply={removeRacks} onUnlock={unlockFilteredRacks} />}
           <div hidden={section !== 'constraints'} data-rack-panel="layout">
           <RoomFloorplan
             key={snapshot.snapshotId}

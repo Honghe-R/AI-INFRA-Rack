@@ -319,6 +319,8 @@
 .rack-workbench::backdrop { background: var(--surface); }
 .rack-bulk-removal { margin: 12px 0; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
 .rack-bulk-removal > summary { cursor: pointer; font-weight: 600; }
+.rack-bulk-toolbar { position: sticky; top: 0; z-index: 4; padding: 12px 0; background: var(--surface); border-bottom: 1px solid var(--line); }
+.rack-surface button.rack-bulk-delete { background: var(--error); border-color: var(--error); color: var(--surface); font-weight: 600; }
 .rack-bulk-filters { display: flex; flex-wrap: wrap; gap: 12px; margin: 12px 0; }
 .rack-bulk-filters label { flex: 1 1 180px; min-width: 0; }
 .rack-bulk-filters input, .rack-bulk-filters select { width: 100%; min-width: 0; box-sizing: border-box; }

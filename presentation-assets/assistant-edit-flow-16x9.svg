@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-label="Assistant 修改指令执行流程"><defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto-start-reverse" markerUnits="userSpaceOnUse"><path d="M0 0L10 5L0 10Z" fill="#52677f"/></marker></defs><rect width="1600" height="900" fill="white"/><g font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif"><text x="60" y="83" font-size="44" font-weight="700" fill="#172b46">Assistant 修改指令执行流程</text>
+<polyline points="340,260 460,260" fill="none" stroke="#52677f" stroke-width="2.5" stroke-linejoin="round"  marker-end="url(#arrow)" />
+<polyline points="740,260 860,260" fill="none" stroke="#52677f" stroke-width="2.5" stroke-linejoin="round"  marker-end="url(#arrow)" />
+<text x="800" y="241" font-size="23" text-anchor="middle" fill="#52677f">允许</text>
+<polyline points="1140,260 1260,260" fill="none" stroke="#52677f" stroke-width="2.5" stroke-linejoin="round"  marker-end="url(#arrow)" />
+<text x="1200" y="241" font-size="23" text-anchor="middle" fill="#52677f">通过</text>
+<polyline points="1400,320 1400,520" fill="none" stroke="#52677f" stroke-width="2.5" stroke-linejoin="round"  marker-end="url(#arrow)" />
+<polyline points="1260,580 1140,580" fill="none" stroke="#52677f" stroke-width="2.5" stroke-linejoin="round"  marker-end="url(#arrow)" />
+<text x="1200" y="619" font-size="23" text-anchor="middle" fill="#52677f">提案 ID</text>
+<polyline points="860,580 740,580" fill="none" stroke="#52677f" stroke-width="2.5" stroke-linejoin="round"  marker-end="url(#arrow)" />
+<text x="800" y="559" font-size="23" text-anchor="middle" fill="#52677f">通过</text>
+<polyline points="460,580 340,580" fill="none" stroke="#52677f" stroke-width="2.5" stroke-linejoin="round"  marker-end="url(#arrow)" />
+<text x="400" y="559" font-size="23" text-anchor="middle" fill="#52677f">提交</text>
+<polyline points="600,320 600,390" fill="none" stroke="#52677f" stroke-width="2.5" stroke-linejoin="round"  marker-end="url(#arrow)" />
+<text x="502" y="367" font-size="23" text-anchor="middle" fill="#52677f">越权／只读</text>
+<polyline points="1000,320 1000,390" fill="none" stroke="#52677f" stroke-width="2.5" stroke-linejoin="round"  marker-end="url(#arrow)" />
+<text x="1080" y="367" font-size="23" text-anchor="middle" fill="#52677f">检查失败</text>
+<polyline points="1000,520 1000,470" fill="none" stroke="#52677f" stroke-width="2.5" stroke-linejoin="round"  marker-end="url(#arrow)" />
+<polyline points="600,520 600,470" fill="none" stroke="#52677f" stroke-width="2.5" stroke-linejoin="round"  marker-end="url(#arrow)" />
+<polyline points="1260,550 1190,550 1190,430 1090,430" fill="none" stroke="#52677f" stroke-width="2.5" stroke-linejoin="round"  marker-end="url(#arrow)" />
+<text x="1158" y="413" font-size="23" text-anchor="middle" fill="#52677f">拒绝</text>
+<rect x="60" y="200" width="280" height="120" rx="12" fill="#edf4ff" stroke="#4675bc" stroke-width="2"/>
+<text x="200" y="252" font-size="31" text-anchor="middle" fill="#172b46">修改指令</text>
+<text x="200" y="290" font-size="25" text-anchor="middle" fill="#52677f">明确目标与参数</text>
+<rect x="460" y="200" width="280" height="120" rx="12" fill="#edf4ff" stroke="#4675bc" stroke-width="2"/>
+<text x="600" y="252" font-size="31" text-anchor="middle" fill="#172b46">权限与上下文</text>
+<text x="600" y="290" font-size="25" text-anchor="middle" fill="#52677f">身份／Plan／模式</text>
+<rect x="860" y="200" width="280" height="120" rx="12" fill="#edf4ff" stroke="#4675bc" stroke-width="2"/>
+<text x="1000" y="252" font-size="31" text-anchor="middle" fill="#172b46">读取并预览</text>
+<text x="1000" y="290" font-size="25" text-anchor="middle" fill="#52677f">检查修改后状态</text>
+<rect x="1260" y="200" width="280" height="120" rx="12" fill="#edf4ff" stroke="#4675bc" stroke-width="2"/>
+<text x="1400" y="252" font-size="31" text-anchor="middle" fill="#172b46">保存绑定提案</text>
+<text x="1400" y="290" font-size="25" text-anchor="middle" fill="#52677f">用户与版本 · 30 分钟</text>
+<rect x="1260" y="520" width="280" height="145" rx="12" fill="#edf4ff" stroke="#4675bc" stroke-width="2"/>
+<text x="1400" y="565.5" font-size="31" text-anchor="middle" fill="#172b46">操作模式</text>
+<text x="1400" y="603.5" font-size="25" text-anchor="middle" fill="#52677f">Ask：用户确认</text>
+<text x="1400" y="641.5" font-size="25" text-anchor="middle" fill="#52677f">Full：直接应用</text>
+<rect x="860" y="520" width="280" height="145" rx="12" fill="#edf4ff" stroke="#4675bc" stroke-width="2"/>
+<text x="1000" y="565.5" font-size="31" text-anchor="middle" fill="#172b46">应用前复核</text>
+<text x="1000" y="603.5" font-size="25" text-anchor="middle" fill="#52677f">权限／来源／版本</text>
+<text x="1000" y="641.5" font-size="25" text-anchor="middle" fill="#52677f">锁定／空间／容量</text>
+<rect x="460" y="520" width="280" height="145" rx="12" fill="#edf8f3" stroke="#41866d" stroke-width="2"/>
+<text x="600" y="565.5" font-size="31" text-anchor="middle" fill="#172b46">事务保存</text>
+<text x="600" y="603.5" font-size="25" text-anchor="middle" fill="#52677f">布局＋版本</text>
+<text x="600" y="641.5" font-size="25" text-anchor="middle" fill="#52677f">提案应用状态</text>
+<rect x="60" y="520" width="280" height="145" rx="12" fill="#edf8f3" stroke="#41866d" stroke-width="2"/>
+<text x="200" y="584.5" font-size="31" text-anchor="middle" fill="#172b46">返回并刷新</text>
+<text x="200" y="622.5" font-size="25" text-anchor="middle" fill="#52677f">显示保存结果</text>
+<rect x="510" y="390" width="580" height="80" rx="12" fill="#fff4f2" stroke="#cf8f85" stroke-width="2"/>
+<text x="800" y="441" font-size="31" text-anchor="middle" fill="#172b46">失败或拒绝：返回原因，不改布局</text>
+<text x="600" y="713" font-size="24" text-anchor="middle" fill="#52677f">事务失败时回滚</text>
+<text x="1000" y="713" font-size="24" text-anchor="middle" fill="#52677f">复核失败时拒绝</text>
+<text x="60" y="817" font-size="25" text-anchor="start" fill="#52677f">上排从左到右，下排从右到左。Full 只跳过确认，仍需复核与事务保存。</text>
+<text x="60" y="857" font-size="25" text-anchor="start" fill="#52677f">预览只保存提案；成功应用后，同一提案的重复请求不会再次修改布局。</text></g></svg>

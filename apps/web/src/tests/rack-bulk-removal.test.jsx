@@ -1,7 +1,7 @@
 import { test } from 'vitest';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { bulkRemoval, removalItems, filterRemovalItems } from '../rack/bulk-removal.js';
+import { bulkRemoval, removalItems, filterRemovalItems, unlockRacks } from '../rack/bulk-removal.js';
 import { RackBulkRemoval } from '../rack/RackBulkRemoval.jsx';
 import { RackEquipment } from '../rack/RackEquipment.jsx';
 import { defaultEditorEquipment, beginLayoutDraft, layoutCheckBody, validateEditorEquipment } from '../rack/edit-layout-state.js';
@@ -103,11 +103,36 @@ test('read-only users have no enabled selection or removal actions; saved locked
   const readonly = render(false);
   assert.equal((readonly.match(/type="checkbox" disabled=""/g) ?? []).length, 3);
   assert.match(readonly, /disabled="">Select filtered/);
-  assert.match(readonly, /disabled="">Review removal/);
+  assert.match(readonly, /disabled="">Delete selected racks/);
   const editor = render(true);
   assert.equal((editor.match(/type="checkbox" disabled=""/g) ?? []).length, 1);
   assert.match(editor, /Select filtered \(2\)/);
   assert.match(editor, /keep their devices as unassigned inventory/);
+});
+
+test('batch unlock changes only draft locks; saved protection remains until unlock is saved', () => {
+  const before = structuredClone(placements);
+  const unlocked = unlockRacks(placements, ['a', 'c']);
+  assert.deepEqual(unlocked, placements.map(r => r.rackId === 'c' ? { ...r, locked: false } : r));
+  assert.deepEqual(placements, before);
+  assert.throws(() => bulkRemoval({ kind: 'racks', ids: ['c'], placements: unlocked, savedPlacements: placements, equipment: equipment() }), /Unlock and save/);
+  assert.equal(bulkRemoval({ kind: 'racks', ids: ['c'], placements: unlocked, savedPlacements: unlocked, equipment: equipment() }).removedCount, 1);
+  assert.throws(() => unlockRacks(placements, ['a', 'missing']), /changed/);
+  assert.throws(() => unlockRacks(placements, ['a', 'a']), /changed/);
+  assert.throws(() => unlockRacks(placements, []), /changed/);
+});
+
+test('bulk panel exposes a clear delete action before the list and explains saved versus pending locks', () => {
+  const html = renderToStaticMarkup(<RackBulkRemoval kind="racks" placements={placements} equipment={equipment()} editable onUnlock={() => {}} />);
+  assert.match(html, /<details[^>]*open=""/);
+  assert.ok(html.indexOf('Delete selected racks') < html.indexOf('racks bulk selection'));
+  assert.match(html, /Unlock filtered racks \(1\)/);
+  assert.match(html, /Position locks protect racks/);
+  const unlocked = unlockRacks(placements, ['c']);
+  const pending = renderToStaticMarkup(<RackBulkRemoval kind="racks" placements={unlocked} savedPlacements={placements} equipment={equipment()} editable onUnlock={() => {}} />);
+  assert.match(pending, /1 unlocks pending save/);
+  assert.match(pending, /Unlock pending — Save layout before deletion/);
+  assert.match(pending, /disabled="">Unlock filtered racks \(0\)/);
 });
 
 test('device panel includes bulk inventory actions and escapes untrusted labels', () => {

@@ -333,19 +333,9 @@ Dominant Best Fit先计算设备在各容量维度的占比，按最大占比从
 
 ### Assistant集成架构图
 
-```mermaid
-flowchart TB
-  UI["聊天界面"] <-->|"HTTP"| API["聊天API<br/>身份校验"]
-  API <--> Host["Assistant宿主<br/>编排与校验"]
-  Guide["领域指令与Plan上下文"] -.-> Host
-  Connection["个人连接<br/>加密凭证"] -.-> Host
-  Host -->|"消息与工具结果"| Model["模型服务"]
-  Model -->|"回答或工具调用"| Host
-  Host <-->|"调用与结果"| Tools["7个Rack工具"]
-  Tools <--> Service["Rack服务<br/>规则检查与保存"]
-  Service <--> DB[("PostgreSQL／PostGIS")]
-  Host -.-> History["会话存储<br/>DB索引＋RustFS"]
-```
+![Assistant集成架构：16:9横向版](presentation-assets/assistant-architecture-16x9.png)
+
+[可编辑SVG](presentation-assets/assistant-architecture-16x9.svg)。图片为3200×1800，适合单独放入一页16:9 PPT；采用固定排版，避免自动布局拉长图形。
 
 图中实线表示主要调用或结果流，虚线表示指令、连接等辅助输入及会话记录。连接的API Key仅供后端调用模型，不发送给浏览器或写入模型消息。模型提出工具调用，宿主验证后执行；模型没有直接访问数据库的连接。
 
@@ -377,25 +367,9 @@ flowchart TB
 
 ### 修改指令执行流程图
 
-```mermaid
-flowchart TB
-  Request["修改指令"] --> Auth{"身份、上下文<br/>与编辑权限"}
-  Auth -->|"拒绝／Read only"| Stop["返回原因，不改布局"]
-  Auth -->|"允许"| Read["读取Plan"]
-  Read --> Preview["预览修改"]
-  Preview --> Valid{"提案检查"}
-  Valid -->|"失败"| Stop
-  Valid -->|"通过"| Proposal[("保存绑定提案<br/>有效期30分钟")]
-  Proposal --> Mode{"操作模式"}
-  Mode -->|"Ask"| Consent{"用户确认"}
-  Consent -->|"拒绝"| Stop
-  Consent -->|"确认"| Apply["应用提案ID"]
-  Mode -->|"Full"| Apply
-  Apply --> Fresh{"权限与保存规则复核"}
-  Fresh -->|"失败，回滚"| Stop
-  Fresh -->|"通过"| Save["事务保存<br/>版本＋提案状态"]
-  Save --> Result["返回结果，刷新界面"]
-```
+![Assistant修改流程：16:9双行版](presentation-assets/assistant-edit-flow-16x9.png)
+
+[可编辑SVG](presentation-assets/assistant-edit-flow-16x9.svg)。上排从左向右，下排从右向左，中央汇总失败／拒绝分支。图片为3200×1800，适合单独放入一页16:9 PPT。
 
 Full authorization在图中只省略确认卡片，后续重新检查和事务保存完全保留。预览阶段会持久化提案，但不会修改Plan布局。应用失败不会提交部分布局；应用成功后相同提案重复请求会返回原应用结果，不再保存一次。
 

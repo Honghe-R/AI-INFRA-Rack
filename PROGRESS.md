@@ -1132,6 +1132,19 @@ Docker 可能保留已下载的镜像缓存，本轮没有清理全局 Docker �
 - Verification: full Web suite **67 files / 710 tests passed**, including four new cases for preset validity, preservation/non-mutation, replacement without duplicates, manual edits/save DTO, invalid targets and read-only/matching/integrated rendering. Production build passed with inherited toolchain/bundle warnings; Git whitespace checks passed. No browser click acceptance, demo-data changes or database migration.
 - Worked only in the Rack copy. No teacher folder/platform changes, staging, commits, pushes or remote changes. Manual browser walkthrough and actual site-specific capacity ratings remain user inputs.
 
+## 2026-10-31: Round45 — 16:9 Assistant presentation diagrams
+
+- Replaced the tall Assistant diagrams on pages14–15 of [presentation content](RACK_PRESENTATION_OUTLINE.md) with fixed 16:9 artwork in presentation-assets. Architecture uses a horizontal request/tool/service chain with model/configuration above and persistence below. Modification flow uses two rows, with top left-to-right and bottom right-to-left, plus a shared rejection path.
+- Exported two SVG originals (1600×900) and two PNGs (3200×1800) using [the reproducible renderer](scripts/render-assistant-diagrams.mjs). Retained identity/scope, instructions/context, personal encrypted connection, model/tool loop, shared services, data/session storage, Ask/Full, preview proposal, expiry/binding, application rechecks, transaction failure/rollback, refresh and retry semantics. Supporting explanation remains in the presentation document.
+- Rendered and visually inspected both images, then corrected cramped connector labels and spacing. Checked exported dimensions, local links and Git whitespace. These are diagram assets for insertion into the user's slides, not a new PPTX; no PowerPoint application acceptance claimed. No product code, database, credentials, teacher-folder/platform, staging, commits, pushes or remote changes.
+
+## 2026-10-31: Round46 — Visible bulk deletion and batch unlock guidance
+
+- User could not find the action after selecting many objects. Made Rack/device bulk panels initially expanded, renamed the review entry to **Delete selected racks/devices (N)**, styled delete actions prominently, and moved review/confirmation above the scrollable list inside a sticky action area. **Confirm deletion** still only changes the draft; Save layout persists it and Discard remains available.
+- Added a position-lock explanation, excluded count and distinct per-row hints for locked versus unlock-pending-save racks. Added **Unlock filtered racks (N)** through RackEditor and a pure transformation in [bulk-removal.js](apps/web/src/rack/bulk-removal.js). It changes only explicit existing rack locks in the shared draft. Users must save unlocks before selection/deletion; saved locks remain enforced and device removal remains independent of position locks. No automatic lock bypass or implicit save.
+- Updated [UI specification](doc/tools/rack/ui-pattern.md). Full Web suite **67 files / 712 tests passed**, including batch unlock preservation, atomic invalid-selection rejection, saved-lock retention and eventual eligibility, visible action placement and lock guidance. Production build passed with inherited toolchain/bundle-size warnings; Git whitespace checks passed. No interactive browser acceptance or actual user/demo deletions/unlocks performed.
+- Existing presentation assets/outline changes preserved. Only the Rack copy changed; no API/schema/database or teacher-platform changes, staging, commits, pushes or remote changes.
+
 ## 后续记录格式（第十七轮后沿用）
 
 每轮追加一个日期标题，至少写清：
