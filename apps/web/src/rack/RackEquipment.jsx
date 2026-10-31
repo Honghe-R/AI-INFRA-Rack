@@ -4,6 +4,8 @@ import { deviceFromCatalog, detachCatalogDevice, modelKey } from '../catalog/cat
 import { MAX_EQUIPMENT_DEVICES } from './limits.generated.js';
 import { RackBulkRemoval } from './RackBulkRemoval.jsx';
 import { bulkRemoval } from './bulk-removal.js';
+import { RackCapacityCatalog } from './RackCapacityCatalog.jsx';
+import { applyRackCapacityTemplate } from './capacity-catalog.js';
 
 const dimensions = [
   ['weightKg', 'maxWeightKg', 'Weight', 'kg'],
@@ -310,6 +312,9 @@ export function RackEquipment({
         <>
           <div hidden={mode === 'equipment'} data-equipment-panel="capacity">
           <h4>{rack.name} capacity limits</h4>
+          <RackCapacityCatalog key={rack.rackId} rack={rack} limit={limit} editable={editable} onApply={templateId => {
+            if (editable) patch(applyRackCapacityTemplate(e, placements, rack.rackId, templateId));
+          }} />
           <label className="rack-lock-field">
             <input
               type="checkbox"

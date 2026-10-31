@@ -1124,6 +1124,14 @@ Docker 可能保留已下载的镜像缓存，本轮没有清理全局 Docker �
 - Verification: full Web suite **66 files / 706 tests passed**, including 9 new bulk-removal cases covering reference cleanup, preservation/non-mutation, mixed locks, stale/invalid selection, ordinary save-body identity, filters, pagination, permission rendering and escaping. Web production build passed with inherited esbuild/oxc and bundle-size warnings. Git whitespace checks passed. No interactive browser acceptance or live plan deletion claimed.
 - Worked only in the Rack copy; existing presentation edits preserved. No database/demo-data changes, teacher directory/platform changes, staging, commits, pushes or remote changes. Actual browser interaction remains a user walkthrough item.
 
+## 2026-10-31: Round44 — Rack capacity template catalog
+
+- Added **Rack capacity catalog** beside the selected rack's limits in Capacity. Five v1 planning presets cover light-duty/edge (600 kg / 3 kW / 3 kW), general-purpose (1000 / 8 / 8), compute-dense (1200 / 15 / 15), high-density GPU (1500 / 30 / 30) and liquid-cooled AI (1800 / 80 / 80); values are weight, power and cooling respectively. English preview includes intended use and assumption scope.
+- [Catalog data and application](apps/web/src/rack/capacity-catalog.js), [picker](apps/web/src/rack/RackCapacityCatalog.jsx) and RackEquipment integration let users explicitly apply all three limits to one selected rack, creating an override if needed. Existing manual adjustment, override disabling, shared draft Save/Discard and ordinary checked persistence remain in place. Other racks, devices, room budgets and source references are preserved. Matching values disable redundant application; read-only users can browse but cannot apply.
+- Extended [UI specification](doc/tools/rack/ui-pattern.md) before implementation. Presets are local numeric planning assumptions, not pinned vendor specifications or authoritative facility allocations. Only the existing rackLimits numeric snapshot is saved, with no new API/schema. Cooling represents assumed heat-removal capacity equal to electrical demand, without an extra margin; high-density/liquid profiles require actual facility support. Template identity is not persisted as a model binding.
+- Verification: full Web suite **67 files / 710 tests passed**, including four new cases for preset validity, preservation/non-mutation, replacement without duplicates, manual edits/save DTO, invalid targets and read-only/matching/integrated rendering. Production build passed with inherited toolchain/bundle warnings; Git whitespace checks passed. No browser click acceptance, demo-data changes or database migration.
+- Worked only in the Rack copy. No teacher folder/platform changes, staging, commits, pushes or remote changes. Manual browser walkthrough and actual site-specific capacity ratings remain user inputs.
+
 ## 后续记录格式（第十七轮后沿用）
 
 每轮追加一个日期标题，至少写清：

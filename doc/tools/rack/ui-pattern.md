@@ -68,6 +68,37 @@ Unknown/stale selected IDs reject the whole action. Review becomes invalid if
 its underlying layout/equipment changes. Existing permission, source/version,
 in-flight command, normalization and atomic-save checks remain authoritative.
 
+### Rack capacity template catalog
+
+Capacity exposes a local, versioned **Rack capacity catalog** for the selected
+rack, alongside the existing manual limit inputs. These are editable planning
+assumptions, not pinned equipment models or vendor/facility ratings.
+
+| Template (v1) | Weight limit (kg) | Power limit (kW) | Cooling limit (kW) |
+| --- | ---: | ---: | ---: |
+| Light-duty / edge | 600 | 3 | 3 |
+| General-purpose servers | 1000 | 8 | 8 |
+| Compute-dense | 1200 | 15 | 15 |
+| High-density GPU | 1500 | 30 | 30 |
+| Liquid-cooled AI | 1800 | 80 | 80 |
+
+Choosing a template previews its values and intended use; **Apply to selected
+rack** explicitly creates or replaces all three plan-assumed limits for that
+rack. It preserves devices, other racks, room budgets and equipment provenance.
+Existing manual fields remain editable, and disabling plan-assumed limits returns
+to model limits. Template browsing does not modify data. Write controls follow
+the shared draft editability guard; Save layout/Discard changes retain their
+ordinary meanings and backend validation remains authoritative.
+
+Equal power and cooling values assume that electrical demand becomes heat, with
+no additional cooling margin modeled. The cooling number is a rack heat-removal
+budget, not cooling-system electrical consumption. High-density and liquid-cooled
+profiles require suitable facilities; values must be adjusted to actual cabinet,
+floor, PDU and cooling capabilities. Applying a template does not enlarge room
+budgets or imply installed cooling equipment. Only numeric limit snapshots are
+saved in existing equipment.rackLimits; template identity/version is a browsing
+reference, not a new persisted catalog binding. No API/schema migration is needed.
+
 ### View and Metric Semantics
 
 Floor layout, front elevations and capacity table share IDs and selection. U1 is at the bottom. Switching view cannot move objects. Unknown and Not checked are distinct from normal load. The rack-body envelope metric is an axis-aligned area, not certified freed usable floor space. Power/U coloring describes local checks, not circuit or airflow validation.
