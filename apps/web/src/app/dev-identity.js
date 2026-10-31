@@ -83,8 +83,11 @@ export function withDevIdentity(fetchImpl = globalThis.fetch) {
   const existing = wrappedFetches.get(fetchImpl);
   if (existing) return existing;
 
-  const wrapper = (url, options = {}) =>
-    fetchImpl(url, { ...options, headers: { ...options.headers, ...devIdentityHeaders() } });
+  const wrapper = async (url, options = {}) => {
+    const response = await fetchImpl(url, { ...options, headers: { ...options.headers, ...devIdentityHeaders() } });
+    if (response.status === 401 && typeof globalThis.dispatchEvent === 'function') globalThis.dispatchEvent(new Event('rack:session-expired'));
+    return response;
+  };
   wrappedFetches.set(fetchImpl, wrapper);
   return wrapper;
 }

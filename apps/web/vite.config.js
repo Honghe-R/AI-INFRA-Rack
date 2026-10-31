@@ -4,6 +4,7 @@ import react from '@vitejs/plugin-react';
 import { SignJWT } from 'jose';
 import { fileURLToPath } from 'node:url';
 import { clientIdentities, devSubjects } from '../../scripts/lib/dev-identities.mjs';
+import { createAccountStore, createRackAuthMiddleware, RACK_GATEWAY_TOKEN } from '../../scripts/lib/rack-auth.mjs';
 
 /** The repository root, where `.env` lives — one level above `apps/web`. */
 const REPO_ROOT = fileURLToPath(new URL('../..', import.meta.url));
@@ -80,6 +81,17 @@ const buildCommit = resolveBuildCommit();
 const devSecret = readEnv('AUTH_DEV_SECRET');
 const devSubject = readEnv('AUTH_DEV_SUBJECT') ?? 'dev-user';
 const issuer = readEnv('AUTH_ISSUER') ?? 'https://identity.local';
+const authMode = readEnv('RACK_AUTH_MODE') ?? 'password';
+if (!['password', 'demo'].includes(authMode)) throw new Error('RACK_AUTH_MODE must be password or demo.');
+const demoAuth = authMode === 'demo' && mode === 'development';
+const webPort = Number(readEnv('WEB_PORT') ?? 5173);
+const accountStore = createAccountStore({ file: fileURLToPath(new URL('../../.local-runtime/auth/accounts.json', import.meta.url)) });
+async function mintSessionToken(subject) {
+  if (!devSecret) throw new Error('The local authentication gateway is not configured.');
+  return new SignJWT({}).setProtectedHeader({ alg: 'HS256' }).setSubject(subject).setIssuer(issuer)
+    .setIssuedAt().setExpirationTime('5m')
+    .setAudience(readEnv('AUTH_AUDIENCE') || 'ai-infra-local').sign(new TextEncoder().encode(devSecret));
+}
 
 /**
  * One token per identity, minted up front.
@@ -93,7 +105,7 @@ const issuer = readEnv('AUTH_ISSUER') ?? 'https://identity.local';
  */
 const tokensBySubject = new Map();
 const subjects = devSubjects({ include: devSubject });
-if (devSecret) {
+if (devSecret && demoAuth) {
   const minters = subjects.map((subject) => ({
     subject,
     minter: createDevTokenMinter({ secret: devSecret, issuer, audience: readEnv('AUTH_AUDIENCE'), subject }),
@@ -132,8 +144,24 @@ function identityMiddleware() {
     // and the proxy is internal — so this must be a pre-hook to be reachable at all. The
     // path is deliberately not under /api, which the proxy owns.
     configureServer(server) {
+      if (demoAuth && !['127.0.0.1', 'localhost', '::1'].includes(server.config.server.host ?? 'localhost'))
+        throw new Error('Demo impersonation requires a loopback-bound server.');
+      if (!demoAuth) server.middlewares.use(createRackAuthMiddleware({
+        store: accountStore, mint: mintSessionToken,
+        allowedOrigins: (readEnv('RACK_AUTH_ORIGINS') ?? `http://localhost:${webPort},http://127.0.0.1:${webPort}`).split(',').map(s => s.trim()).filter(Boolean),
+        secure: readEnv('RACK_AUTH_COOKIE_SECURE') === 'true',
+        validateAccount: async account => {
+          const response = await fetch(`${apiTarget}/api/v1/me/permissions`, { headers: { authorization: `Bearer ${await mintSessionToken(account.subject)}` }, signal: AbortSignal.timeout(5000) });
+          if (response.status === 401 || response.status === 403) throw Object.assign(new Error('Account name or password is incorrect.'), { status: 401, code: 'INVALID_CREDENTIALS' });
+          if (!response.ok) throw new Error('Backend identity service is unavailable.');
+        },
+      }));
+      else server.middlewares.use('/__auth/session', (request, response) => {
+        response.setHeader('Content-Type', 'application/json'); response.setHeader('Cache-Control', 'no-store');
+        response.end(JSON.stringify({ data: { mode: 'demo', account: null } }));
+      });
       server.middlewares.use('/__dev/identities', (request, response) => {
-        if (!devSecret) {
+        if (!devSecret || !demoAuth) {
           response.statusCode = 404;
           response.end('{}');
           return;
@@ -171,7 +199,9 @@ export default defineConfig({
     include: ['src/tests/**/*.test.{js,jsx}'],
   },
   server: {
-    port: Number(readEnv('WEB_PORT') ?? 5173),
+    host: readEnv('HOST') ?? '127.0.0.1',
+    port: webPort,
+    fs: { deny: ['.env', '.env.*', '*.{crt,pem}', '**/.git/**', '**/.local-runtime/**'] },
     // Vite's default is to move to the next free port, which quietly puts the shell
     // somewhere other than where the documentation, the README, and your bookmark say it
     // is. Failing loudly is the kinder behaviour.
@@ -181,12 +211,12 @@ export default defineConfig({
         target: apiTarget,
         changeOrigin: true,
         configure(proxy) {
-          if (!devSecret) return;
           proxy.on('proxyReq', (proxyReq, request) => {
             // Read the cached token synchronously: the proxy does not await this handler,
             // so an await here would race the request.
             const asked = request.headers[IDENTITY_HEADER];
-            const token = tokensBySubject.get(asked) ?? tokensBySubject.get(devSubject);
+            const token = demoAuth ? tokensBySubject.get(asked) ?? tokensBySubject.get(devSubject) : request[RACK_GATEWAY_TOKEN];
+            proxyReq.removeHeader('authorization');
             if (token) proxyReq.setHeader('authorization', `Bearer ${token}`);
             // The API authenticates on the bearer token and must never see this, or a
             // client could name its own identity against the real service.

@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { PlatformApp } from './app/PlatformApp.jsx';
+import { AuthGate } from './app/AuthGate.jsx';
 import './styles.css';
 
 // The active organisation is supplied by the session. `VITE_ORGANISATION_ID`
@@ -10,6 +11,7 @@ const organisationId = import.meta.env?.VITE_ORGANISATION_ID ?? null;
 const container = document.getElementById('root');
 createRoot(container).render(
   <StrictMode>
-    <PlatformApp organisationId={organisationId} />
+    <AuthGate>{({ account, onSignOut }) => <PlatformApp organisationId={account?.organisationId ?? organisationId}
+      accountLabel={account?.name} sessionAccount={account} onSignOut={onSignOut} />}</AuthGate>
   </StrictMode>,
 );

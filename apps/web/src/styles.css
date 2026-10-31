@@ -3625,3 +3625,15 @@ body {
 .assistant-connection button:not(.assistant__new) { padding: 5px 9px; cursor: pointer; }
 .assistant-connection button:disabled { cursor: default; opacity: .55; }
 @media (max-width: 600px) { .assistant-connection fieldset { grid-template-columns: 1fr; } }
+.rack-auth { min-height: 100dvh; display: grid; place-items: center; padding: 24px; box-sizing: border-box; background: var(--bg); color: var(--text); }
+.rack-auth-card { width: min(100%, 420px); padding: 36px; box-sizing: border-box; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
+.rack-auth-brand { font-size: 12px; letter-spacing: .15em; color: var(--text-muted); }
+.rack-auth-card h1 { font-size: 28px; margin: 18px 0 12px; }
+.rack-auth-card p { line-height: 1.6; }
+.rack-auth-card form, .rack-auth-card label { display: grid; gap: 10px; }
+.rack-auth-card form { gap: 18px; margin-top: 24px; }
+.rack-auth-card input { min-width: 0; padding: 12px; font: inherit; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--surface); color: var(--text); }
+.rack-auth-card button { padding: 12px; border: 0; border-radius: 6px; background: var(--accent); color: white; font: inherit; cursor: pointer; }
+.rack-auth-card button:disabled { opacity: .6; cursor: default; }
+.rack-auth-note { font-size: 12px; color: var(--text-muted); }
+.rack-auth-error { color: var(--error); }

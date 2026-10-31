@@ -34,8 +34,17 @@ npm run dev
 
 打开 **http://localhost:5193/**，点击 **Northern DC Campus**，即可查看 **Site & Facility** 的场地、建筑和机房边界。
 建议使用较宽的浏览器窗口；窄侧栏中导航和属性面板会折叠或挤压画布。
-本地开发身份由 Vite 代理自动附加；这是开发便利机制，没有正式登录界面。
-账户菜单可切换第二组织和不同权限的示例用户。
+默认先进入个人账号登录页，不再展示全部账号供任意切换。首次由操作者在副本根目录执行：
+
+```powershell
+npm run rack:account -- --subject dev-user --login admin
+```
+
+打开输出路径 `.local-runtime/auth/activate-admin.txt` 中的一次性链接，设置自己的密码，再以 `admin` 登录。链接24小时有效，只可成功使用一次；没有统一默认密码。登录保持8小时，左下角只显示本人账号，可点开退出。操作前请保存布局草稿，退出会丢弃未保存的浏览器状态。
+
+可以用同一命令为已有后端身份分别开通账号，例如 `--subject dev-editor --login editor` 或 `--subject dev-viewer --login viewer`，每个人通过自己的激活链接设置密码。该命令不会新增项目权限或修改设备／方案。账号文件和激活链接均在被Git忽略且禁止通过Web访问的 `.local-runtime/auth/` 下；激活后由操作者清理对应链接文件。完整契约和生产部署边界见 [Local sign-in](doc/tools/rack/local-sign-in.md)。
+
+只有明确设置 `RACK_AUTH_MODE=demo` 才保留旧的开发身份切换，且要求开发服务器绑定本机。正常演示使用默认的 `password` 模式。
 
 `npm run dev` 同时启动 API、前端和本地合成网格瓦片。当前默认显示 Plan only，
 可直接看设施几何；本地瓦片也是合成网格，不是卫星图或真实地图。

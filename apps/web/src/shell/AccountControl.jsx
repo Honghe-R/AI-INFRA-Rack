@@ -242,6 +242,18 @@ export function AccountControl({ accountLabel = null, devIdentity = null, compac
   const name = current?.name ?? accountLabel ?? 'Account';
   const currentRole = roleLine(current);
 
+  if (devIdentity?.signOut) return <div className="account account--in-sidebar" ref={containerRef}>
+    <button type="button" className="sidebar__account account__trigger" aria-label={`Account: ${name}`} aria-haspopup="menu" aria-expanded={open}
+      onClick={() => setOpen(value => !value)} title={`Signed in as ${name}`}>
+      <Avatar identity={current} name={name}/>{compact ? null : <span className="sidebar__label">{name}</span>}
+    </button>
+    {open && placement && <div className="account__menu" role="menu" aria-label="Your account"
+      style={{left:`${placement.left}px`,bottom:`${placement.bottom}px`,width:`${placement.width}px`}}>
+      <p className="account__heading">Your account</p><p className="account__note">{name}<br/>{current?.subject}</p>
+      <button type="button" className="account__option" role="menuitem" onClick={devIdentity.signOut}>Sign out</button>
+    </div>}
+  </div>;
+
   if (!switchable) {
     return (
       <span className="sidebar__account" title={`Signed in as ${name}`}>

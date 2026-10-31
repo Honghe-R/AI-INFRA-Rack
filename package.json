@@ -28,6 +28,8 @@
     "rack:demo:catalog": "node --env-file-if-exists=.env scripts/rack-catalog-demo.mjs",
     "rack:demo:hall": "node --env-file-if-exists=.env scripts/rack-hall-demo.mjs",
     "rack:setup": "node scripts/rack-setup.mjs",
+    "rack:account": "node --env-file-if-exists=.env scripts/rack-account.mjs",
+    "rack:auth:test": "node --test scripts/tests/rack-auth.test.mjs",
     "ui:shot": "node scripts/ui-shot.mjs"
   },
   "engines": {

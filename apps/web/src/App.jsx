@@ -48,6 +48,8 @@ export function App({
   permissionClient = null,
   unscopedKeys = null,
   accountLabel = null,
+  sessionAccount = null,
+  onSignOut = null,
   badges = {},
   onCreateProject = () => {},
   // Left null so the shell opens the project through the workspace store it owns.
@@ -73,6 +75,8 @@ export function App({
             scenarios={scenarios}
             revisions={revisions}
             accountLabel={accountLabel}
+            sessionAccount={sessionAccount}
+            onSignOut={onSignOut}
             badges={badges}
             assets={assets}
             toolLabels={toolLabels}
@@ -89,7 +93,7 @@ export function App({
   );
 }
 
-function AppBody({ projects, projectsPending, projectsError, projectsNotice, scenarios, revisions, accountLabel, badges, assets, toolLabels, assetHandlers, assetClient, onCreateProject, onOpenProject, loadProjectScenarios, onCommand }) {
+function AppBody({ projects, projectsPending, projectsError, projectsNotice, scenarios, revisions, accountLabel, sessionAccount, onSignOut, badges, assets, toolLabels, assetHandlers, assetClient, onCreateProject, onOpenProject, loadProjectScenarios, onCommand }) {
   const workspace = useWorkspace();
   const { resolved } = useUiContext();
   const context = workspace.workspaceContext;
@@ -204,6 +208,7 @@ function AppBody({ projects, projectsPending, projectsError, projectsNotice, sce
 
   /** The identities a dev server offers. Absent in a deployment, where the read 404s. */
   useEffect(() => {
+    if (sessionAccount) return undefined;
     let active = true;
     loadDevIdentities().then((result) => {
       if (active) setDevIdentities(result);
@@ -211,7 +216,7 @@ function AppBody({ projects, projectsPending, projectsError, projectsNotice, sce
     return () => {
       active = false;
     };
-  }, []);
+  }, [sessionAccount]);
 
   /**
    * Switching identity reloads the page.
@@ -227,7 +232,7 @@ function AppBody({ projects, projectsPending, projectsError, projectsNotice, sce
     globalThis.location?.reload();
   }, []);
 
-  const devIdentity = {
+  const devIdentity = sessionAccount ? { available: false, identities: [], current: { name: sessionAccount.name, subject: sessionAccount.login }, signOut: onSignOut } : {
     ...devIdentities,
     current: describeIdentity({
       identities: devIdentities.identities,

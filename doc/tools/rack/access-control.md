@@ -6,7 +6,9 @@ Status: implementation contract for the scoped access increment of 2026-10-30. R
 
 Authentication establishes an account identity. Authorization decides which operation that identity may perform in a project. Reuse the inherited identity verifier, permission catalog, role assignments and evaluator; Rack contributes its permission split, project access workflow and acceptance evidence. A person's job title is not an authorization rule.
 
-The development account menu changes the subject used by the local proxy to issue a signed token. It demonstrates different identities against real server permission checks, but is not a production login flow. Its example role labels come from the seed, whereas the Rack capability strip and Project access table use actual permission/member responses; changes to assignments do not rewrite that static development menu. The existing OIDC/JWKS verifier is the deployment seam; configuring an identity provider and browser sign-in remains separate work. Never expose development impersonation on a public deployment.
+The local Rack platform now defaults to [personal password sign-in](local-sign-in.md), with one-use activation, salted password hashes, revocable browser sessions and a current-account-only menu. The authentication gateway obtains the subject from its server-side session and ignores browser impersonation headers. The backend still verifies its signed token and checks actual database permissions. Account provisioning does not grant roles. This is a local single-instance login implementation, not an enterprise identity-provider deployment.
+
+The older development account switcher requires explicit RACK_AUTH_MODE=demo on a loopback development server. Its role labels are seed examples rather than effective permissions. OIDC/JWKS remains the production deployment seam; never expose development impersonation on a public deployment.
 
 ## Default capability matrix
 

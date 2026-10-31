@@ -14,6 +14,7 @@ import { DEV_IDENTITY_HEADER, currentDevIdentity } from '../app/dev-identity.js'
 
 export function createApiClient({ baseUrl = '', fetchImpl = globalThis.fetch, identity = currentDevIdentity } = {}) {
   async function unwrap(response) {
+    if (response.status === 401 && typeof globalThis.dispatchEvent === 'function') globalThis.dispatchEvent(new Event('rack:session-expired'));
     const payload = await response.json().catch(() => null);
     if (!response.ok) {
       const error = new Error(payload?.error?.message ?? `Request failed with status ${response.status}`);
