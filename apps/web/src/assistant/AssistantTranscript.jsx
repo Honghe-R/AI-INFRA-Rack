@@ -263,6 +263,7 @@ export function AssistantTranscript({
   onApplyProposal = () => {},
   onRetryTurn = null,
   onConfirmTurn = null,
+  confirmationDisabled = false,
   onDenyTurn = null,
   grantedKeys = null,
   onEntitySelect = null,
@@ -389,6 +390,7 @@ export function AssistantTranscript({
               {turn.status === 'CONFIRMATION_REQUIRED' && (turn.pendingConfirmations ?? []).length > 0 ? (
                 <ConfirmationCard
                   pending={turn.pendingConfirmations}
+                  disabled={confirmationDisabled}
                   onConfirm={() => onConfirmTurn?.(turn.turnId)}
                   onDeny={() => onDenyTurn?.(turn.turnId)}
                 />
@@ -454,7 +456,7 @@ function CopyButton({ text }) {
  * card that merely disappeared would be drawn again from the same proposal: the model has to be
  * told that the reader said no, or it will ask the same question again.
  */
-function ConfirmationCard({ pending, onConfirm, onDeny }) {
+function ConfirmationCard({ pending, onConfirm, onDeny, disabled = false }) {
   const single = pending.length === 1 ? pending[0] : null;
   const summaryOf = (entry) => entry?.summary ?? 'A change to this revision';
   return (
@@ -474,7 +476,7 @@ function ConfirmationCard({ pending, onConfirm, onDeny }) {
         </ul>
       ) : null}
       <div className="confirmation__actions">
-        <button type="button" className="confirmation__confirm" onClick={onConfirm}>
+        <button type="button" className="confirmation__confirm" onClick={onConfirm} disabled={disabled}>
           {single ? 'Apply this change' : `Apply ${pending.length} changes`}
         </button>
         <button type="button" className="confirmation__deny" onClick={onDeny}>

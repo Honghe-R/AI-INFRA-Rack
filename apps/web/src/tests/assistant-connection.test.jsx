@@ -13,6 +13,35 @@ test('first-time setup remains inside Ask about Rack and blocks sending until co
   assert.match(html, /disabled=""[^>]*title="Set up a model connection first"/);
 });
 
+test('Rack operation selector exposes all three modes and locks during a turn', () => {
+  for (const streaming of [false, true]) {
+    const html = renderToStaticMarkup(<AssistantComposer open toolLabel="Rack" streaming={streaming}
+      permissionMode="ask" onPermissionModeChange={() => {}} />);
+    assert.match(html, /aria-label="Assistant operation mode"/);
+    assert.match(html, /value="read_only">Read only/);
+    assert.match(html, /value="ask" selected="">Ask for permission/);
+    assert.match(html, /value="full">Full authorization/);
+    assert.equal(/<select[^>]*aria-label="Assistant operation mode"[^>]*disabled=""/.test(html), streaming);
+  }
+  const facility = renderToStaticMarkup(<AssistantComposer open toolLabel="Site & Facility" />);
+  assert.doesNotMatch(facility, /Assistant operation mode/);
+});
+
+test('operation mode is an explicit request field in streamed and ordinary transports', async () => {
+  for (const stream of [false, true]) {
+    const requests = [];
+    const client = { async sendAssistantTurn(body) { requests.push(body); return { data: {} }; } };
+    if (stream) client.streamAssistantTurn = async body => { requests.push(body); return {}; };
+    const transport = createAssistantTransport(client);
+    for (const mode of ['read_only', 'ask', 'full']) {
+      await transport.sendTurn({ messages: [], contextKey: 'rack', context: {}, permissionMode: mode });
+      assert.equal(requests.at(-1).permission_mode, mode);
+    }
+    await transport.sendTurn({ messages: [], contextKey: 'facility', context: {} });
+    assert.equal(Object.hasOwn(requests.at(-1), 'permission_mode'), false);
+  }
+});
+
 test('configured connection keeps a compact settings entry with no key in markup', () => {
   const html = renderToStaticMarkup(<AssistantComposer open toolLabel="Rack" draft="Show capacity"
     provider={{ configured: true, host: 'models.example.com', model: 'test-model' }} connectionClient={{ getAssistantConnection() {} }} />);

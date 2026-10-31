@@ -49,6 +49,8 @@ export function AssistantComposer({
   models = [],
   model = null,
   onModelChange = null,
+  permissionMode = null,
+  onPermissionModeChange = null,
   connectionClient = null,
   connectionPending = false,
   connectionError = null,
@@ -453,6 +455,7 @@ export function AssistantComposer({
           onApplyProposal={onApplyProposal}
           onRetryTurn={onRetryTurn}
           onConfirmTurn={onConfirmTurn}
+          confirmationDisabled={permissionMode === 'read_only' || streaming}
           onDenyTurn={onDenyTurn}
           onEntitySelect={onEntitySelect}
           onEntityHover={onEntityHover}
@@ -561,6 +564,20 @@ export function AssistantComposer({
           </button>
 
           <div className="assistant__trailing">
+            {permissionMode && onPermissionModeChange ? (
+              <select
+                className="assistant__permission-mode"
+                aria-label="Assistant operation mode"
+                title="Controls confirmation for Rack edits. Account permissions and layout checks always apply."
+                value={permissionMode}
+                disabled={streaming || restoring}
+                onChange={(event) => onPermissionModeChange(event.target.value)}
+              >
+                <option value="read_only">Read only</option>
+                <option value="ask">Ask for permission</option>
+                <option value="full">Full authorization</option>
+              </select>
+            ) : null}
             <button
               type="button"
               ref={usageButtonRef}

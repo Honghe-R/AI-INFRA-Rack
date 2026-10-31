@@ -19,6 +19,7 @@ export { createContextResolver, createExecutionContext, createGuide } from './co
 export { DEFAULT_LIMITS, createOrchestrator, emptyUsage, normalizeUsage } from './orchestrator.js';
 export { createSessionService } from './sessions.js';
 export { createAuditService, createUsageService } from './usage.js';
+export { normalizePermissionMode } from './permission-mode.js';
 
 /**
  * The surfaces and guides the host knows at startup.

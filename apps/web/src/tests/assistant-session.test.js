@@ -65,6 +65,18 @@ function sessionWith(transport, options = {}) {
   return createAssistantSession({ transport, contextKey: 'p-1|s-1|r-1', scopeLabel: 'Site & Facility · Revision: Draft', ...options });
 }
 
+test('session reads the current operation mode for every send', async () => {
+  const transport = fakeTransport();
+  let mode = 'ask';
+  const session = sessionWith(transport, { permissionMode: () => mode });
+  for (const value of ['ask', 'read_only', 'full']) {
+    mode = value;
+    session.setDraft('Inspect the selected plan.');
+    await session.send();
+    assert.equal(transport.calls.at(-1).permissionMode, value);
+  }
+});
+
 /** A stand-in for the localStorage pointer the hook supplies. */
 function cacheStub(initial = {}) {
   const store = new Map(Object.entries(initial));

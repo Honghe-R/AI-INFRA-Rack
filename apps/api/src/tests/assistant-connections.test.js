@@ -160,6 +160,35 @@ async function serverAt(t, handler) {
   return `http://127.0.0.1:${server.address().port}`;
 }
 
+test('chat route validates modes before opening a connection and forwards valid modes', async (t) => {
+  const router = createRouter(), received = [];
+  let opened = 0;
+  registerAssistantRoutes(router, { orchestrator: {}, resolveTurn: async () => {
+    opened++;
+    return { release() {}, orchestrator: { runTurn: async input => { received.push(input); return { status: 'ok' }; } } };
+  } });
+  const logger = createLogger({ sink: { log() {}, warn() {}, error() {} }, level: 'error' });
+  const base = await serverAt(t, createApp({ router, logger,
+    authenticator: { async authenticate(ctx) { ctx.user = { userId: 'authenticated-user' }; } } }));
+  const call = async (mode, stream = false) => {
+    const res = await fetch(`${base}/api/v1/assistant/chat${stream ? '?stream=1' : ''}`, { method: 'POST',
+      headers: { 'content-type': 'application/json' }, body: JSON.stringify({ messages: [{ role: 'user', content: 'Hi' }],
+        context_key: 'rack-test', context: { surface: 'rack' }, ...(mode === undefined ? {} : { permission_mode: mode }) }) });
+    return { status: res.status, body: await res.text() };
+  };
+  for (const stream of [false, true]) for (const invalid of [null, '', 'admin', {}, true]) {
+    const result = await call(invalid, stream);
+    assert.equal(result.status, 400);
+    assert.match(result.body, /ASSISTANT_PERMISSION_MODE_INVALID/);
+  }
+  assert.equal(opened, 0);
+  for (const stream of [false, true]) for (const mode of [undefined, 'read_only', 'ask', 'full']) {
+    assert.equal((await call(mode, stream)).status, 200);
+    assert.equal(received.at(-1).permissionMode, mode ?? 'ask');
+    assert.equal(received.at(-1).context.userId, 'authenticated-user');
+  }
+});
+
 test('administrator origin allowlist permits a local gateway; redirects and oversized responses are blocked', async (t) => {
   let mode = 'ok';
   const base = await serverAt(t, (req, res) => {

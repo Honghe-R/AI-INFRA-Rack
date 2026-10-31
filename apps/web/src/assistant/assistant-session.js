@@ -40,6 +40,7 @@ export function createAssistantSession({
   // switching model must not rebuild the conversation, and a captured value would be the
   // model from when the composer opened.
   model = null,
+  permissionMode = null,
   sessionId = null,
   policy = DEFAULT_ATTACHMENT_POLICY,
   makeTurnId = () => `turn-${++sequence}`,
@@ -326,6 +327,7 @@ export function createAssistantSession({
         // without rebuilding the conversation on every context change.
         context: typeof context === 'function' ? context() : context,
         model: typeof model === 'function' ? model() : model,
+        permissionMode: typeof permissionMode === 'function' ? permissionMode() : permissionMode,
         // A confirmation decision the user made about a proposal the server gated. Omitted when
         // there is none, so an ordinary turn does not carry an empty list.
         confirmations,

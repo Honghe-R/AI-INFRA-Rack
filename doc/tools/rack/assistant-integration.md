@@ -13,7 +13,7 @@ This document follows the Site and Facility Assistant specification's structure 
 | Surface key/version | rack / 1 |
 | Guide key/version | rack-guide / 1 |
 | Entry functions | rack.read and facility.read in the resolved project |
-| Capabilities | Five read/computation tools; write-authorized preview plus confirmed application |
+| Capabilities | Five read/computation tools; write-authorized preview plus mode-controlled application |
 | Digest | null; no Rack workspace digest generator |
 | Rack UI actions | Empty list |
 | Rack entity-reference kinds | No Rack-specific kinds registered |
@@ -43,9 +43,19 @@ Read metadata names saved version/snapshot/source, saved-only scope, client dirt
 
 ### Capabilities Not Declared
 
-The [Assistant Edits contract](assistant-edits.md) adds rack_preview_changes and rack_apply_changes: explicit cabinet add/remove/move, existing-device assignment, clearance and assumed room budget changes. Preview requires rack.write; apply additionally uses the existing confirmation card and ordinary checked atomic save. Quantity-driven design, automatic allocation, plan lifecycle, unlocking, formal validation/publication and cross-tool mutations remain unavailable through chat. Relocation candidate summaries are still not directly applied.
+The [Assistant Edits contract](assistant-edits.md) adds rack_preview_changes and rack_apply_changes: explicit cabinet add/remove/move, existing-device assignment, clearance and assumed room budget changes. Preview requires rack.write; apply uses the existing confirmation card in Ask mode, or explicit Full authorization, and ordinary checked atomic save. Quantity-driven design, automatic allocation, plan lifecycle, unlocking, formal validation/publication and cross-tool mutations remain unavailable through chat. Relocation candidate summaries are still not directly applied.
 
 ## Selection and Authorization
+
+The Rack composer adds **Read only**, **Ask for permission** (default) and
+**Full authorization**. See [operation-mode contract](assistant-edits.md#user-selected-operation-mode).
+Each request carries `permission_mode`; the server validates it before opening a
+provider connection. Read only removes preview/apply, even for explicitly replayed
+confirmed calls. Full automatically confirms only `rack_apply_changes` after a
+server preview, while preserving every account, proposal and save check. It grants
+no extra tools or role. Scope/model/connection changes, a new chat and reload reset
+the in-memory choice; it is never saved with API credentials or inferred from chat.
+Other tool surfaces keep their existing behavior.
 
 1. The chat route stamps authenticated user identity; a payload cannot select another principal.
 2. The host resolves project/scenario/revision and checks Rack/Facility read access before selected-plan data or provider use.

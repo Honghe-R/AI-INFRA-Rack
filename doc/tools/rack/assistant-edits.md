@@ -2,10 +2,30 @@
 
 ## Workflow
 
+### User-selected operation mode
+
+The Rack composer exposes three modes, sent as top-level `permission_mode` on
+each chat request: `read_only` (Read only), `ask` (Ask for permission, default),
+and `full` (Full authorization). The model cannot change the selected mode.
+Read only removes both edit preview and apply tools, including from the explicit
+confirmed-call path. Ask retains the existing confirmation card. Full allows only
+`rack_apply_changes` to run without that card; a valid server-owned preview is
+still required. All modes retain ordinary account permissions, immutable-source,
+version, ownership, expiry, lock and spatial/resource checks. Full is not an
+administrator role and does not grant access to any additional operation.
+Tool audit records distinguish automatic approval as `full_authorization` from
+an individually `confirmed` call.
+
+Selection is held only in memory and resets to Ask on a new chat, reload, scope,
+plan, lifecycle, connection or model change. Account switching reloads the app.
+The selector is disabled during a turn. An unknown mode is rejected with400
+before opening a model connection. This increment applies to Rack only; other
+surfaces retain their existing confirmation behavior.
+
 The Rack Assistant supports natural-language edit requests through two tools:
 `rack_preview_changes` builds a validated server-owned proposal;
 `rack_apply_changes` applies that exact proposal after the existing chat
-confirmation card is accepted. Both require `rack.read`, `facility.read` and
+confirmation card is accepted, or under explicit Full authorization. Both require `rack.read`, `facility.read` and
 `rack.write`. Preview changes no layout; viewers keep the five read tools.
 
 Supported operations: add/remove/move a cabinet, assign/move/unassign an existing
@@ -40,7 +60,7 @@ proposals cannot be confirmed. Retention cleanup remains future work.
 ## User experience and limits
 
 The model reads first, previews the requested change, explains before/after values
-and reported incomplete scope, then asks the existing confirmation card to apply.
+and reported incomplete scope, then applies under the selected operation mode.
 The card uses the stored server summary. A denial does not save. One confirmed
 application per turn is allowed. Successful writes invalidate the Rack views;
 local browser drafts are retained and ordinary version conflict handling applies.

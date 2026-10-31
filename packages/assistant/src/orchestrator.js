@@ -4,6 +4,7 @@ import { createExecutionContext } from './context.js';
 import { collectEntities, indexEntities, rewriteReply } from './entity-references.js';
 import { LlmError, redactDeep } from './errors.js';
 import { composeSystemPrompt } from './prompt.js';
+import { normalizePermissionMode, rackPermissionInstruction } from './permission-mode.js';
 
 /**
  * The orchestrator loop (chatbox blueprint §4.3).
@@ -73,7 +74,9 @@ export function createOrchestrator({
     // not re-check it: the allowlist is a property of the deployment, and the orchestrator
     // has no business inventing a second answer. `null` keeps the configured model.
     model = null,
+    permissionMode = 'ask',
   } = {}) {
+    const operationMode = normalizePermissionMode(permissionMode);
     const startedAt = now();
     const turnRequestId = requestId ?? ids();
     const transcript = normalizeMessages(messages, effective);
@@ -223,11 +226,15 @@ export function createOrchestrator({
       }
 
       // 6. Tool selection is an authorization boundary.
-      const selected = await toolRegistry.select({
+      const authorizedTools = await toolRegistry.select({
         surfaceKey: chatContext.surface,
         readOnly: chatContext.readOnly,
         authorize: authorizeAtScope,
       });
+      const rackReadOnly = chatContext.surface === 'rack' && (operationMode === 'read_only' || chatContext.readOnly);
+      const selected = rackReadOnly
+        ? authorizedTools.filter(tool => tool.access === 'read' && !tool.requiredFunctions.includes('rack.write'))
+        : authorizedTools;
       const modelTools = toolRegistry.modelTools(selected);
       const host = toolRegistry.createHost({ selected, executionContext });
 
@@ -250,7 +257,7 @@ export function createOrchestrator({
           digestNotice: digestMeta?.notice ?? null,
           tools: modelTools,
           uiActions,
-        }),
+        }) + (chatContext.surface === 'rack' ? rackPermissionInstruction(rackReadOnly ? 'read_only' : operationMode) : ''),
       };
 
       /**
@@ -279,7 +286,9 @@ export function createOrchestrator({
          * id names one call and a new call cannot present it.
          */
         const confirmedByName = !forceConfirmed && confirmed.has(toolName);
-        const preConfirmed = forceConfirmed || confirmedByName || confirmed.has(call.id);
+        const autoConfirmed = chatContext.surface === 'rack' && !chatContext.readOnly && operationMode === 'full'
+          && capability?.name === 'rack_apply_changes' && capability.access === 'write';
+        const preConfirmed = autoConfirmed || forceConfirmed || confirmedByName || confirmed.has(call.id);
         if (confirmedByName) confirmed.delete(toolName);
         let args;
         let outcome;
@@ -295,7 +304,7 @@ export function createOrchestrator({
           });
         } catch (error) {
           // A refused call is still a call: it is audited either way.
-          auditToolCall({ auditService, toolName, capability, args, executionContext, contextKey, turnRequestId, outcome: 'failed', confirmation: preConfirmed ? 'confirmed' : 'none', durationMs: now() - callStartedAt, errorCode: error?.code ?? null });
+          auditToolCall({ auditService, toolName, capability, args, executionContext, contextKey, turnRequestId, outcome: 'failed', confirmation: autoConfirmed ? 'full_authorization' : preConfirmed ? 'confirmed' : 'none', durationMs: now() - callStartedAt, errorCode: error?.code ?? null });
           // Answered in the transcript rather than unwound, so the model gets another round.
           // Unwinding showed the user the raw refusal — "The arguments are not valid for this
           // tool." — as if it were the answer, and took the rest of the turn with it.
@@ -369,7 +378,7 @@ export function createOrchestrator({
           // receives is applied before the result is serialized.
           content: JSON.stringify(redactDeep(bounded.value, redact)),
         });
-        auditToolCall({ auditService, toolName, capability, args, executionContext, contextKey, turnRequestId, outcome: bounded.truncated ? 'degraded' : 'ok', confirmation: preConfirmed || capability?.confirmation === 'required' ? 'confirmed' : 'none', durationMs: now() - callStartedAt });
+        auditToolCall({ auditService, toolName, capability, args, executionContext, contextKey, turnRequestId, outcome: bounded.truncated ? 'degraded' : 'ok', confirmation: autoConfirmed ? 'full_authorization' : preConfirmed || capability?.confirmation === 'required' ? 'confirmed' : 'none', durationMs: now() - callStartedAt });
         return { done: true };
       }
 

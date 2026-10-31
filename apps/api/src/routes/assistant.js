@@ -1,4 +1,5 @@
 import { ApiError, errors } from '@ai-infra/core';
+import { normalizePermissionMode } from '@ai-infra/assistant';
 import { toApiError } from '../assistant-host.js';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -60,6 +61,9 @@ export function registerAssistantRoutes(router, { orchestrator, sessionService =
   router.post('/api/v1/assistant/chat', async (ctx) => {
     const { json, user, correlationId, response, query } = ctx;
     const body = await json();
+    let permissionMode;
+    try { permissionMode = normalizePermissionMode(body.permission_mode); }
+    catch (error) { throw toApiError(error); }
     // Credentials and arbitrary provider URLs belong only to connection management.
     if (['apiKey', 'api_key', 'endpoint', 'provider', 'baseURL'].some((key) => Object.hasOwn(body, key))) {
       throw new ApiError('ASSISTANT_CHAT_INVALID', 'Chat requests may only reference a saved model connection.', { status: 400 });
@@ -134,6 +138,7 @@ export function registerAssistantRoutes(router, { orchestrator, sessionService =
       const result = await (turnHost?.orchestrator ?? orchestrator).runTurn({
         messages: body.messages,
         model: selectedModel,
+        permissionMode,
         contextKey: turnContextKey,
         sessionId: body.session_id ?? body.sessionId ?? null,
         context,

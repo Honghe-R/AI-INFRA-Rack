@@ -717,7 +717,7 @@ function assistantEditRig(f,layout,user='admin') {
     rackContext:{planId:layout.planId,version:layout.version,clientVersion:layout.version,hasUnsavedDraft:false}});
   return {edits,ctx,layouts,authorize};
 }
-test('Assistant edit preview, confirmation, atomic save and replay use real Rack services', {skip},async()=>fixture(async f=>server(f.people,async request=>{
+for (const permissionMode of ['ask', 'full']) test(`Assistant ${permissionMode} edit preview, atomic save and replay use real Rack services`, {skip},async()=>fixture(async f=>server(f.people,async request=>{
   const {url,layout}=await prepared(f,request),rig=assistantEditRig(f,layout);
   const args={base_version:layout.version,operations:[{type:'ADD_RACK',model_id:layout.models[0].modelId,name:'Assistant rack',x_m:3,y_m:3}]};
   const surface=createRackAssistantSurface({layouts:rig.layouts,plans:createRackPlanService({pool}),authorize:rig.authorize,edits:rig.edits});
@@ -733,11 +733,23 @@ test('Assistant edit preview, confirmation, atomic save and replay use real Rack
   const host=createAssistantHost({provider,surfaces:[surface.surface],guides:[surface.guide],capabilities:surface.capabilities,
     authorize:rig.authorize,resolveScope:async()=>({surface:'rack',workspaceId:layout.projectId,scenarioId:layout.scenarioId,
       revisionId:layout.facilityInput.revisionId,rackContext:rig.ctx.rackContext})});
-  const turn={messages:[{role:'user',content:'Add a rack at (3,3) metres.'}],contextKey:'test|rack|edit',context:{userId:f.people.admin.userId,surface:'rack'}};
+  const turn={messages:[{role:'user',content:'Add a rack at (3,3) metres.'}],contextKey:'test|rack|edit',context:{userId:f.people.admin.userId,surface:'rack'},permissionMode};
+  if(permissionMode==='full') {
+    const result=await host.orchestrator.runTurn(turn);
+    assert.equal(result.status,'ok');assert.equal(result.draftChanged,true);
+    const saved=(await request(url)).body.data;
+    assert.equal(saved.version,layout.version+1);assert.equal(saved.placements[0].name,'Assistant rack');
+    assert.equal(saved.placements.length,1);
+    return;
+  }
   const preview=await host.orchestrator.runTurn(turn);
   assert.equal(preview.status,'confirmation_required');assert.notEqual(preview.draftChanged,true);
   assert.deepEqual((await request(url)).body.data,layout);
   const pending=preview.pendingConfirmations[0];assert.match(pending.summary,/Add rack.*Assistant rack/);
+  const blocked=await host.orchestrator.runTurn({...turn,permissionMode:'read_only',
+    confirmedCalls:[{callId:pending.callId,name:pending.toolName,arguments:pending.arguments}]});
+  assert.equal(blocked.draftChanged,false);
+  assert.deepEqual((await request(url)).body.data,layout,'Read only cannot execute an earlier Ask approval');
   const accepted=await host.orchestrator.runTurn({...turn,confirmedCalls:[{callId:pending.callId,name:pending.toolName,arguments:pending.arguments}]});
   assert.equal(accepted.status,'ok');assert.equal(accepted.draftChanged,true);
   const saved=(await request(url)).body.data;assert.equal(saved.version,layout.version+1);assert.equal(saved.placements.length,1);assert.equal(saved.placements[0].name,'Assistant rack');

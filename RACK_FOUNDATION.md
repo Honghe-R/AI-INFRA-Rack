@@ -1,5 +1,11 @@
 # Rack 基础设计与本轮边界
 
+Latest supplement (2026-10-31, round39): [Assistant operation modes](doc/tools/rack/assistant-edits.md#user-selected-operation-mode)
+adds Read only, Ask for permission (default) and Full authorization inside Ask
+about Rack. Full skips only the individual apply card; proposal, account and save
+checks remain enforced. Selection is transient and resets on context/new-chat
+changes. Validation evidence and real-model/browser boundaries are in PROGRESS.md.
+
 Latest supplement (2026-10-31, round36): [Assistant Edits](doc/tools/rack/assistant-edits.md)
 adds typed server-validated previews and confirmed atomic saves for cabinet,
 assignment, clearance and assumed-budget edits. Migration014 stores durable

@@ -52,6 +52,13 @@ export function useAssistantSession({
   const [connectionNonce, setConnectionNonce] = useState(0);
   const transport = useMemo(() => createAssistantTransport(client, provider), [client, provider?.connectionId, provider?.version]);
   const key = connectionSessionKey(assistantSessionKey(workspaceContext, toolId, toolRouteState), provider, model);
+  const modeScope = `${key}|${model ?? ''}|${connectionNonce}|${workspaceContext?.lifecycleState ?? ''}`;
+  const [modeChoice, setModeChoice] = useState(null);
+  const permissionMode = modeChoice?.scope === modeScope && modeChoice.client === client ? modeChoice.value : 'ask';
+  const permissionModeRef = useRef(null);
+  permissionModeRef.current = toolId === 'rack' ? permissionMode : null;
+  // Forget elevated consent when leaving a scope, including when later returning.
+  useEffect(() => { setModeChoice(null); }, [modeScope, client]);
   // True while a picked file is being stored. The composer blocks Send on it, so this is
   // state the user can see the effect of, not an internal detail.
   const [uploading, setUploading] = useState(false);
@@ -242,6 +249,7 @@ export function useAssistantSession({
           toolRouteState: latest.current.toolRouteState,
         }),
       model: () => modelRef.current,
+      permissionMode: () => permissionModeRef.current,
       sessionCache: sessionPointerCache(),
     });
     sessionRef.current = session;
@@ -292,6 +300,11 @@ export function useAssistantSession({
     models: provider?.models ?? [],
     model,
     onModelChange,
+    permissionMode: toolId === 'rack' ? permissionMode : null,
+    onPermissionModeChange: toolId === 'rack' ? (value) => {
+      if (sessionRef.current?.getState().streaming || !['read_only', 'ask', 'full'].includes(value)) return;
+      setModeChoice({ scope: modeScope, client, value });
+    } : null,
     connectionClient: client?.getAssistantConnection ? client : null,
     connectionPending,
     connectionError,
@@ -307,6 +320,8 @@ export function useAssistantSession({
     },
     onStop: () => sessionRef.current?.stop(),
     onNewSession: () => {
+      permissionModeRef.current = toolId === 'rack' ? 'ask' : null;
+      setModeChoice(null);
       setUiActionNotices([]);
       sessionRef.current?.startNew();
     },
@@ -387,7 +402,7 @@ function storeModel(model, storage = typeof window !== 'undefined' ? window.loca
 export function createAssistantTransport(client, connection = null) {
   if (!client?.sendAssistantTurn) return null;
   return {
-    async sendTurn({ messages, contextKey, sessionId, context, model, signal, onEvent, confirmations = null, confirmedCalls = null, deniedCalls = null }) {
+    async sendTurn({ messages, contextKey, sessionId, context, model, permissionMode = null, signal, onEvent, confirmations = null, confirmedCalls = null, deniedCalls = null }) {
       const body = {
         messages,
         context_key: contextKey,
@@ -396,6 +411,7 @@ export function createAssistantTransport(client, connection = null) {
         // Omitted rather than null when unset: an absent key asks the server for its own
         // configured model, which is what a deployment with no menu should always get.
         ...(model ? { model } : {}),
+        ...(permissionMode ? { permission_mode: permissionMode } : {}),
         ...(connection?.connectionId ? { connection_id: connection.connectionId, connection_version: connection.version } : {}),
         // The user's decision about a proposal the server gated. Omitted when there is none, so
         // an ordinary turn does not carry an empty list.
