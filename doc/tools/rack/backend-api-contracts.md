@@ -17,6 +17,8 @@ Rack responses follow `{data,meta?}`; command metadata includes replay/applied-v
 | Rename | rack.write | Matching plan version and lifecycle |
 | Delete | rack.delete | Matching plan version and lifecycle |
 | Restore | rack.restore | Matching plan version and lifecycle |
+| Record saved checks | rack.write | facility.read, version/snapshot and unchanged source |
+| Check history/detail/planning report | rack.read | facility.read; deleted plans return410 |
 
 Tenant transactions/RLS supplement route guards. IDs and UI read-only hints cannot authorize a request. Services are internal and expect authorized callers. Model tools reauthorize independently.
 
@@ -31,8 +33,17 @@ Project membership administration is outside the `/rack` base, under `/api/v1/pr
 | GET /plans/:planId | Identity | Plan metadata, placements, source status; deleted detail remains inspectable |
 | GET /plans/:planId/room-view | Identity | Supported live source view or unavailable/unsupported reason |
 | GET /plans/:planId/layout | Identity | Coherent saved snapshot, models, placements, constraints, equipment, source status and version |
+| GET /plans/:planId/check-runs | No query parameters | Latest20 summaries with current/historical freshness |
+| GET /plans/:planId/check-runs/:runId | Scoped run UUID | Immutable reports plus computed freshness |
+| GET /plans/:planId/report | No query parameters | Fresh saved planning snapshot and latest matching check, if any |
 
 List defaults to 20, permits 1–50; cursor is a UUID resolved inside the same scope/filters, ordered newest by creation time and ID. deleted is `true`/`false`, default active. Deleted layout access returns 410 while plan metadata still supports restore.
+
+POST `/plans/:planId/check-runs` records saved inputs only, with
+`{contract_version:1,base_version:3,snapshot_id:"<uuid>"}` and UUID
+`Idempotency-Key`. New recording returns201; exact retry200 with `meta.replayed`.
+No layout version is advanced. See [Saved Checks and Reports](check-history-and-reports.md)
+for locking, fingerprints, freshness, retry and download boundaries.
 
 ## Creation and Lifecycle Commands
 

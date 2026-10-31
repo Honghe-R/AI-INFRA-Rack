@@ -1,5 +1,12 @@
 # AI-INFRA Rack 课程项目实施清单
 
+Current review (2026-10-31, round35): [Delivery status](RACK_DELIVERY_STATUS.md)
+supersedes older iteration summaries below. Saved scoped check history,
+version/input/ruleset freshness, JSON/CSV planning downloads and repeatable32/128-rack
+performance samples are implemented. Formal engineering validation, durable
+candidates, connected egress, shared Facility reservations and final human course
+deliverables remain open. See [evidence](records/2026-10-31-rack-delivery-gaps/commands.md).
+
 最新增量（2026-10-29，第二十二轮）：[8份工具规范](doc/tools/rack/Overview.md)及[按设备数量自动设计](RACK_DEMAND_DESIGN.md)已接通，含装箱、紧凑候选、比较/复核/共享草稿保存。领域/HTTP/Web定向通过，浏览器较早候选已保存；最终排序需正常重启后浏览器复核。通道、正式验证与性能实验仍待，详见PROGRESS.md。
 
 最新增量（2026-10-29，第二十一轮）：已有HALL内的新建→布柜→设备上架→约束/预算→保存→重命名→删除/恢复已实际验收，旧单功能示例移入本机已删除列表。见 [完整操作链](RACK_USER_JOURNEY.md) 和 [进展记录](PROGRESS.md)。这不代表正式工程验证或课程交付全部完成。

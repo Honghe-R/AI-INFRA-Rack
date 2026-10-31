@@ -10,6 +10,7 @@ import { RackDemandDesign } from './RackDemandDesign.jsx';
 import { RackAllocation } from './RackAllocation.jsx';
 import { RackWorkbench } from './RackWorkbench.jsx';
 import { RackAddDialog } from './RackAddDialog.jsx';
+import { RackCheckHistory } from './RackCheckHistory.jsx';
 import { RACK_COMMANDS, rackCommandReason, addPlanObject } from './rack-commands.js';
 import {
   beginLayoutDraft,
@@ -645,7 +646,7 @@ export function RackEditor({
             onChange={(value) => onDraftChange({ ...draft, constraints: value })}
           />
           </div>
-          {section === 'validate' && <p className="rack-warning">These are current draft checks, not a stored whole-plan Validation Run. Whole-plan state remains {layout.validationState}.</p>}
+          {section === 'validate' && <RackCheckHistory key={`${layout.projectId}:${layout.planId}:${layout.version}`} client={client} layout={layout} draft={draft} canWrite={canWrite} />}
           <section hidden={!['layout', 'constraints', 'validate'].includes(section)} className="rack-check-panel" aria-label="Spatial diagnostics">
             <h3>Spatial checks</h3>
             {inputError ? (

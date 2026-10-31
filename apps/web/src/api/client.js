@@ -98,6 +98,15 @@ export function createApiClient({ baseUrl = '', fetchImpl = globalThis.fetch, id
       request(`/api/v1/projects/${encodeURIComponent(projectId)}/rack/plans/${encodeURIComponent(planId)}/layout`, { signal }),
     checkRackLayout: (projectId, planId, body, { signal } = {}) =>
       request(`/api/v1/projects/${encodeURIComponent(projectId)}/rack/plans/${encodeURIComponent(planId)}/layout/check`, {method:'POST',body,signal}),
+    listRackCheckRuns: (projectId, planId, { signal } = {}) =>
+      request(`/api/v1/projects/${encodeURIComponent(projectId)}/rack/plans/${encodeURIComponent(planId)}/check-runs`, {signal}),
+    getRackCheckRun: (projectId, planId, runId, { signal } = {}) =>
+      request(`/api/v1/projects/${encodeURIComponent(projectId)}/rack/plans/${encodeURIComponent(planId)}/check-runs/${encodeURIComponent(runId)}`, {signal}),
+    recordRackCheckRun: (projectId, planId, body, { idempotencyKey, signal } = {}) =>
+      request(`/api/v1/projects/${encodeURIComponent(projectId)}/rack/plans/${encodeURIComponent(planId)}/check-runs`,
+        {method:'POST',body,signal,headers:{'Idempotency-Key':idempotencyKey}}),
+    getRackReport: (projectId, planId, { signal } = {}) =>
+      request(`/api/v1/projects/${encodeURIComponent(projectId)}/rack/plans/${encodeURIComponent(planId)}/report`, {signal}),
     generateRackOptions: (projectId, planId, body, { signal } = {}) =>
       request(`/api/v1/projects/${encodeURIComponent(projectId)}/rack/plans/${encodeURIComponent(planId)}/layout/options`, {method:'POST',body,signal}),
     generateRackDesignOptions: (projectId, planId, body, { signal } = {}) =>

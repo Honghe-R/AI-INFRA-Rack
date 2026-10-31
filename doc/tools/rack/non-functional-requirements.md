@@ -36,6 +36,13 @@ Initial target (proposed): keep ordinary plan inspection/check feedback comforta
 
 ## Concurrency, Availability and Durability
 
+Round35 added [reproducible local samples](../../../records/2026-10-31-rack-delivery-gaps/performance.md)
+with one warmup/five sequential read/check/report repetitions per32/128-rack
+fixture and an explicit complexity discussion.128-rack medians were55.8ms read,
+555.9ms check and71.6ms report (before recorded-check payload). This preliminary
+experiment does not replace concurrency, optimizer, rendering or tail-latency
+acceptance. Saved-layout deep equality passed before/after sampling.
+
 Project access has a separate [authorization contract](access-control.md): granular Rack deletion/recovery, organisation-scoped existing accounts, versioned membership changes, project-row serialization, fresh actor checks, last-administrator protection and transactional access events. Effective authority remains additive across scopes. Permission-decision invalidation is process-local; multi-instance deployments need coordinated revocation before being accepted.
 
 Optimistic versions and a shared plan-row lock prevent lost updates across save/lifecycle paths. Source token/lifecycle locks prevent a Facility writer advancing those values during a Rack save. This does not provide collaborative draft merge, offline synchronization or live presence.

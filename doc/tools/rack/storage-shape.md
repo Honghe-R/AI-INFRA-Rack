@@ -6,6 +6,8 @@ PostgreSQL/PostGIS holds saved Rack aggregates and fixed source references. Brow
 
 Rack aggregate schema comes from immutable migrations 007–011; migration 012 adds scoped access controls and events. Existing databases use migrations, not reset/reseed of edited examples.
 
+Migration013 adds saved scoped check evidence, separate from formal validation.
+
 ## Transactional Store
 
 | Table | Key / fields | Responsibility |
@@ -15,8 +17,15 @@ Rack aggregate schema comes from immutable migrations 007–011; migration 012 a
 | rack_placements | `(rack_id,plan_id,project_id)`; model FK, position, rotation, name, lock | Placement membership |
 | rack_models | model_id PK; definition JSONB | Server-owned assumed models |
 | rack_layout_commands | `(project_id,plan_id,command_key)`; request hash, applied version, actor/time | Capture/save/lifecycle retry identity |
+| rack_check_runs | run UUID; composite plan FK, saved version/snapshot, input hash, ruleset, command key, actor/time, spatial/equipment reports | Append-only service evidence with forced project RLS and newest-first index |
 
 Devices, rack limits and room budgets live in equipment JSONB; exclusion rectangles/clearance live in spatial_constraints. Equipment catalog versions are read-only code data. There are no candidate-history, aisle-graph, Rack Validation Run or publication tables.
+
+Saved checks bind exact saved inputs without incrementing the plan version. Recording
+locks plan/source just like save; retries reuse the original run. Reads calculate
+freshness from version, snapshot, canonical SHA-256, ruleset and source status.
+History summaries are limited to20; older records remain addressable by scoped ID.
+No retention job or historical layout reconstruction exists. See [record contract](check-history-and-reports.md).
 
 ### Geometry and CRS
 

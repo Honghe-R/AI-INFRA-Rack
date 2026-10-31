@@ -8,7 +8,7 @@ export const RACK_SECTIONS = Object.freeze([
   { functionId: 'equipment', label: 'Devices & U slots', status: 'PARTIAL', description: 'Catalog models, device assignment and cabinet U elevation.' },
   { functionId: 'capacity', label: 'Capacity', status: 'PARTIAL', description: 'Per-rack capacity and plan-wide room power/cooling budgets, totals and unknowns.' },
   { functionId: 'candidates', label: 'Layout options', status: 'PARTIAL', description: 'Bounded rack relocation and quantity-driven empty-plan design, comparison, preview and staging for a checked save.' },
-  { functionId: 'validate', label: 'Checks', status: 'PARTIAL', description: 'Current spatial and equipment checks, diagnostics and unchecked scope.' },
+  { functionId: 'validate', label: 'Checks', status: 'PARTIAL', description: 'Live checks, saved check history, freshness and JSON/CSV planning reports.' },
 ].map(Object.freeze));
 
 export function rackSection(id) {

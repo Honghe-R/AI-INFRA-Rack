@@ -15,7 +15,7 @@ This bundle follows the structure of the [Site and Facility Editor](../site-and-
 | Capacity | Per-rack limits and optional plan-local room assumptions | No authoritative Facility allocation, electrical or HVAC design |
 | Planning | Packing, bounded layout search, relocation and automatic allocation | Network graph layout is not a physical placement algorithm |
 | Assistance | Rack projection of existing read/computation services | Shared Assistant host owns connections, sessions and orchestration |
-| Governance | Versions, idempotent writes, soft deletion/restoration | No formal Rack Validation Run, publication or approvals yet |
+| Governance | Versions, idempotent writes, soft deletion/restoration, saved scoped check evidence | No formal Rack Validation Run, publication or approvals yet |
 
 The inherited blueprint also assigns room/row concerns to Floorplan. This course implementation owns plan-local rack placements inside a Facility HALL. A platform-wide canonical Floorplan/Rack ownership contract remains an [open decision](decisions.md).
 
@@ -37,7 +37,7 @@ The inherited blueprint also assigns room/row concerns to Floorplan. This course
 
 | Target | Current behavior | Remaining work |
 | --- | --- | --- |
-| Traceability | Source/model versions, algorithm IDs, fingerprints, commands | Durable candidate history and reports |
+| Traceability | Source/model versions, algorithm IDs, fingerprints, commands, saved checks and JSON/CSV planning reports | Durable candidate history and accepted cross-tool handoffs |
 | Collaboration | Authentication, RBAC, isolation, optimistic concurrency | Presence and draft merging |
 | Assistant | Five read/computation tools and personal model connection | Demand/allocation projection and real-model acceptance |
 | Recovery | Soft deletion, restore, exact retry | Retention policy and restore drills |
@@ -52,6 +52,7 @@ The inherited blueprint also assigns room/row concerns to Floorplan. This course
 5. Edit placement, assign devices, inspect loads and diagnose conflicts.
 6. Stage a reviewed candidate and save the shared draft atomically.
 7. Ask the Assistant about saved inventory, capacity, checks and relocation options.
+8. Record saved-version checks, identify historical results and download planning JSON/equipment CSV.
 
 ## Software Architecture
 
@@ -100,6 +101,7 @@ Domain functions normalize values, check equipment and generate deterministic pr
 | [Import Mapping](import-adapters.md) | Current normalized inputs and future file/vendor adapters |
 | [Assistant Integration](assistant-integration.md) | Capabilities, grounding, personal API setup and security |
 | [Authentication and Access Control](access-control.md) | Role matrix, lifecycle authority, scoped membership administration and audit |
+| [Saved Checks and Reports](check-history-and-reports.md) | Saved-version evidence, freshness, history and JSON/CSV downloads |
 | [Non-Functional Requirements](non-functional-requirements.md) | Limits, performance experiments and operational risks |
 | [Decisions and Open Questions](decisions.md) | Implemented choices and unresolved policies |
 | [Demand Planning](demand-planning.md) | Algorithm, objectives, budgets and limitations |
@@ -107,7 +109,7 @@ Domain functions normalize values, check equipment and generate deterministic pr
 
 ## Implementation Status and Acceptance Criteria
 
-Implemented: fixed snapshots, three workbench views, manual editing, relocation, allocation, demand design, local checks, lifecycle and personal Assistant connections. Whole-plan validation remains `NOT_RUN`.
+Implemented: fixed snapshots, three workbench views, manual editing, relocation, allocation, demand design, live checks, saved check history, JSON/CSV planning reports, lifecycle and personal Assistant connections. Saved evidence was added on2026-10-31; it does not change whole-plan validation, which remains `NOT_RUN`.
 
 Planned: continuous aisles/evacuation, electrical redundancy, rail/depth compatibility, airflow, floor loading, shared reservations, durable candidates, publication and cross-tool exports. A real provider has not been accepted end to end merely because scripted-provider tests pass.
 

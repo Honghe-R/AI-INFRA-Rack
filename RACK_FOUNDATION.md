@@ -1,5 +1,12 @@
 # Rack 基础设计与本轮边界
 
+Latest supplement (2026-10-31, round35): [Saved Checks and Reports](doc/tools/rack/check-history-and-reports.md)
+adds version-bound persistent scoped evidence, freshness/history and JSON/CSV
+planning downloads (migration013). [Delivery status](RACK_DELIVERY_STATUS.md)
+maps implemented features and remaining course/deployment work. Repeated local
+read/check/report samples and verification evidence are recorded in round35;
+whole-plan validation remains NOT_RUN. Older entries retain their historical scope.
+
 Latest supplement (2026-10-31, round33): [Hall demonstrations](RACK_HALL_DEMO.md) now scale both cabinets and installed inventory by four:128 racks/944 installed/eight pending, with80 high-load and48 normal racks. Saved inventory capacity is2,048 devices, shared with the browser through a generated mirror. Existing search budgets remain separate. The exact sparse demo was backed up and upgraded through normal versioned APIs, preserving geometry and other plans. See round33 evidence in PROGRESS.md.
 
 Latest supplement (2026-10-30, round32): [Hall demonstrations](RACK_HALL_DEMO.md) include a separate128-rack/eight-row synthetic plan with384 installed and eight pending devices. Existing32-rack/user plans are preserved; normal API geometry/resource checks and candidate previews passed. Existing input/algorithm limits remain unchanged. Evidence: PROGRESS.md and records/2026-10-30-rack-large-hall.

@@ -4,10 +4,15 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { RackRoomCapacity } from '../rack/RackRoomCapacity.jsx';
 import { beginLayoutDraft, defaultEditorEquipment, layoutCheckBody, validateEditorEquipment } from '../rack/edit-layout-state.js';
 import { rackInputSummary } from '../rack/rack-inputs.js';
-import { checkRoomBudget } from '@ai-infra/rack';
 
 const roomBudget = { maxPowerKw: 0, maxCoolingKw: null, source: { kind: 'ASSUMED', reference: 'Test <budget>' } };
 const equipment = { ...defaultEditorEquipment(), roomBudget };
+// Representative API responses; the browser must not import server/domain code.
+const unknownResource = { unit: 'kW', knownSubtotal: 0, total: 0, unknownDevices: 0, limit: null,
+  remaining: null, status: 'UNKNOWN', inventory: { knownSubtotal: 0, total: 0, unknownDevices: 0 }, inventoryExceedsLimit: false };
+const emptyRoomReport = { scope: 'PLAN_INSTALLED_DEVICE_DEMAND', budgetState: 'NOT_RECORDED', source: null,
+  installedDevices: 0, inventoryDevices: 0, unassignedDevices: 0, coverage: 'UNKNOWN', status: 'INCOMPLETE',
+  resources: { powerKw: unknownResource, coolingKw: unknownResource }, diagnostics: [] };
 
 test('room budget editor distinguishes zero, unknown, absent, explicit removal and invalid references', () => {
   assert.equal(validateEditorEquipment(equipment, []), null);
@@ -37,14 +42,23 @@ test('capacity panel renders real room totals and unknown lower bounds with sour
     { rackId: 'r', powerKw: 2, coolingKw: null },
     { rackId: null, powerKw: 4, coolingKw: 4 },
   ] };
-  const html = renderToStaticMarkup(<RackRoomCapacity equipment={e} report={{ roomCapacity: checkRoomBudget(e) }} editable={false} />);
+  const roomCapacity = { ...emptyRoomReport, budgetState: 'PLAN_ASSUMPTION', source: roomBudget.source,
+    installedDevices: 1, inventoryDevices: 2, unassignedDevices: 1, status: 'ISSUES_FOUND',
+    resources: {
+      powerKw: { ...unknownResource, knownSubtotal: 2, total: 2, limit: 0, remaining: -2, status: 'EXCEEDED',
+        inventory: { knownSubtotal: 6, total: 6, unknownDevices: 0 }, inventoryExceedsLimit: true },
+      coolingKw: { ...unknownResource, total: null, unknownDevices: 1,
+        inventory: { knownSubtotal: 4, total: null, unknownDevices: 1 } },
+    }, diagnostics: [{ code: 'ROOM_BUDGET_EXCEEDED', dimension: 'powerKw', knownSubtotal: 2, limit: 0, unit: 'kW',
+      message: 'Installed powerKw known subtotal exceeds this plan\'s assumed room budget.' }] };
+  const html = renderToStaticMarkup(<RackRoomCapacity equipment={e} report={{ roomCapacity }} editable={false} />);
   for (const value of ['Test &lt;budget&gt;', 'ROOM_BUDGET_EXCEEDED', 'ISSUES_FOUND', '1 installed', '1 unassigned', '≥ 0 (1 unknown)', 'above budget if all installed', 'disabled=""', 'does not reserve Facility capacity', 'No global room weight limit']) assert.ok(html.includes(value), value);
   assert.ok(!html.includes('NaN'));
 });
 
 test('no budget is explicitly scoped to per-rack checks and does not invent room limits', () => {
   const e = defaultEditorEquipment();
-  const html = renderToStaticMarkup(<RackRoomCapacity equipment={e} report={{ roomCapacity: checkRoomBudget(e) }} editable={true} />);
-  for (const value of ['Room budget not recorded', 'INCOMPLETE', 'Unknown', 'per-rack-only scope']) assert.ok(html.includes(value), value);
+  const html = renderToStaticMarkup(<RackRoomCapacity equipment={e} report={{ roomCapacity: emptyRoomReport }} editable={true} />);
+  for (const value of ['Room budget not recorded', 'INCOMPLETE', 'Unknown', 'Per-rack checks cannot establish room capacity']) assert.ok(html.includes(value), value);
   assert.ok(!html.includes('Room power limit (kW)'));
 });

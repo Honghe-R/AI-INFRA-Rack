@@ -1,0 +1,23 @@
+{
+  "generatedAt": "2026-10-31T06:03:28.143Z",
+  "planId": "879a2cbc-87d4-4c7a-93c3-ca435e3f34f3",
+  "version": 3,
+  "runId": "2e0ab4e0-d97f-481e-a3ad-d5931180e455",
+  "spatialStatus": "INCOMPLETE",
+  "equipmentStatus": "INCOMPLETE",
+  "freshness": {
+    "status": "CURRENT",
+    "reasons": []
+  },
+  "racks": 128,
+  "installed": 944,
+  "inventory": 952,
+  "exactRetryDeduplicated": true,
+  "threeActiveLayoutsUnchanged": true,
+  "jsonReportMatched": true,
+  "csvRows": 952,
+  "csvSha256": "38f4512d83228652ee2dd045cddd6383c2e8a4b01ef9c7f317462d0e24e2cd07",
+  "healthz": 200,
+  "readyz": 200,
+  "visualAcceptance": "Not performed: native Computer Use helper unavailable. HTTP/static-render/build verification only."
+}

@@ -35,6 +35,19 @@ export function registerRackRoutes(router, { pool, guard }) {
     await facilityRead(ctx);
     return {data:await layouts.check({projectId:ctx.params.projectId,planId:ctx.params.planId,body:ctx.body})};
   }), {permission:RACK_KEYS.READ,projectParam:'projectId'});
+  router.post(`${base}/:planId/check-runs`, ctx => adapt(async () => {
+    await facilityRead(ctx);
+    const result = await layouts.recordCheckRun({ projectId:ctx.params.projectId, planId:ctx.params.planId,
+      actorId:ctx.user.userId, body:ctx.body, key:ctx.headers['idempotency-key'] });
+    return { status:result.replayed ? 200 : 201, data:result.run, meta:{replayed:result.replayed} };
+  }), {permission:RACK_KEYS.WRITE,projectParam:'projectId'});
+  for (const [suffix, method] of [['/check-runs','listCheckRuns'], ['/check-runs/:runId','getCheckRun'], ['/report','getReport']]) {
+    router.get(`${base}/:planId${suffix}`, ctx => adapt(async () => {
+      await facilityRead(ctx);
+      if (Object.keys(ctx.query).length) throw new RackInputError('query', 'query parameters are not supported');
+      return {data:await layouts[method]({projectId:ctx.params.projectId,planId:ctx.params.planId,runId:ctx.params.runId})};
+    }), {permission:RACK_KEYS.READ,projectParam:'projectId'});
+  }
   router.post(`${base}/:planId/layout/options`, ctx => adapt(async () => {
     await facilityRead(ctx);
     return { data: await layouts.options({ projectId:ctx.params.projectId, planId:ctx.params.planId, body:ctx.body }) };

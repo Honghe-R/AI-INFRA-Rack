@@ -9,6 +9,7 @@ import { generateRackOptions, normalizePlannerOptions, layoutMetrics, PLANNER_LI
 import { pickRackPosition } from './rack-planner-geometry.js';
 import { allocateUnassignedEquipment } from '@ai-infra/rack';
 import { generateDemandOptions, normalizeDesignDemand, DEMAND_LIMITS } from '@ai-infra/rack';
+import { createSavedRackChecks } from './rack-check-records.js';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const conflict = (code, message, details = []) => new ApiError(code, message, { status: 409, details });
@@ -182,6 +183,7 @@ async function check(client, layout, entries, constraints) {
 
 export function createRackLayoutService({ pool }) {
   return {
+    ...createSavedRackChecks({ pool, read, check }),
     async designOptions({ projectId, planId, body }) {
       scope(projectId, planId);
       bodyFields(body, ['contract_version','base_version','snapshot_id','demand']);

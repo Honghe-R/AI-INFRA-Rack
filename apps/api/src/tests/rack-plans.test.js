@@ -608,6 +608,97 @@ async function prepared(f,request,coordinates) {
   return {url,planUrl:created.location,layout:response.body.data};
 }
 
+test('saved check evidence is idempotent, scoped, non-mutating and historical after plan changes', {skip},async()=>fixture(async f=>server(f.people,async request=>{
+  const {url,planUrl,layout}=await prepared(f,request);
+  const runUrl=`${planUrl}/check-runs`, body={contract_version:1,base_version:layout.version,snapshot_id:layout.snapshot.snapshotId},key=randomUUID();
+  assert.equal((await request(`${planUrl}/report`,{user:'viewer'})).body.data.checkRun,null);
+  const created=await request(runUrl,{body,key,user:'editor'});
+  assert.equal(created.status,201,JSON.stringify(created.body));
+  const run=created.body.data;
+  assert.equal(run.planVersion,layout.version);assert.equal(run.createdBy,f.people.editor.userId);
+  assert.equal(run.freshness.status,'CURRENT');assert.equal(run.ruleset,'rack-scoped-checks/v1');
+  assert.equal(run.report.status,'NOT_CHECKED');assert.ok(run.equipmentReport.uncheckedRules.includes('ENGINEERING_ACCURACY'));
+  assert.equal(run.inputHash.length,64);
+  const replay=await request(runUrl,{body,key,user:'editor'});
+  assert.equal(replay.status,200);assert.equal(replay.body.meta.replayed,true);assert.deepEqual(replay.body.data,run);
+  assert.equal((await request(runUrl,{body,key})).status,409,'another actor cannot reuse recording identity');
+  assert.equal((await request(runUrl,{body:{...body,base_version:9},key,user:'editor'})).status,409);
+  const listed=(await request(runUrl,{user:'viewer'})).body.data;
+  assert.equal(listed.items.length,1);assert.equal(listed.items[0].runId,run.runId);assert.equal(listed.items[0].report,undefined);
+  const detail=await request(`${runUrl}/${run.runId}`,{user:'viewer'});assert.equal(detail.status,200);assert.deepEqual(detail.body.data,run);
+  const exported=(await request(`${planUrl}/report`,{user:'viewer'})).body.data;
+  assert.equal(exported.kind,'RACK_PLANNING_REPORT');assert.deepEqual(exported.layout,layout);assert.deepEqual(exported.checkRun,run);
+  assert.equal(exported.validationState,'NOT_RUN');
+  assert.deepEqual((await request(url)).body.data,layout,'recording checks does not change any layout fields');
+  assert.equal((await pool.query('SELECT count(*)::int n FROM rack_layout_commands WHERE project_id=$1',[f.a.projectId])).rows[0].n,0);
+  assert.equal((await request(planUrl,{method:'PATCH',body:{contract_version:1,name:'Renamed'},version:layout.version})).status,200);
+  const old=(await request(`${runUrl}/${run.runId}`)).body.data;
+  assert.equal(old.freshness.status,'HISTORICAL');assert.ok(old.freshness.reasons.includes('PLAN_VERSION_CHANGED'));
+  assert.equal((await request(`${planUrl}/report`)).body.data.checkRun,null);
+  assert.equal((await request(runUrl,{body})).status,412);
+  assert.equal((await request(runUrl,{body,key,user:'editor'})).body.data.runId,run.runId,'exact retry still finds the old run');
+  const current=(await request(url)).body.data;
+  const saved=await request(url,{method:'PUT',version:current.version,body:layoutBody(current,[rack()])});assert.equal(saved.status,200);
+  const newRun=await request(runUrl,{body:{...body,base_version:saved.body.data.version}});assert.equal(newRun.status,201,JSON.stringify(newRun.body));
+  assert.equal(newRun.body.data.report.racksChecked,1);assert.notEqual(newRun.body.data.inputHash,run.inputHash);
+  await pool.query('UPDATE revision_etags SET etag=$1 WHERE project_id=$2',[randomUUID(),f.a.projectId]);
+  assert.equal((await request(`${planUrl}/report`)).body.data.checkRun,null);
+  assert.ok((await request(`${runUrl}/${newRun.body.data.runId}`)).body.data.freshness.reasons.includes('SOURCE_CHANGED'));
+  assert.equal((await request(runUrl,{body:{...body,base_version:saved.body.data.version}})).status,409);
+})));
+
+test('check records reject malformed input, forbidden and foreign scopes, retain history across soft deletion', {skip},async()=>fixture(async f=>server(f.people,async request=>{
+  const {planUrl,layout}=await prepared(f,request),url=`${planUrl}/check-runs`;
+  const body={contract_version:1,base_version:layout.version,snapshot_id:layout.snapshot.snapshotId};
+  for (const user of ['viewer','outsider']) assert.equal((await request(url,{body,user})).status,403);
+  for (const patch of [{base_version:0},{snapshot_id:'bad'},{placements:[]},{contract_version:2}])
+    assert.equal((await request(url,{body:{...body,...patch}})).status,400);
+  assert.equal((await request(url,{body,key:null})).status,428);
+  assert.equal((await request(url,{body,key:'bad'})).status,400);
+  assert.equal((await request(url,{body:{...body,snapshot_id:randomUUID()}})).status,409);
+  const created=await request(url,{body});assert.equal(created.status,201);
+  const runId=created.body.data.runId;
+  for(const suffix of ['/check-runs',`/check-runs/${runId}`,'/report']){
+    assert.equal((await request(`${path(f.b)}/${layout.planId}${suffix}`)).status,404);
+    assert.equal((await request(`${planUrl}${suffix}`,{user:'outsider'})).status,403);
+    assert.equal((await request(`${planUrl}${suffix}?extra=1`)).status,400);
+  }
+  assert.equal((await request(`${url}/${randomUUID()}`)).status,404);
+  assert.equal((await request(`${url}/bad`)).status,404);
+  assert.equal((await request(planUrl,{method:'DELETE',body:{contract_version:1},version:layout.version})).status,200);
+  assert.equal((await request(url)).status,410);assert.equal((await request(url,{body})).status,410);
+  assert.equal((await request(`${planUrl}/restore`,{body:{contract_version:1},version:layout.version+1})).status,200);
+  const restored=(await request(url)).body.data.items;
+  assert.equal(restored.length,1);assert.equal(restored[0].runId,runId);assert.equal(restored[0].freshness.status,'HISTORICAL');
+})));
+
+test('concurrent check retries append once, history is bounded and forced RLS hides foreign evidence', {skip},async()=>fixture(async f=>server(f.people,async request=>{
+  const {planUrl,layout}=await prepared(f,request),url=`${planUrl}/check-runs`;
+  const body={contract_version:1,base_version:layout.version,snapshot_id:layout.snapshot.snapshotId},key=randomUUID();
+  const concurrent=await Promise.all([request(url,{body,key}),request(url,{body,key})]);
+  assert.deepEqual(concurrent.map(r=>r.status).sort(),[200,201]);
+  assert.equal(concurrent[0].body.data.runId,concurrent[1].body.data.runId);
+  const reordered={snapshot_id:body.snapshot_id,base_version:body.base_version,contract_version:1};
+  assert.equal((await request(url,{body:reordered,key})).status,200,'canonical hashing tolerates object key order');
+  const role=`rack_check_rls_${randomUUID().replaceAll('-','')}`,client=await pool.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query(`CREATE ROLE ${role} NOSUPERUSER NOBYPASSRLS NOLOGIN`);
+    await client.query(`GRANT USAGE ON SCHEMA public TO ${role}`);
+    await client.query(`GRANT SELECT ON rack_check_runs TO ${role}`);
+    await client.query(`SET LOCAL ROLE ${role}`);
+    for(const [scope,count] of [['',0],[f.b.projectId,0],[f.a.projectId,1]]) {
+      await client.query("SELECT set_config('app.project_id',$1,true)",[scope]);
+      assert.equal((await client.query('SELECT count(*)::int n FROM rack_check_runs')).rows[0].n,count);
+    }
+  } finally {await client.query('ROLLBACK');client.release();}
+  for(let i=0;i<20;i++) assert.equal((await request(url,{body})).status,201);
+  const page=(await request(url)).body.data;
+  assert.equal(page.items.length,20);assert.equal(page.hasOlder,true);assert.equal(page.limit,20);
+  assert.ok(!page.items.some(run=>run.runId===concurrent[0].body.data.runId));
+  assert.equal((await request(`${url}/${concurrent[0].body.data.runId}`)).status,200,'older evidence remains addressable');
+})));
+
 function designRequest(layout, patch={}) {
   return {contract_version:1,base_version:layout.version,snapshot_id:layout.snapshot.snapshotId,
     demand:{groups:[{modelId:'demo-gpu-4u',version:1,quantity:8},{modelId:'demo-tor-1u',version:1,quantity:2}],

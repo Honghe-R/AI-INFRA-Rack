@@ -43,7 +43,11 @@ Define aisle width/connectivity endpoints, egress criteria, maintenance-band sem
 
 ### Formal Validation and Candidate History
 
-Design version/checksum/rule-set binding, stale-run invalidation, report retention, candidate reproducibility and UI comparison. Decide whether jobs/workers are required and what cancellation/timeouts mean. No current endpoint is reserved by this document as an implemented feature.
+Saved scoped checks now bind version/snapshot/canonical SHA-256/ruleset and compute
+historical invalidation; JSON/CSV planning downloads are implemented. See
+[Saved Checks and Reports](check-history-and-reports.md). Formal validation gates,
+record retention, durable candidate reproducibility, comparison and worker/job
+semantics remain open. A saved scoped check cannot approve or publish a plan.
 
 ### Model Connections and Agent Expansion
 

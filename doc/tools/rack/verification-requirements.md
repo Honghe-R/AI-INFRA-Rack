@@ -1,5 +1,15 @@
 # Rack Planner Verification Requirements
 
+## Saved Check Evidence Supplement — 2026-10-31
+
+Saved checks require exact/concurrent retry deduplication, saved-version/snapshot
+matching, source locks, actor/scope permissions, no layout mutation, historical
+invalidation after edits, bounded summary reads, retained detail, soft-delete
+recovery and non-owner project RLS. Report downloads require fresh scope/version
+matching, installed/pending U intervals, unknown versus zero, CSV quoting/formula
+neutralization and permission/draft UI gates. These checks supplement the
+existing matrix below and do not constitute engineering certification.
+
 ## Validation Scope and Target Gating
 
 Verification distinguishes input validity, local spatial/equipment checks, candidate stageability, atomic persistence, Assistant integration and future formal engineering validation. Current state is DRAFT/NOT_RUN. Passing local tests or a green candidate does not create a formal Validation Run or certification.
