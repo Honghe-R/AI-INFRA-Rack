@@ -1167,6 +1167,13 @@ Docker 可能保留已下载的镜像缓存，本轮没有清理全局 Docker �
 - Both provisioning operations verified the active backend identity and organisation membership. A read-only database query confirmed the existing project roles for dev-user/dev-editor/dev-viewer; no role, member status, plan content or version was modified. Git ignores both activation-link files. No new code or tests were needed for account provisioning; round48 verification remains the implementation evidence.
 - Account opening and project-role assignment remain separate: operators provision a login, while authorized administrators use Project access to manage actual roles. Anonymous registration and a browser account-provisioning UI remain outside this increment. No teacher directory/platform access, staging, commits, pushes or remote changes.
 
+## 2026-10-31: Round50 — Read-only review of inherited authentication and permission design
+
+- User asked what authentication/permission settings the teacher platform provides. Read the Computer Use skill and guidance, then attempted its supported `sky.list_apps()` initialization. The native helper failed with `Computer Use native pipe is unavailable` / `os error 2`; no live teacher page was inspected and no teacher-side settings were changed.
+- As a clearly limited fallback, inspected only the Rack copy's inherited identity verifier/middleware, role presets and evaluator, self/admin API routes, development identities, account-menu comments, RBAC blueprint and deployment documentation. Confirmed the baseline design separates token authentication from scoped authorization, defines five role presets, provides catalog/role-mapping/assignment/membership APIs, and documents two-organisation/eight-identity development demonstrations. Rack-specific role keys and the new local password gateway are our additions, not evidence of teacher deployment features.
+- Distinguished implementation from plans: OIDC/JWKS verification and MFA/recent-auth guard helpers exist; this does not demonstrate a deployed SSO flow, enabled MFA, or route-level step-up enforcement. Blueprint administration requirements exceed the directly inspected routes, and live UI entry points/current teacher deployment settings remain unverified. No product tests were needed for this source-only review.
+- Only this progress record was changed. No business data, credentials, original teacher directory/platform, staging, commits, pushes or remotes were modified.
+
 ## 后续记录格式（第十七轮后沿用）
 
 每轮追加一个日期标题，至少写清：
