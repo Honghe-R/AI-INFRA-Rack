@@ -56,7 +56,7 @@ export function RackBulkRemoval({ kind, placements, equipment, savedPlacements =
   return <details className="rack-bulk-removal" open>
     <summary>Bulk remove {kind}</summary>
     <p className="rack-muted">{kind === 'racks'
-      ? 'Remove unlocked racks and keep their devices as unassigned inventory. Locked racks must be unlocked and saved first.'
+      ? 'Remove unlocked racks together with all devices installed in them. Unassigned devices and devices in other racks are kept. Locked racks must be unlocked and saved first.'
       : 'Remove selected devices from this plan, including installed devices.'} Changes enter the draft; Save layout to persist or Discard changes to undo.</p>
     {!editable && <p role="status">Bulk removal requires an editable draft.</p>}
     <div className="rack-bulk-filters">
@@ -92,7 +92,7 @@ export function RackBulkRemoval({ kind, placements, equipment, savedPlacements =
     {error && <p role="alert" className="rack-error">{error}</p>}
     {review && <div className="rack-bulk-review" role="group" aria-label="Confirm bulk removal">
       <p><strong>Delete {review.result.removedCount} {kind}?</strong> {kind === 'racks'
-        ? `${review.result.unassignedCount} installed devices will become unassigned. No devices will be deleted.`
+        ? `${review.result.removedDeviceCount} installed devices will also be deleted from this plan. Unassigned devices and devices in other racks will be kept.`
         : 'Selected devices will be removed from inventory and U slots.'}</p>
       <p>{items.filter(i => review.ids.includes(i.id)).slice(0, 10).map(i => i.name).join(', ')}{review.ids.length > 10 ? `, and ${review.ids.length - 10} more` : ''}</p>
       {!currentReview && <p role="alert">The layout changed. Review the selection again.</p>}

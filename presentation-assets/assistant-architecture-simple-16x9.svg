@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+<title id="title">Assistant 集成架构 · 简明版</title>
+<desc id="desc">用户通过聊天界面向后端发送请求，后端结合项目知识和模型调用受控 Rack 工具与业务服务，由服务读取或保存方案数据，并记录会话。中文黑体，英文 Arial。</desc>
+<defs><marker id="arrow" markerWidth="11" markerHeight="11" refX="9" refY="5.5" orient="auto-start-reverse" markerUnits="userSpaceOnUse"><path d="M0 0 L11 5.5 L0 11 Z" fill="#52677f"/></marker></defs>
+<rect width="1600" height="900" fill="#fff"/>
+<text x="60" y="85" font-size="46" text-anchor="start" fill="#172b46" font-family="Arial, SimHei"><tspan font-family="Arial">Assistant </tspan><tspan font-family="SimHei">集成架构</tspan><tspan font-family="Arial"> </tspan><tspan font-family="SimHei">·</tspan><tspan font-family="Arial"> </tspan><tspan font-family="SimHei">简明版</tspan></text>
+<text x="60" y="134" font-size="28" text-anchor="start" fill="#52677f" font-family="Arial, SimHei"><tspan font-family="SimHei">用户提需求，模型理解，后端执行与校验。</tspan></text>
+<polyline points="300,505 420,505" fill="none" stroke="#52677f" stroke-width="3" stroke-linejoin="round" marker-end="url(#arrow)" marker-start="url(#arrow)"/>
+<polyline points="720,505 830,505" fill="none" stroke="#52677f" stroke-width="3" stroke-linejoin="round" marker-end="url(#arrow)" marker-start="url(#arrow)"/>
+<polyline points="1130,505 1240,505" fill="none" stroke="#52677f" stroke-width="3" stroke-linejoin="round" marker-end="url(#arrow)" marker-start="url(#arrow)"/>
+<text x="360" y="477" font-size="23" text-anchor="middle" fill="#52677f" font-family="Arial, SimHei"><tspan font-family="SimHei">请求</tspan><tspan font-family="Arial">/</tspan><tspan font-family="SimHei">回复</tspan></text>
+<text x="775" y="477" font-size="23" text-anchor="middle" fill="#52677f" font-family="Arial, SimHei"><tspan font-family="SimHei">调用</tspan><tspan font-family="Arial">/</tspan><tspan font-family="SimHei">结果</tspan></text>
+<text x="1185" y="477" font-size="23" text-anchor="middle" fill="#52677f" font-family="Arial, SimHei"><tspan font-family="SimHei">读取</tspan><tspan font-family="Arial">/</tspan><tspan font-family="SimHei">保存</tspan></text>
+<polyline points="510,300 510,420" fill="none" stroke="#52677f" stroke-width="3" stroke-linejoin="round" marker-end="url(#arrow)" stroke-dasharray="8 7"/>
+<text x="470" y="370" font-size="24" text-anchor="middle" fill="#52677f" font-family="Arial, SimHei"><tspan font-family="SimHei">注入</tspan></text>
+<polyline points="980,300 980,350 650,350 650,420" fill="none" stroke="#52677f" stroke-width="3" stroke-linejoin="round" marker-end="url(#arrow)" marker-start="url(#arrow)"/>
+<text x="820" y="329" font-size="24" text-anchor="middle" fill="#52677f" font-family="Arial, SimHei"><tspan font-family="SimHei">模型调用</tspan><tspan font-family="Arial"> / </tspan><tspan font-family="SimHei">工具请求</tspan></text>
+<polyline points="570,590 570,660" fill="none" stroke="#52677f" stroke-width="3" stroke-linejoin="round" marker-end="url(#arrow)" marker-start="url(#arrow)" stroke-dasharray="8 7"/>
+<text x="623" y="635" font-size="23" text-anchor="middle" fill="#52677f" font-family="Arial, SimHei"><tspan font-family="SimHei">存取</tspan></text>
+<rect x="60" y="420" width="240" height="170" rx="14" fill="#edf4ff" stroke="#4675bc" stroke-width="2"/>
+<text x="180" y="496" font-size="34" text-anchor="middle" fill="#172b46" font-family="Arial, SimHei"><tspan font-family="SimHei">聊天界面</tspan></text>
+<text x="180" y="536" font-size="26" text-anchor="middle" fill="#52677f" font-family="Arial, SimHei"><tspan font-family="Arial">Ask about Rack</tspan></text>
+<rect x="420" y="420" width="300" height="170" rx="14" fill="#edf4ff" stroke="#4675bc" stroke-width="2"/>
+<text x="570" y="496" font-size="34" text-anchor="middle" fill="#172b46" font-family="Arial, SimHei"><tspan font-family="Arial">Assistant </tspan><tspan font-family="SimHei">后台</tspan></text>
+<text x="570" y="536" font-size="26" text-anchor="middle" fill="#52677f" font-family="Arial, SimHei"><tspan font-family="SimHei">身份校验</tspan><tspan font-family="Arial"> </tspan><tspan font-family="SimHei">·</tspan><tspan font-family="Arial"> </tspan><tspan font-family="SimHei">工具编排</tspan></text>
+<rect x="830" y="420" width="300" height="170" rx="14" fill="#edf8f3" stroke="#41866d" stroke-width="2"/>
+<text x="980" y="476" font-size="34" text-anchor="middle" fill="#172b46" font-family="Arial, SimHei"><tspan font-family="Arial">Rack </tspan><tspan font-family="SimHei">工具与服务</tspan></text>
+<text x="980" y="516" font-size="26" text-anchor="middle" fill="#52677f" font-family="Arial, SimHei"><tspan font-family="SimHei">查询</tspan><tspan font-family="Arial"> / </tspan><tspan font-family="SimHei">预览</tspan><tspan font-family="Arial"> / </tspan><tspan font-family="SimHei">应用</tspan></text>
+<text x="980" y="556" font-size="26" text-anchor="middle" fill="#52677f" font-family="Arial, SimHei"><tspan font-family="SimHei">权限与规则检查</tspan></text>
+<rect x="1240" y="420" width="300" height="170" rx="14" fill="#edf8f3" stroke="#41866d" stroke-width="2"/>
+<text x="1390" y="476" font-size="34" text-anchor="middle" fill="#172b46" font-family="Arial, SimHei"><tspan font-family="SimHei">方案数据</tspan></text>
+<text x="1390" y="516" font-size="26" text-anchor="middle" fill="#52677f" font-family="Arial, SimHei"><tspan font-family="Arial">PostgreSQL / PostGIS</tspan></text>
+<text x="1390" y="556" font-size="26" text-anchor="middle" fill="#52677f" font-family="Arial, SimHei"><tspan font-family="SimHei">方案版本与布局</tspan></text>
+<rect x="365" y="180" width="290" height="120" rx="14" fill="#f5f7fa" stroke="#a0adbd" stroke-width="2"/>
+<text x="510" y="231" font-size="34" text-anchor="middle" fill="#172b46" font-family="Arial, SimHei"><tspan font-family="Arial">Rack </tspan><tspan font-family="SimHei">项目知识</tspan></text>
+<text x="510" y="271" font-size="26" text-anchor="middle" fill="#52677f" font-family="Arial, SimHei"><tspan font-family="SimHei">领域指令</tspan><tspan font-family="Arial"> + </tspan><tspan font-family="SimHei">当前</tspan><tspan font-family="Arial"> Plan</tspan></text>
+<rect x="830" y="180" width="300" height="120" rx="14" fill="#f5f7fa" stroke="#a0adbd" stroke-width="2"/>
+<text x="980" y="231" font-size="34" text-anchor="middle" fill="#172b46" font-family="Arial, SimHei"><tspan font-family="SimHei">模型服务</tspan></text>
+<text x="980" y="271" font-size="26" text-anchor="middle" fill="#52677f" font-family="Arial, SimHei"><tspan font-family="SimHei">个人</tspan><tspan font-family="Arial"> API </tspan><tspan font-family="SimHei">连接</tspan></text>
+<rect x="420" y="660" width="300" height="110" rx="14" fill="#f5f7fa" stroke="#a0adbd" stroke-width="2"/>
+<text x="570" y="706" font-size="34" text-anchor="middle" fill="#172b46" font-family="Arial, SimHei"><tspan font-family="SimHei">会话记录</tspan></text>
+<text x="570" y="746" font-size="26" text-anchor="middle" fill="#52677f" font-family="Arial, SimHei"><tspan font-family="SimHei">数据库索引</tspan><tspan font-family="Arial"> + RustFS</tspan></text>
+<text x="60" y="820" font-size="27" text-anchor="start" fill="#172b46" font-family="Arial, SimHei"><tspan font-family="SimHei">修改经过权限检查、必要确认与事务保存；模型不直接写数据库。</tspan></text>
+<text x="60" y="865" font-size="24" text-anchor="start" fill="#52677f" font-family="Arial, SimHei"><tspan font-family="SimHei">实线：请求与返回</tspan><tspan font-family="Arial">    </tspan><tspan font-family="SimHei">虚线：知识注入与会话记录</tspan><tspan font-family="Arial">    API Key </tspan><tspan font-family="SimHei">仅由后端使用</tspan></text>
+</svg>

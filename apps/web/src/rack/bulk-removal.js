@@ -11,20 +11,16 @@ export function bulkRemoval({ kind, ids, placements, equipment, savedPlacements 
   if (kind === 'devices') return {
     placements,
     equipment: { ...equipment, devices: equipment.devices.filter(d => !selected.has(d.deviceId)) },
-    removedCount: ids.length, unassignedCount: 0,
+    removedCount: ids.length, removedDeviceCount: ids.length,
   };
   if ([...placements, ...savedPlacements].some(r => selected.has(r.rackId) && r.locked))
     throw new Error('Unlock and save locked racks before removing them.');
-  let unassignedCount = 0;
-  const devices = equipment.devices.map(d => {
-    if (!selected.has(d.rackId)) return d;
-    unassignedCount++;
-    return { ...d, rackId: null, startU: null };
-  });
+  const devices = equipment.devices.filter(d => !selected.has(d.rackId));
+  const removedDeviceCount = equipment.devices.length - devices.length;
   return {
     placements: placements.filter(r => !selected.has(r.rackId)),
     equipment: { ...equipment, devices, rackLimits: equipment.rackLimits.filter(l => !selected.has(l.rackId)) },
-    removedCount: ids.length, unassignedCount,
+    removedCount: ids.length, removedDeviceCount,
   };
 }
 

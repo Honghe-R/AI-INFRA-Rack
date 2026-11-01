@@ -220,7 +220,7 @@ export function RackEditor({
     onDraftChange({ ...draft, placements: result.placements, equipment: result.equipment });
     if (ids.includes(selectedId)) setSelectedId(null);
     setError(null);
-    setNotice(`Removed ${result.removedCount} racks from the draft; ${result.unassignedCount} devices kept as unassigned. Save layout to persist.`);
+    setNotice(`Removed ${result.removedCount} racks from the draft; ${result.removedDeviceCount} installed devices deleted with them. Save layout to persist.`);
   }
   function removeSelectedRack() {
     if (!editable || !selected || selectedPositionLocked ||

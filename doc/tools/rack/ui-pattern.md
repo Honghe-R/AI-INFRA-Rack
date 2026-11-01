@@ -75,8 +75,11 @@ changes restores the saved state. No new delete API or database migration is use
 
 Device removal deletes selected inventory entries, whether installed or pending.
 Rack removal deletes selected unlocked placements and their capacity-limit records,
-and unassigns their devices by clearing both rackId and startU. The review states
-the affected device count; it never silently deletes equipment. Locks in either
+and deletes all devices currently assigned to those racks from this Plan inventory.
+Unassigned devices and devices in other racks remain unchanged, as does the global
+catalog. The review explicitly states both the rack count and installed-device deletion
+count. Rack placements, installed equipment and capacity limits enter the same draft
+and ordinary atomic save; Discard restores them together. Locks in either
 the current draft or saved layout block rack removal, including an unsaved unlock.
 Unknown/stale selected IDs reject the whole action. Review becomes invalid if
 its underlying layout/equipment changes. Existing permission, source/version,

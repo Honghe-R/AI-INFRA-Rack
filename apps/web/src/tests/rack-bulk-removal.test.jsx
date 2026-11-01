@@ -31,19 +31,16 @@ test('batch device removal handles installed and unassigned inventory without ch
   assert.deepEqual(e, before);
 });
 
-test('batch rack removal unassigns equipment, removes limit references and preserves complete inventory with valid U state', () => {
+test('batch rack removal deletes installed equipment and limits while preserving unassigned inventory and other racks', () => {
   const e = equipment(), before = structuredClone({ e, placements });
   const result = bulkRemoval({ kind: 'racks', ids: ['a', 'b'], placements, equipment: e });
   assert.equal(result.removedCount, 2);
-  assert.equal(result.unassignedCount, 2);
+  assert.equal(result.removedDeviceCount, 2);
   assert.deepEqual(result.placements.map(r => r.rackId), ['c']);
   assert.deepEqual(result.equipment.rackLimits.map(l => l.rackId), ['c']);
-  assert.equal(result.equipment.devices.length, 4);
-  for (const d of result.equipment.devices.slice(0, 2)) {
-    assert.equal(d.rackId, null); assert.equal(d.startU, null);
-    assert.equal(d.weightKg, null); assert.deepEqual(d.catalogRef, e.devices[0].catalogRef);
-  }
-  assert.deepEqual(result.equipment.devices.slice(2), e.devices.slice(2));
+  assert.deepEqual(result.equipment.devices.map(d => d.deviceId), ['d3', 'd4']);
+  assert.deepEqual(result.equipment.devices, e.devices.slice(2));
+  assert.deepEqual(result.equipment.roomBudget, e.roomBudget);
   assert.equal(validateEditorEquipment(result.equipment, result.placements), null);
   assert.deepEqual({ e, placements }, before);
 });
@@ -69,7 +66,7 @@ test('saved draft snapshot and command identity remain intact; changes enter one
   const next = { ...draft, placements: result.placements, equipment: result.equipment };
   const body = layoutCheckBody(next);
   assert.equal(next.baseVersion, 3); assert.equal(next.planId, 'p'); assert.equal(next.attempt, null);
-  assert.equal(body.snapshot_id, 's'); assert.equal(body.placements.length, 1); assert.equal(body.equipment.devices.length, 4);
+  assert.equal(body.snapshot_id, 's'); assert.equal(body.placements.length, 1); assert.equal(body.equipment.devices.length, 2);
   assert.deepEqual(beginLayoutDraft(saved), draft);
   assert.equal(saved.equipment.devices[0].rackId, 'a');
 });
@@ -107,7 +104,8 @@ test('read-only users have no enabled selection or removal actions; saved locked
   const editor = render(true);
   assert.equal((editor.match(/type="checkbox" disabled=""/g) ?? []).length, 1);
   assert.match(editor, /Select filtered \(2\)/);
-  assert.match(editor, /keep their devices as unassigned inventory/);
+  assert.match(editor, /together with all devices installed in them/);
+  assert.match(editor, /Unassigned devices and devices in other racks are kept/);
 });
 
 test('batch unlock changes only draft locks; saved protection remains until unlock is saved', () => {
@@ -163,3 +161,24 @@ test('device panel includes bulk inventory actions and escapes untrusted labels'
   assert.equal((readonly.match(/type="checkbox" disabled/g)??[]).length,3);
   assert.match(readonly,/disabled="">Lock selected/);assert.match(readonly,/disabled="">Unlock selected/);
  });
+
+
+test('rack cascade counts every installed device, supports empty racks and keeps unassigned inventory when all racks are deleted', () => {
+  const unlocked = placements.map(r => ({ ...r, locked: false }));
+  const e = equipment();
+  e.devices.push(device('d5', 'a'));
+  const before = structuredClone(e);
+  const empty = bulkRemoval({ kind: 'racks', ids: ['a'], placements: unlocked, equipment: { ...e, devices: [device('pending', null)] } });
+  assert.equal(empty.removedDeviceCount, 0);
+  assert.equal(empty.equipment.devices[0].deviceId, 'pending');
+  const subset = bulkRemoval({ kind: 'racks', ids: ['a'], placements: unlocked, equipment: e });
+  assert.equal(subset.removedDeviceCount, 2);
+  assert.deepEqual(subset.equipment.devices.map(d => d.deviceId), ['d2', 'd3', 'd4']);
+  const all = bulkRemoval({ kind: 'racks', ids: ['a', 'b', 'c'], placements: unlocked, equipment: e });
+  assert.equal(all.removedDeviceCount, 4);
+  assert.deepEqual(all.placements, []);
+  assert.deepEqual(all.equipment.rackLimits, []);
+  assert.deepEqual(all.equipment.devices, [e.devices[3]]);
+  assert.equal(validateEditorEquipment(all.equipment, []), null);
+  assert.deepEqual(e, before);
+});
