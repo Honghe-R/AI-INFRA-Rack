@@ -22,7 +22,7 @@ test('both strategies are repeatable, compact racks and leave inputs unchanged',
   const result=await generateRackOptions(input);
   assert.deepEqual(result,await generateRackOptions(input));
   assert.equal(result.length,2);
-  for(const option of result){assert.equal(option.unplaced.length,0);assert.equal(option.metrics.envelopeAreaM2,4);assert.equal(option.metrics.movedRacks,2);}
+  for(const option of result){assert.equal(option.unplaced.length,0);assert.ok(Math.abs(option.metrics.envelopeAreaM2-4.4)<1e-8);assert.equal(option.metrics.movedRacks,1);}
   assert.deepEqual({...input,pickPosition:undefined},before);
 });
 test('locked cabinets keep every property, and largest-first orders heterogeneous sizes with stable ties', async()=>{
@@ -38,7 +38,7 @@ test('maintenance bands rotate physically with the proposal; geometry adapter co
   const constraints={...EMPTY_SPATIAL_CONSTRAINTS,clearance:{frontM:1,rearM:.5}};
   const g=plannerGeometry({...rack(1),xM:0,yM:0,rotationDeg:90},model,constraints.clearance);
   assert.equal(g.bands.length,2);assert.ok(g.bands[0].coordinates[0].every(p=>p[0]>=1));
-  const [option]=await generateRackOptions(fixture({constraints,options:{allow_rotation:true,strategy:'INPUT_ORDER'},pickPosition:async batch=>batch.findIndex(p=>p.placement.rotationDeg===90)}));
+  const [option]=await generateRackOptions(fixture({constraints,options:{allow_rotation:true,strategy:'INPUT_ORDER'},pickPosition:async batch=>{const i=batch.findIndex(p=>p.placement.rotationDeg===90);return i<0?null:i;}}));
   assert.ok(option.placements.every(p=>p.rotationDeg===90));
 });
 test('no accepted grid position retains original identities and distinguishes finite exhaustion from search limits', async()=>{
@@ -59,7 +59,12 @@ test('64 identical racks continue past occupied scan prefixes without exhausting
   const wide={...model,widthM:20};
   const placements=Array.from({length:64},(_,i)=>({...rack(i),name:`Unique ${i}`,xM:10+i*20,yM:1}));
   const input=fixture({placements,models:[wide],boundary:{type:'Polygon',coordinates:[[[0,0],[1600,0],[1600,2],[0,2],[0,0]]]},
-    options:{grid_step_m:.5,allow_rotation:false,strategy:'INPUT_ORDER'}});
+    options:{grid_step_m:.5,allow_rotation:false,strategy:'INPUT_ORDER'},
+    pickPosition:async(batch,placed)=>{
+      const i=batch.findIndex(g=>Math.abs(g.placement.xM*2-Math.round(g.placement.xM*2))<1e-8 &&
+        placed.every(p=>g.bounds.maxX<=p.bounds.minX || g.bounds.minX>=p.bounds.maxX || g.bounds.maxY<=p.bounds.minY || g.bounds.minY>=p.bounds.maxY));
+      return i<0?null:i;
+    }});
   const before=structuredClone(placements);
   const [option]=await generateRackOptions(input);
   assert.equal(option.unplaced.length,0);
@@ -69,9 +74,36 @@ test('64 identical racks continue past occupied scan prefixes without exhausting
 });
 
 test('continued searches recheck the unexamined batch suffix against newly placed racks', async()=>{
-  const [option]=await generateRackOptions(fixture({options:{grid_step_m:.5,allow_rotation:false,strategy:'INPUT_ORDER'}}));
+  const [option]=await generateRackOptions(fixture({options:{grid_step_m:.5,allow_rotation:false,strategy:'INPUT_ORDER'},
+    pickPosition:async(batch,placed)=>{
+      const i=batch.findIndex(g=>g.placement.yM===1 && Math.abs(g.placement.xM*2-Math.round(g.placement.xM*2))<1e-8 &&
+        placed.every(p=>g.bounds.maxX<=p.bounds.minX || g.bounds.minX>=p.bounds.maxX || g.bounds.maxY<=p.bounds.minY || g.bounds.minY>=p.bounds.maxY));
+      return i<0?null:i;
+    }}));
   assert.deepEqual(option.placements.map(p=>[p.xM,p.yM]),[[.5,1],[1.5,1]]);
   assert.notEqual(option.placements[0].rackId,option.placements[1].rackId);
+});
+
+test('160-rack extension stays beside existing rows instead of moving the unlocked group to a room corner', async()=>{
+  const fixed=Array.from({length:96},(_,i)=>({...rack(i),xM:45+(i%12)*1.2,yM:40+Math.floor(i/12)*3.2,locked:true}));
+  const moving=Array.from({length:64},(_,i)=>({...rack(i+96),xM:10+(i%8)*1.2,yM:10+Math.floor(i/8)*3.2}));
+  const input=fixture({placements:[...fixed,...moving],boundary:{type:'Polygon',coordinates:[[[0,0],[100,0],[100,100],[0,100],[0,0]]]},
+    options:{grid_step_m:.5,allow_rotation:true,strategy:'COMPARE'}});
+  const before=structuredClone(input.placements), rows=new Set(fixed.map(p=>p.yM));
+  const results=await generateRackOptions(input);
+  for(const option of results){
+    assert.equal(option.unplaced.length,0);
+    assert.deepEqual(option.placements.slice(0,96),fixed);
+    for(const p of option.placements.slice(96)){
+      assert.ok(rows.has(p.yM),'continues the existing row centers');
+      assert.ok(p.xM>30 && p.xM<75,'stays near the existing cluster');
+      const distance=Math.min(...option.placements.filter(q=>q.rackId!==p.rackId).map(q=>Math.hypot(p.xM-q.xM,p.yM-q.yM)));
+      assert.ok(distance<1.21,'every added rack has an adjacent neighbour');
+    }
+    assert.ok(option.positionsSubmitted<=PLANNER_LIMITS.posesPerOption);
+  }
+  assert.deepEqual(input.placements,before);
+  assert.deepEqual(results,await generateRackOptions(input));
 });
 
 test('all locked racks stay exact and bypass pose search; rotation streams remain independent', async()=>{

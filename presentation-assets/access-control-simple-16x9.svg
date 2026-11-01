@@ -1,22 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
 <title id="title">认证与权限管理架构 · 简明版</title>
-<desc id="desc">用户请求经过身份认证、当前项目的权限检查后进入 Rack 业务与数据。Viewer 可读与计算，Editor 可创建编辑保存，项目 Administrator 还可删除恢复和管理成员。Project access 维护成员角色与状态。</desc>
+<desc id="desc">用户请求经过身份认证、当前项目的权限检查后进入 Rack 业务与数据。上方仅展示 Viewer、Editor、Administrator 三个项目角色名称。Project access 维护成员角色与状态。</desc>
 <defs><marker id="arrow" markerWidth="11" markerHeight="11" refX="9" refY="5.5" orient="auto" markerUnits="userSpaceOnUse"><path d="M0 0 L11 5.5 L0 11 Z" fill="#52677f"/></marker></defs>
 <rect width="1600" height="900" fill="#fff"/>
 <text x="60" y="85" font-size="46" text-anchor="start" fill="#172b46"><tspan font-family="SimHei">认证与权限管理架构</tspan><tspan font-family="Arial"> </tspan><tspan font-family="SimHei">·</tspan><tspan font-family="Arial"> </tspan><tspan font-family="SimHei">简明版</tspan></text>
 <text x="60" y="134" font-size="28" text-anchor="start" fill="#52677f"><tspan font-family="SimHei">先确认用户身份，再检查当前项目允许的操作。</tspan></text>
-<rect x="60" y="200" width="440" height="160" rx="14" fill="#f5f7fa" stroke="#a0adbd" stroke-width="2"/>
-<text x="280" y="271" font-size="34" text-anchor="middle" fill="#172b46"><tspan font-family="Arial">Viewer</tspan></text>
-<text x="280" y="311" font-size="26" text-anchor="middle" fill="#52677f"><tspan font-family="SimHei">读取</tspan><tspan font-family="Arial"> </tspan><tspan font-family="SimHei">·</tspan><tspan font-family="Arial"> </tspan><tspan font-family="SimHei">检查</tspan><tspan font-family="Arial"> </tspan><tspan font-family="SimHei">·</tspan><tspan font-family="Arial"> </tspan><tspan font-family="SimHei">计算候选</tspan></text>
-<rect x="580" y="200" width="440" height="160" rx="14" fill="#f5f7fa" stroke="#a0adbd" stroke-width="2"/>
-<text x="800" y="251" font-size="34" text-anchor="middle" fill="#172b46"><tspan font-family="Arial">Editor</tspan></text>
-<text x="800" y="291" font-size="26" text-anchor="middle" fill="#52677f"><tspan font-family="Arial">Viewer </tspan><tspan font-family="SimHei">能力</tspan></text>
-<text x="800" y="331" font-size="26" text-anchor="middle" fill="#52677f"><tspan font-family="Arial">+ </tspan><tspan font-family="SimHei">创建</tspan><tspan font-family="Arial"> </tspan><tspan font-family="SimHei">·</tspan><tspan font-family="Arial"> </tspan><tspan font-family="SimHei">编辑</tspan><tspan font-family="Arial"> </tspan><tspan font-family="SimHei">·</tspan><tspan font-family="Arial"> </tspan><tspan font-family="SimHei">保存</tspan></text>
-<rect x="1100" y="200" width="440" height="160" rx="14" fill="#f5f7fa" stroke="#a0adbd" stroke-width="2"/>
-<text x="1320" y="251" font-size="31" text-anchor="middle" fill="#172b46"><tspan font-family="Arial">Administrator</tspan><tspan font-family="SimHei">（项目）</tspan></text>
-<text x="1320" y="291" font-size="26" text-anchor="middle" fill="#52677f"><tspan font-family="Arial">Editor </tspan><tspan font-family="SimHei">能力</tspan></text>
-<text x="1320" y="331" font-size="26" text-anchor="middle" fill="#52677f"><tspan font-family="Arial">+ </tspan><tspan font-family="SimHei">删除</tspan><tspan font-family="Arial"> / </tspan><tspan font-family="SimHei">恢复</tspan><tspan font-family="Arial"> </tspan><tspan font-family="SimHei">·</tspan><tspan font-family="Arial"> </tspan><tspan font-family="SimHei">成员管理</tspan></text>
-<path d="M280 360 V390 H1320 V360 M800 360 V390" fill="none" stroke="#a0adbd" stroke-width="2" stroke-dasharray="8 7"/>
+<rect x="110" y="240" width="340" height="100" rx="14" fill="#f5f7fa" stroke="#a0adbd" stroke-width="2"/>
+<text x="280" y="301" font-size="34" text-anchor="middle" fill="#172b46"><tspan font-family="Arial">Viewer</tspan></text>
+<rect x="630" y="240" width="340" height="100" rx="14" fill="#f5f7fa" stroke="#a0adbd" stroke-width="2"/>
+<text x="800" y="301" font-size="34" text-anchor="middle" fill="#172b46"><tspan font-family="Arial">Editor</tspan></text>
+<rect x="1150" y="240" width="340" height="100" rx="14" fill="#f5f7fa" stroke="#a0adbd" stroke-width="2"/>
+<text x="1320" y="301" font-size="34" text-anchor="middle" fill="#172b46"><tspan font-family="Arial">Administrator</tspan></text>
+<path d="M280 340 V390 H1320 V340 M800 340 V390" fill="none" stroke="#a0adbd" stroke-width="2" stroke-dasharray="8 7"/>
 <polyline points="940,390 940,470" fill="none" stroke="#52677f" stroke-width="3" stroke-linejoin="round" marker-end="url(#arrow)" stroke-dasharray="8 7"/>
 <text x="1110" y="431" font-size="24" text-anchor="middle" fill="#52677f"><tspan font-family="SimHei">默认角色</tspan><tspan font-family="Arial"> </tspan><tspan font-family="SimHei">→</tspan><tspan font-family="Arial"> </tspan><tspan font-family="SimHei">权限键</tspan></text>
 <polyline points="320,545 410,545" fill="none" stroke="#52677f" stroke-width="3" stroke-linejoin="round" marker-end="url(#arrow)"/>
@@ -45,8 +40,5 @@
 <rect x="720" y="710" width="440" height="100" rx="14" fill="#f5f7fa" stroke="#a0adbd" stroke-width="2"/>
 <text x="940" y="751" font-size="30" text-anchor="middle" fill="#172b46"><tspan font-family="Arial">Project access</tspan></text>
 <text x="940" y="791" font-size="26" text-anchor="middle" fill="#52677f"><tspan font-family="SimHei">授权管理员管理成员</tspan></text>
-<text x="60" y="701" font-size="27" text-anchor="start" fill="#172b46"><tspan font-family="SimHei">身份无效：</tspan><tspan font-family="Arial">401</tspan></text>
-<text x="60" y="746" font-size="27" text-anchor="start" fill="#172b46"><tspan font-family="SimHei">权限不足：</tspan><tspan font-family="Arial">403</tspan></text>
-<text x="60" y="791" font-size="25" text-anchor="start" fill="#52677f"><tspan font-family="SimHei">前端控制按钮；后端决定能否执行。</tspan></text>
 <text x="60" y="862" font-size="26" text-anchor="start" fill="#52677f"><tspan font-family="SimHei">角色按项目分配；图示为默认预设，有效权限还可能来自组织或全局授权。</tspan></text>
 </svg>

@@ -154,6 +154,11 @@ with a specific explanation; the UI never changes locks automatically. Existing
 equipment assignments remain unchanged by relocation. Automatic device allocation
 is a separate operation and excludes locked racks as installation targets.
 
+Candidates first extend the existing rack rows, matching nearby row directions
+and preferring a compact body envelope. They propose adjacent positions around
+locked/already placed racks before using the room grid as a fallback. Obstacles
+and maintenance clearances remain enforced by the server for every position.
+
 Within each strategy, identical model/orientation searches continue past rejected
 or occupied grid prefixes; unexamined suffixes are rechecked against newly placed
 racks. Geometry batches reuse parsed shapes and bounding-box rejection before exact

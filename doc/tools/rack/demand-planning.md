@@ -73,7 +73,7 @@ Unknown device resources, unplaced equipment, actual spatial/resource conflicts 
 
 ## Other Planning Operations
 
-Existing-rack relocation compares row-scan-v1 and largest-first-v1, preserves devices/U assignments and saved locked rack geometry, and uses a configurable 0.1–5m grid. Bounds: 64 movable racks, 2,048 submitted poses per rack, 16,384 per option, batches of 128.
+Existing-rack relocation compares row-scan-v1 and largest-first-v1 (retained compatibility IDs), preserves devices/U assignments and saved locked rack geometry, and first extends existing rows with compact adjacent positions. It prefers matching row directions and smaller body envelopes, using a gap of min(0.2m, grid step) between body/maintenance envelopes. Adjacent poses need not lie on the room-origin grid; the configurable 0.1–5m grid is a fallback. All poses receive authoritative geometry checks. Shared bounds: 64 movable racks, 2,048 submitted poses per rack, 16,384 per option; adjacent batches up to32 and fallback grid batches up to128.
 
 Automatic equipment allocation changes only unassigned devices. It sorts descending height with stable ID ties, scans contiguous U gaps in unlocked racks and checks weight/power/cooling plus optional room budget. Bounds: 128 pending devices, 64 eligible racks, rack height at most 100U. Installed assignments and all rack positions stay unchanged. Unknown/oversized/room-blocked devices remain unassigned with reasons.
 

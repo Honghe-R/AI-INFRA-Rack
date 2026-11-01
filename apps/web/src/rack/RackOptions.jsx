@@ -3,7 +3,7 @@ import { RoomFloorplan } from './RackRoomView.jsx';
 import { rackError } from './rack-plan-state.js';
 import { optionStageReason, stageRackOption } from './rack-options-state.js';
 
-const label = id => id === 'row-scan-v1' ? 'Row scan · baseline' : 'Largest first · heuristic';
+const label = id => id === 'row-scan-v1' ? 'Compact rows · saved order' : 'Compact rows · largest first';
 const number = n => Number(n.toFixed(3)).toLocaleString();
 
 export function RackOptions({ client, layout, draft, canWrite, onDraftChange, onNavigate }) {
@@ -39,14 +39,14 @@ export function RackOptions({ client, layout, draft, canWrite, onDraftChange, on
   }
   return <section className="rack-options" aria-label="Rack layout options">
     <h3>Generate and compare layouts</h3>
-    <p>Relocate the existing unlocked racks; keep locked positions, identities, equipment assignments and capacity assumptions. Search uses the fixed room Polygon, holes, exclusion zones and declared front/rear clearances.</p>
-    <p className="rack-muted">Two deterministic greedy strategies, with bounded grid search. Neither guarantees an optimum or proves that a room is full. No device allocation, connected-aisle planning or engineering certification is performed.</p>
+    <p>Place unlocked racks beside the existing rows, extending the cluster before searching the room grid. Keep locked positions, identities, equipment assignments and capacity assumptions. Search respects the fixed room Polygon, holes, exclusion zones and declared front/rear clearances.</p>
+    <p className="rack-muted">Two deterministic greedy strategies, with bounded adjacent-position and grid search. Neither guarantees an optimum or proves that a room is full. No device allocation, connected-aisle planning or engineering certification is performed.</p>
     <form className="rack-card" onSubmit={generate} aria-label="Layout search parameters">
       <div className="rack-form-fields">
         <label>Grid step (m)<input type="number" min="0.1" max="5" step="0.1" required disabled={pending}
           value={Number.isFinite(step) ? step : ''} onChange={e => setStep(e.target.value === '' ? NaN : Number(e.target.value))} /></label>
         <label>Strategy<select value={strategy} disabled={pending} onChange={e => setStrategy(e.target.value)}>
-          <option value="COMPARE">Compare both strategies</option><option value="INPUT_ORDER">Saved rack order / row scan</option><option value="LARGEST_FIRST">Largest footprint first</option>
+          <option value="COMPARE">Compare both strategies</option><option value="INPUT_ORDER">Compact rows / saved rack order</option><option value="LARGEST_FIRST">Compact rows / largest footprint first</option>
         </select></label>
       </div>
       <label className="rack-option-check"><input type="checkbox" checked={rotate} disabled={pending} onChange={e => setRotate(e.target.checked)} />Allow quarter-turn rotations</label>
