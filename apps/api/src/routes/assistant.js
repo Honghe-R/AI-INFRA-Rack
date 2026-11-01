@@ -17,7 +17,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
  * `uiActions`, `entities`, `usage`, `trace` — and `status` distinguishes a
  * completed turn from one that stopped at a confirmation gate.
  */
-export function registerAssistantRoutes(router, { orchestrator, sessionService = null, usageService = null, provider = null, models = [], redact = (value) => value, connections = null, resolveTurn = null, developer = null }) {
+export function registerAssistantRoutes(router, { orchestrator, sessionService = null, usageService = null, provider = null, models = [], redact = (value) => value, connections = null, resolveTurn = null, developer = null, cli = null }) {
   if (!orchestrator) throw new Error('registerAssistantRoutes requires an assistant orchestrator.');
   const developerContext = ctx => ({ workspaceId: ctx.query.project_id, initiatedBy: { userId: ctx.user.userId }, requestId: ctx.correlationId });
   router.get('/api/v1/assistant/developer/status', async ctx => {
@@ -40,9 +40,12 @@ export function registerAssistantRoutes(router, { orchestrator, sessionService =
    * would be wrong the moment the gateway or model changed, which is exactly the sort of
    * thing a demo is expected to change.
    */
-  router.get('/api/v1/assistant/provider', async ({ user }) => {
+  router.get('/api/v1/assistant/provider', async ({ user, query }) => {
+    const mode = connectionMode(query?.connection_mode);
+    const cliInfo = cli ? await cli.status(user.userId) : { available: false };
+    if (mode === 'codex-cli') return { data: { ...cliInfo, connectionMode: mode, cliAvailable: cliInfo.available === true } };
     const personal = connections ? await connections.get(user.userId) : null;
-    return { data: personal ?? {
+    return { data: { ...(personal ?? {
       provider: provider?.name ?? null,
       model: provider?.model ?? null,
       host: provider?.host ?? null,
@@ -50,7 +53,7 @@ export function registerAssistantRoutes(router, { orchestrator, sessionService =
       // a text box. The client picks from this list and the route below re-checks it.
       models,
       ...(connections ? { configured: Boolean(provider?.host && provider?.model), personalSetup: true } : {}),
-    } };
+    }), connectionMode: 'api', cliAvailable: cliInfo.available === true, cliReason: cliInfo.reason ?? null } };
   });
 
   if (connections) {
@@ -72,6 +75,8 @@ export function registerAssistantRoutes(router, { orchestrator, sessionService =
   router.post('/api/v1/assistant/chat', async (ctx) => {
     const { json, user, correlationId, response, query } = ctx;
     const body = await json();
+    const mode = connectionMode(body.connection_mode);
+    if (mode === 'codex-cli' && !cli) throw new ApiError('CODEX_CLI_UNAVAILABLE', 'Local CLI mode is unavailable.', { status: 503 });
     let permissionMode;
     try { permissionMode = normalizePermissionMode(body.permission_mode); }
     catch (error) { throw toApiError(error); }
@@ -137,7 +142,7 @@ export function registerAssistantRoutes(router, { orchestrator, sessionService =
 
     try {
       turnHost = resolveTurn ? await resolveTurn({ userId: user.userId, connectionId: body.connection_id ?? null,
-        connectionVersion: body.connection_version ?? null }) : null;
+        connectionVersion: body.connection_version ?? null, connectionMode: mode, surface: context.surface }) : null;
       const selectedModel = requestedModel(body.model, turnHost?.models ?? models);
       let turnContextKey = body.context_key ?? body.contextKey;
       if (turnHost?.connectionId) {
@@ -236,6 +241,12 @@ function requestedModel(requested, allowed) {
     throw new ApiError('MODEL_NOT_ALLOWED', `This deployment does not offer the model "${requested}".`, { status: 400 });
   }
   return requested;
+}
+
+function connectionMode(value) {
+  if (value === undefined || value === 'api') return 'api';
+  if (value === 'codex-cli') return value;
+  throw new ApiError('ASSISTANT_MODE_INVALID', 'Connection mode must be api or codex-cli.', { status: 400 });
 }
 
 function requirePersistence(sessionService) {

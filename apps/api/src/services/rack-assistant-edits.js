@@ -6,8 +6,9 @@ import { normalizeEditableLayout, normalizeEquipment, normalizeSpatialConstraint
 
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const reject=(message,code='RACK_ASSISTANT_ARGUMENTS_INVALID',status=400)=>{throw new ApiError(code,message,{status});};
-function fields(input,keys) {
-  if(!input||typeof input!=='object'||Array.isArray(input)||Object.keys(input).some(k=>!keys.includes(k))) reject('Unexpected or malformed edit arguments.');
+function fields(input,keys,label='edit arguments') {
+  if(!input||typeof input!=='object'||Array.isArray(input)) reject(`${label} must be an object.`);
+  if(Object.keys(input).some(k=>!keys.includes(k))) reject(`Unexpected fields in ${label}. Allowed fields: ${keys.join(', ')}. Omit all other fields, including null/empty placeholders.`);
 }
 function exact(items,value,idKey,label) {
   if(typeof value!=='string'||!value.trim()||value.length>160) reject(`Provide an exact ${label} name or identifier.`);
@@ -31,7 +32,7 @@ export function buildRackAssistantEdit(layout,operations) {
       REMOVE_DEVICES:['type','devices'], REMOVE_RACKS:['type','racks','unassign_devices'],
       SET_RACK_LOCK:['type','rack','locked'],SET_RACK_LIMITS:['type','rack','max_weight_kg','max_power_kw','max_cooling_kw'],
       SET_OBSTACLE:['type','obstacle','name','x_m','y_m','width_m','depth_m'],REMOVE_OBSTACLES:['type','obstacles']}[op?.type];
-    if(!allowed) reject('Unsupported edit operation.'); fields(op,allowed);
+    if(!allowed) reject('Unsupported edit operation.'); fields(op,allowed,op.type);
     if(op.type==='ADD_RACK') {
       const model=layout.models.find(m=>m.modelId===op.model_id);
       if(!model) reject('Use a rack model identifier returned by rack_read_plan.');
@@ -40,7 +41,7 @@ export function buildRackAssistantEdit(layout,operations) {
       if(op.locked!==undefined&&typeof op.locked!=='boolean') reject('locked must be boolean.');
       const columns=count===1?1:op.columns;
       if(!Number.isSafeInteger(columns)||columns<1||columns>128) reject('Provide columns for a rack batch.');
-      const dx=count===1?0:finite(op.step_x_m,'step_x_m',0.001,1000),dy=count===1?0:finite(op.step_y_m,'step_y_m',0.001,1000);
+      const dx=count===1?0:finite(op.step_x_m,'step_x_m',Math.min(columns,count)>1?0.001:0,1000),dy=count===1?0:finite(op.step_y_m,'step_y_m',count>columns?0.001:0,1000);
       for(let i=0;i<count;i++) draft.placements.push({rackId:randomUUID(),modelId:model.modelId,name:count===1?op.name:`${op.name} ${i+1}`,
         xM:finite(op.x_m,'x_m')+(i%columns)*dx,yM:finite(op.y_m,'y_m')+Math.floor(i/columns)*dy,rotationDeg:op.rotation_deg??0,locked:op.locked??true});
       changes.push(`Add ${count===1?'rack':`${count} racks`} ${JSON.stringify(op.name)} using model ${model.modelId}; position lock ${op.locked??true}.`);
@@ -188,7 +189,7 @@ export function createRackAssistantEdits({pool,layouts,authorize}) {
         [randomUUID(),ctx.workspaceId,layout.planId,ctx.initiatedBy.userId,layout.version,layout.snapshot.snapshotId,JSON.stringify(body),JSON.stringify(changes),randomUUID()])).rows[0];
       });
       return {canApply:true,persisted:false,planId:layout.planId,proposalId:row.proposal_id,expiresAt:row.expires_at,baseVersion:layout.version,changes,
-        report:checks.report,equipmentReport:checks.equipmentReport,validationState:'NOT_RUN',nextStep:'Explain the exact changes and incomplete scope, then call rack_apply_changes with this proposal_id. The user must confirm before any layout is saved.'};
+        report:checks.report,equipmentReport:checks.equipmentReport,validationState:'NOT_RUN',nextStep:'Explain the exact changes and incomplete scope, then call rack_apply_changes with this proposal_id. Follow the active operation mode: Ask requires the confirmation card; Full authorization saves directly for an explicit authorized request. Account permissions and save checks always apply.'};
   }
   return {
     async preview(ctx,args) {

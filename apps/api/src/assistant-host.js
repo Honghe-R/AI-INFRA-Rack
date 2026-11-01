@@ -17,6 +17,7 @@ import { createDeveloperWorkspace } from './services/developer-workspace.js';
 import { createDeveloperSurface } from './services/developer-assistant.js';
 import { createRackKnowledge, rackAgentDigest } from './services/rack-knowledge.js';
 import { createRackAgentActions, createRackRoomReader, targetRackCapabilities } from './services/rack-agent-actions.js';
+import { createCodexCliConnection } from './services/assistant-codex-cli.js';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -29,10 +30,11 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
  * the provider loop, bounding, entity references, prompt composition, session and
  * usage persistence — belongs to `@ai-infra/assistant`.
  */
-export async function createAssistantHostFor({ config, pool, secrets, guard, logger = null, toolSurface = null, connections = null }) {
+export async function createAssistantHostFor({ config, pool, secrets, guard, logger = null, toolSurface = null, connections = null, cli = null }) {
   // Personal setup remains available without a deployment-wide model.
   const factory = connections && !config.llmEndpoint ? null : createProviderFromConfig({ config, secrets });
   const redact = createRedactor([await resolveCredentialValue(config, secrets)]);
+  const localCli = cli ?? createCodexCliConnection({ pool });
 
   // The facility surface is the tool's own declaration of what the model may call.
   // It is bound to the same executor the HTTP routes use, so a model turn and a UI
@@ -107,10 +109,18 @@ export async function createAssistantHostFor({ config, pool, secrets, guard, log
     ...host,
     redact,
     connections,
+    cli: localCli,
     developer,
-    ...(connections ? {
-      async resolveTurn({ userId, connectionId, connectionVersion }) {
-        const personal = await connections.get(userId);
+    ...{
+      async resolveTurn({ userId, connectionId, connectionVersion, connectionMode = 'api', surface }) {
+        if (connectionMode === 'codex-cli') {
+          if (surface !== 'rack') throw new ApiError('CODEX_CONTEXT_INVALID', 'CLI mode is available in the Rack assistant.', { status: 400 });
+          const connection = await localCli.open(userId, connectionId, connectionVersion);
+          return { ...assemble(connection.provider, connection.redact), models: connection.models,
+            redact: connection.redact, connectionId: connection.connectionId, connectionVersion: connection.version,
+            model: connection.model, release: connection.release };
+        }
+        const personal = connections ? await connections.get(userId) : null;
         if (!personal) {
           if (connectionId != null) throw new ApiError('ASSISTANT_CONNECTION_CHANGED', 'Your model connection was deleted. Reload the connection settings.', { status: 412 });
           return { orchestrator: host.orchestrator, models: config.llmModels ?? [], redact, release() {} };
@@ -122,7 +132,7 @@ export async function createAssistantHostFor({ config, pool, secrets, guard, log
             connectionVersion: connection.version, model: connection.model, release: connection.release };
         } catch (error) { connection.release(); throw error; }
       },
-    } : {}),
+    },
     // The menu the route validates against. Empty means the deployment offers no choice.
     models: config.llmModels ?? [],
     provider: {

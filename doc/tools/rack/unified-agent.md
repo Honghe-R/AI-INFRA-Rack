@@ -48,6 +48,15 @@ Bound model rounds, tool outputs, operation quantities and algorithm invocations
 record completed/failed tool rounds in existing session history. Failure is never
 reported as success. Default tests use scripted local providers, with no paid API.
 
+Edit operations use separate JSON Schema anyOf branches, each with only its own
+fields and required keys. Catalog and custom device additions also have separate
+branches. The runtime rejects fields from other operations, including empty/null
+placeholders, and returns the operation's allowed keys so the model can repair a
+request in the same turn. Rack batch coordinates are centres in metres; a zero
+step is accepted only on an axis unused by the batch (one column or one row).
+Malformed arguments do not bypass the two-preview budget, geometric checks or
+the owner/version-bound proposal/apply path.
+
 Unified limits are 8 model rounds, 16 total calls and 900 output tokens per
 completion; existing aggregate tools also retain their 10-call/one-generation cap.
 Private source tools retain 12 calls/2 commands/60 seconds per command. These do

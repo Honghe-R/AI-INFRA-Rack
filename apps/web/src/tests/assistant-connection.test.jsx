@@ -82,3 +82,16 @@ test('connection management uses authenticated uncached cancellable API calls; o
   assert.equal(calls[2].options.body, '{"connectionId":"a","version":1}');
   assert.ok(!calls[3].options.body.includes('apiKey'));
 });
+
+test('CLI selector preserves the API option and locks during turns; CLI transport and sessions stay separate',async()=>{
+  const cli={connectionMode:'codex-cli',connectionId:'local-cli',version:'config-v1',model:'model',configured:true,cliAvailable:true,host:'gateway'};
+  const html=renderToStaticMarkup(<AssistantComposer open toolLabel="Rack" provider={cli} connectionMode="codex-cli"
+    onConnectionModeChange={()=>{}} streaming />);
+  assert.match(html,/aria-label="Assistant connection mode"/);assert.match(html,/Model API/);assert.match(html,/Local Codex CLI/);
+  assert.match(html,/value="codex-cli" selected=""/);assert.match(html,/Rack permissions and confirmation/);
+  assert.doesNotMatch(html,/Set up AI connection/);
+  const requests=[],transport=createAssistantTransport({async sendAssistantTurn(body){requests.push(body);return {data:{}};}},cli);
+  await transport.sendTurn({messages:[],contextKey:connectionSessionKey('rack',cli),context:{}});
+  assert.equal(requests[0].connection_mode,'codex-cli');assert.equal(requests[0].connection_version,'config-v1');
+  assert.notEqual(connectionSessionKey('rack',cli),connectionSessionKey('rack',{connectionId:'api',version:1,model:'model'}));
+});

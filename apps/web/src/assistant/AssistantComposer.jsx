@@ -46,6 +46,8 @@ export function AssistantComposer({
   onDetach = () => {},
   usage = [],
   provider = null,
+  connectionMode = 'api',
+  onConnectionModeChange = null,
   models = [],
   model = null,
   onModelChange = null,
@@ -295,7 +297,7 @@ export function AssistantComposer({
   const hasModelChoice = models.length > 1 && Boolean(onModelChange);
   const fileInputRef = useRef(null);
 
-  const providerLabel = [provider?.host, hasModelChoice ? null : provider?.model].filter(Boolean).join(' · ');
+  const providerLabel = [provider?.connectionMode === 'codex-cli' ? 'Codex CLI' : null, provider?.host, hasModelChoice ? null : provider?.model].filter(Boolean).join(' · ');
   const providerTitle = [provider?.host, provider?.model, provider?.provider && `over ${provider.provider}`]
     .filter(Boolean)
     .join(' · ');
@@ -446,7 +448,16 @@ export function AssistantComposer({
           </div>
         </header>
 
-        {connectionClient ? <AssistantConnection client={connectionClient} forceSetup={!connectionPending && provider?.configured === false}
+        {onConnectionModeChange ? <label className="assistant__model">Connection
+          <select className="assistant__model-select" aria-label="Assistant connection mode" value={connectionMode}
+            disabled={streaming || connectionPending} onChange={event => onConnectionModeChange(event.target.value)}>
+            <option value="api">Model API</option>
+            <option value="codex-cli" disabled={!provider?.cliAvailable && connectionMode !== 'codex-cli'}>Local Codex CLI</option>
+          </select>
+        </label> : null}
+        {connectionMode === 'codex-cli' ? <p className="assistant__notices">Uses the backend computer’s Codex connection. Rack permissions and confirmation rules still apply.
+          {provider?.reason ? ` ${provider.reason}` : ''}</p> : null}
+        {connectionClient && connectionMode === 'api' ? <AssistantConnection client={connectionClient} forceSetup={!connectionPending && provider?.configured === false}
           onChanged={onConnectionChange} disabled={streaming} /> : null}
         {connectionPending ? <p className="assistant__notices" role="status">Loading model connection…</p> : null}
         {connectionError ? <p className="assistant__notices" role="alert">{connectionError} <button type="button" onClick={onConnectionChange}>Reload connection info</button></p> : null}

@@ -1,5 +1,17 @@
 # Ask about Rack：首次配置与持久连接
 
+## 本地 Codex CLI（2026-11-01，Round76）
+
+进入项目 → Rack → Ask about Rack，在 `Connection` 选择 `Local Codex CLI` 即可使用运行后端的这台电脑已有的 Codex 模型连接。`Model API` 仍是默认方式，已有地址、模型和加密 Key 保留，可以随时切回。刷新或切换工具后恢复 API 模式；两种连接使用独立会话上下文，切换时停止旧会话，操作授权重新确认。CLI 失败时显示错误，不自动切到 API。
+
+此接入把 CLI 作为结构化模型提供方：后端通过 stdin 发送有界对话与平台工具定义，CLI 用 JSON 返回回答或工具请求，原 Assistant Host 继续负责 Rack 工具执行、账号权限、操作确认、预算、保存校验和审计。它没有另建 MCP 服务。CLI 原生 shell、文件修改、浏览器、MCP、hooks、插件等能力关闭，运行目录是临时目录；开发代理工作区仍是平台原有的独立能力。
+
+CLI 使用后端机器的本地凭证，默认只向本机 `dev-user` 账号开放，其他登录用户不能借用该凭证。服务端可用 `ASSISTANT_CODEX_ENABLED=0` 关闭，用 `ASSISTANT_CODEX_SUBJECTS` 指定逗号分隔的允许账号 subject，或用 `ASSISTANT_CODEX_CLI_PATH` 指定绝对 `.exe`/`.js` 路径。管理员修改环境变量后需重启后端。不要把本机凭证分发到浏览器。
+
+当前读取本地配置中显式的 `model`、`model_provider` 和所选 provider 的简单传输字段（name/base_url/wire_api/env_key/requires_openai_auth），不复制普通用户配置中的通知、MCP、hooks 或项目指令。需要对应凭证环境变量可被后端读取；模型或凭证变化会使旧连接版本失效。复杂 profile/额外认证 header 等配置暂不支持。
+
+每轮模型调用超时 90 秒，每账号同时最多一个 CLI 子进程，取消会结束所拥有的进程树并清理临时目录。每轮启动独立 ephemeral CLI、重发有界对话，不复用原生 CLI 会话，因此会有启动延迟及额外 token 开销；继续使用原中转站时消耗该站额度。本轮没有新增依赖或数据库迁移。真实平台只读工具查询与浏览器验收记录见 PROGRESS.md Round76。
+
 2026-10-29，第二十五轮。本文先确定本轮实现契约，实际验证与遗留范围见 PROGRESS.md。
 
 ## 用户流程

@@ -16,6 +16,55 @@ const base=()=>({projectId:randomUUID(),planId:randomUUID(),snapshot:{snapshotId
   constraints:structuredClone(EMPTY_SPATIAL_CONSTRAINTS),equipment:structuredClone(EMPTY_EQUIPMENT)});
 const addRack={type:'ADD_RACK',model_id:example.model.modelId,name:'Rack',x_m:2,y_m:2};
 
+test('edit tool branches isolate rack additions from catalog/device/obstacle fields',()=>{
+  const cap=createRackAssistantSurface({layouts:{},authorize:async()=>true,edits:{preview:async()=>{}}}).capabilities.find(c=>c.name==='rack_preview_changes');
+  const branches=cap.inputSchema.properties.operations.items.anyOf;
+  const add=branches.find(s=>s.properties.type.enum[0]==='ADD_RACK');
+  assert.ok(add);assert.equal(add.additionalProperties,false);
+  for(const key of ['catalog_model_id','height_u','width_m','depth_m','device','obstacle','max_power_kw'])assert.equal(Object.hasOwn(add.properties,key),false,key);
+  const layout=base();
+  const polluted={...addRack,catalog_model_id:'unused',height_u:42,device:'',rack:null};
+  assert.throws(()=>buildRackAssistantEdit(layout,[polluted]),e=>e.code==='RACK_ASSISTANT_ARGUMENTS_INVALID'&&/ADD_RACK.*Allowed fields:.*model_id/.test(e.message));
+  const clean={...addRack,quantity:8,columns:8,step_x_m:0.8,step_y_m:0};
+  const result=buildRackAssistantEdit(layout,[clean]);
+  assert.equal(result.body.placements.length,8);assert.equal(result.body.equipment.devices.length,0);
+  assert.ok(result.body.placements.every(p=>p.yM===2));
+  assert.equal(layout.placements.length,0);
+});
+
+test('rack batches allow zero steps only on axes without a second rack',()=>{
+  const layout=base();
+  const vertical=buildRackAssistantEdit(layout,[{...addRack,quantity:8,columns:1,step_x_m:0,step_y_m:3}]);
+  assert.equal(vertical.body.placements.length,8);assert.ok(vertical.body.placements.every(p=>p.xM===2));
+  for(const batch of [{quantity:8,columns:8,step_x_m:0,step_y_m:0},{quantity:8,columns:1,step_x_m:0,step_y_m:0},
+    {quantity:8,columns:4,step_x_m:0.8,step_y_m:0},{quantity:8,columns:8,step_x_m:0.8,step_y_m:-1}])
+    assert.throws(()=>buildRackAssistantEdit(layout,[{...addRack,...batch}]),e=>e.code==='RACK_ASSISTANT_ARGUMENTS_INVALID');
+});
+
+test('Full authorization recovers malformed additions, previews eight racks, saves and verifies in one turn',async()=>{
+  const layout=base(),ctx=context();let previews=0,applies=0,readbacks=0,round=0;
+  const proposal=randomUUID();let saved=structuredClone(layout);
+  const toolResult=request=>JSON.parse(request.messages.filter(m=>m.role==='tool').at(-1).content);
+  const edits={preview:async(_ctx,args)=>{
+    const built=buildRackAssistantEdit(saved,args.operations);previews++;
+    return {canApply:true,proposalId:proposal,changes:built.changes};
+  },apply:async(_ctx,args)=>{assert.equal(args.proposal_id,proposal);applies++;saved={...saved,...buildRackAssistantEdit(saved,[{...addRack,quantity:8,columns:8,step_x_m:0.8,step_y_m:0}]).body,version:2};return {persisted:true,planId:saved.planId,appliedVersion:2};}};
+  const layouts={get:async()=>{readbacks++;return saved;},check:async()=>({report:{diagnostics:[]},equipmentReport:{diagnostics:[]}})};
+  const rack=createRackAssistantSurface({layouts,edits,authorize:async()=>true});
+  const host=createAssistantHost({surfaces:[rack.surface],guides:[rack.guide],capabilities:rack.capabilities,authorize:async()=>true,
+    resolveScope:async()=>({surface:'rack',workspaceId:ctx.workspaceId}),provider:{async complete(request){
+      round++;let name,args;
+      if(round===1){name='rack_preview_changes';args={base_version:1,operations:[{...addRack,height_u:42}]};}
+      else if(round===2){assert.match(JSON.stringify(toolResult(request)),/Allowed fields/);name='rack_preview_changes';args={base_version:1,operations:[{...addRack,quantity:8,columns:8,step_x_m:0.8,step_y_m:0}]};}
+      else if(round===3){assert.match(JSON.stringify(toolResult(request)),new RegExp(proposal));name='rack_apply_changes';args={proposal_id:proposal};}
+      else {assert.match(JSON.stringify(toolResult(request)),/matchesAppliedVersion/);return {choices:[{message:{role:'assistant',content:'已添加8个空机柜，保存版本v2。'}}]};}
+      return {choices:[{message:{role:'assistant',tool_calls:[{id:`call-${round}`,type:'function',function:{name,arguments:JSON.stringify(args)}}]}}]};
+    }}});
+  const result=await host.orchestrator.runTurn({contextKey:'add-eight',context:{userId:ctx.initiatedBy.userId,surface:'rack'},permissionMode:'full',messages:[{role:'user',content:'新增8个空机柜，直接弄好'}]});
+  assert.equal(result.status,'ok');assert.equal(result.draftChanged,true);assert.equal(previews,1);assert.equal(applies,1);
+  assert.equal(saved.placements.length,8);assert.equal(saved.equipment.devices.length,0);assert.equal(readbacks,2);
+});
+
 test('batch Rack/catalog inventory edits are immutable, explicit, bounded and default position locks on',()=>{
   const layout=base(),before=structuredClone(layout);
   const edited=buildRackAssistantEdit(layout,[{...addRack,quantity:3,columns:2,step_x_m:2,step_y_m:3},

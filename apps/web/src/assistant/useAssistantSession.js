@@ -56,6 +56,7 @@ export function useAssistantSession({
   const [state, setState] = useState(null);
   const [uiActionNotices, setUiActionNotices] = useState([]);
   const [provider, setProvider] = useState(null);
+  const [connectionMode, setConnectionMode] = useState('api');
   const [model, setModel] = useState(readStoredModel);
   const [connectionPending, setConnectionPending] = useState(Boolean(client?.getAssistantProvider));
   const [connectionError, setConnectionError] = useState(null);
@@ -173,7 +174,7 @@ export function useAssistantSession({
     setConnectionPending(true);
     setConnectionError(null);
     client
-      .getAssistantProvider()
+      .getAssistantProvider({ connectionMode })
       .then(({ data }) => {
         if (cancelled) return;
         setProvider(data ?? null);
@@ -194,7 +195,9 @@ export function useAssistantSession({
     return () => {
       cancelled = true;
     };
-  }, [client, connectionNonce]);
+  }, [client, connectionNonce, connectionMode]);
+
+  useEffect(() => { sessionRef.current?.stop(); setConnectionMode('api'); }, [client, toolId]);
 
   const onConnectionChange = useCallback(() => {
     sessionRef.current?.stop();
@@ -307,6 +310,12 @@ export function useAssistantSession({
     error: state?.error ?? null,
     attachmentPolicy: effectiveAttachmentPolicy,
     provider,
+    connectionMode,
+    onConnectionModeChange: toolId === 'rack' ? (value) => {
+      if (sessionRef.current?.getState().streaming || !['api', 'codex-cli'].includes(value)) return;
+      sessionRef.current?.stop(); setProvider(null); setConnectionPending(true);
+      setModel(null); storeModel(null); setConnectionMode(value);
+    } : null,
     models: provider?.models ?? [],
     model,
     developer: toolId === 'rack' ? developer : null,
@@ -425,6 +434,7 @@ export function createAssistantTransport(client, connection = null) {
         ...(model ? { model } : {}),
         ...(permissionMode ? { permission_mode: permissionMode } : {}),
         ...(connection?.connectionId ? { connection_id: connection.connectionId, connection_version: connection.version } : {}),
+        ...(connection?.connectionMode === 'codex-cli' ? { connection_mode: 'codex-cli' } : {}),
         // The user's decision about a proposal the server gated. Omitted when there is none, so
         // an ordinary turn does not carry an empty list.
         ...(confirmations && confirmations.length > 0 ? { confirmations } : {}),

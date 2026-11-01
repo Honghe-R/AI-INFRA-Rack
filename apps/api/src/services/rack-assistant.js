@@ -1,3 +1,4 @@
+import { rackEditOperationSchema } from './rack-assistant-edit-schema.js';
 import { ApiError, errors } from '@ai-infra/core';
 import { normalizeEquipment, checkEquipment, normalizePlannerOptions } from '@ai-infra/rack';
 
@@ -151,18 +152,7 @@ export function createRackAssistantSurface({ layouts, plans, authorize, edits = 
     capabilities.push({ name:'rack_preview_changes',access:'read',confirmation:'none',surfaces:['rack'],
       requiredFunctions:['rack.read','facility.read','rack.write'],
       description:'Preview explicit edits to the selected saved plan. Requires edit permission. No layout is saved. Read current data first; use exact object names/IDs. Returns an opaque server proposal_id for confirmation, before/after summary and shared checks. Do not invent unspecified values.',
-      inputSchema:{...schema({base_version:{type:'integer',minimum:1},operations:{type:'array',minItems:1,maxItems:20,items:{
-        type:'object',additionalProperties:false,required:['type'],properties:{
-          type:{type:'string',enum:['MOVE_RACK','ADD_RACK','REMOVE_RACK','ASSIGN_DEVICE','SET_CLEARANCE','SET_ROOM_BUDGET','ADD_DEVICE','REMOVE_DEVICES','REMOVE_RACKS','SET_RACK_LOCK','SET_RACK_LIMITS','SET_OBSTACLE','REMOVE_OBSTACLES']},
-          rack:{type:['string','null'],description:'Exact rack name/UUID; null only to unassign a device.'},device:{type:'string'},
-          x_m:{type:'number'},y_m:{type:'number'},rotation_deg:{type:'integer',enum:[0,90,180,270]},model_id:{type:'string'},name:{type:'string'},
-          start_u:{type:['integer','null']},front_m:{type:'number'},rear_m:{type:'number'},
-          max_power_kw:{type:['number','null']},max_cooling_kw:{type:['number','null']},reference:{type:'string'},
-          max_weight_kg:{type:['number','null']},locked:{type:'boolean'},quantity:{type:'integer',minimum:1,maximum:128},columns:{type:'integer'},step_x_m:{type:'number'},step_y_m:{type:'number'},
-          catalog_model_id:{type:'string'},catalog_version:{type:'integer'},height_u:{type:'integer'},weight_kg:{type:['number','null']},power_kw:{type:['number','null']},cooling_kw:{type:['number','null']},
-          devices:{type:'array',items:{type:'string'},maxItems:128},racks:{type:'array',items:{type:'string'},maxItems:128},unassign_devices:{type:'boolean'},
-          obstacle:{type:'string'},obstacles:{type:'array',items:{type:'string'},maxItems:128},width_m:{type:'number'},depth_m:{type:'number'},
-        },description:'MOVE_RACK: rack,x_m,y_m. ADD_RACK: model_id,name,x_m,y_m; locked defaults true; batch quantity needs columns,step_x_m,step_y_m. REMOVE_RACK: rack. ASSIGN_DEVICE: device,rack,start_u (both null unassign). ADD_DEVICE: name,quantity and catalog_model_id/catalog_version OR height_u,weight_kg,power_kw,cooling_kw (null unknown). REMOVE_DEVICES: devices[]. REMOVE_RACKS: racks[], explicit unassign_devices if occupied. SET_RACK_LOCK: rack,locked; unlock must be saved before move/delete. SET_RACK_LIMITS: rack,max_weight_kg,max_power_kw,max_cooling_kw. SET_OBSTACLE: optional existing obstacle plus name,x_m,y_m,width_m,depth_m. REMOVE_OBSTACLES: obstacles[]. SET_CLEARANCE: front_m,rear_m. SET_ROOM_BUDGET: max_power_kw,max_cooling_kw,reference. No other fields accepted.'}}}),required:['base_version','operations']},
+      inputSchema:{...schema({base_version:{type:'integer',minimum:1},operations:{type:'array',minItems:1,maxItems:20,items:rackEditOperationSchema}}),required:['base_version','operations']},
       handler:async(ctx,args)=>{
         const budget=await enter(ctx,args,['base_version','operations']);
         if((budget.previews=(budget.previews??0)+1)>2) throw new ApiError('RACK_ASSISTANT_CALL_LIMIT','At most two edit previews are allowed per turn.',{status:429});
@@ -212,6 +202,7 @@ export function createRackAssistantSurface({ layouts, plans, authorize, edits = 
     workflow: ['Read the selected plan → query capacity or run checks → explain named racks and diagnostics → optionally generate options.',
       'For an explicit edit request in an editing mode, read the saved version and exact targets, call rack_preview_changes, explain its server-generated before/after changes and incomplete scope, then call rack_apply_changes. Follow the Active Rack operation mode for confirmation; Read only forbids both edit tools.',
       'Clarify ambiguous intent rather than guessing positions, equipment or budgets. After successful apply report appliedVersion and returned read-back verification, then stop further design edits this turn. These edit tools require rack.write; viewers only have read tools.',
+      'When quantity/model/region are clear and the user authorizes choosing positions, choose positions in that region and check them; do not demand user-supplied coordinates. In Full authorization finish preview → apply → verify in the same turn without repeated consent questions. Repair invalid tool arguments using the returned field guidance within the remaining budget; never ask the user to repair JSON.',
       'Use rack_get_catalog before catalog additions. Batch additions/removals explicitly; retain occupied-rack devices only when unassignment is requested. Position locks require a separate saved unlock before move/delete.',
       'For quantity-driven creation use rack_list_rooms → rack_create_plan → rack_read_plan(plan_id) → rack_preview_automatic_design(kind DESIGN) → rack_apply_changes with the same plan_id. Missing design limits must be clarified. Relocation/allocation previews use the same apply path.',
       'Plan rename/delete/restore have separate tools and account permission keys. Confirmations do not confer permission. If a needed tool is absent, explain insufficient permission or unsupported capability without claiming success.',

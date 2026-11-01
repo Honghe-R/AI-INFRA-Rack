@@ -261,7 +261,7 @@ export function createApiClient({ baseUrl = '', fetchImpl = globalThis.fetch, id
      * client asks rather than assumes; the composer shows it, so a reviewer can see what
      * is answering without any credential reaching the browser.
      */
-    getAssistantProvider: () => request('/api/v1/assistant/provider'),
+    getAssistantProvider: ({ connectionMode = 'api' } = {}) => request(`/api/v1/assistant/provider${connectionMode === 'api' ? '' : `?connection_mode=${encodeURIComponent(connectionMode)}`}`),
     getAssistantConnection: ({ signal } = {}) => request('/api/v1/assistant/connection', { signal }),
     saveAssistantConnection: (body, { signal } = {}) => request('/api/v1/assistant/connection', { method: 'PUT', body, signal }),
     deleteAssistantConnection: (version, { signal } = {}) => request('/api/v1/assistant/connection', { method: 'DELETE', body: { version }, signal }),
