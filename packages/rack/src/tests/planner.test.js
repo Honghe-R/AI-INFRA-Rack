@@ -113,3 +113,52 @@ test('all locked racks stay exact and bypass pose search; rotation streams remai
   const [mixed]=await generateRackOptions(fixture({placements:[rack(1),{...rack(2),rotationDeg:90}],options:{strategy:'INPUT_ORDER',allow_rotation:false}}));
   assert.deepEqual(mixed.placements.map(p=>p.rotationDeg),[0,90]);assert.equal(mixed.unplaced.length,0);
 });
+
+test('both strategies finish physical-size groups despite interleaved IDs and different same-size model IDs', async()=>{
+  const large={...model,modelId:uuid(4),widthM:2}, twin={...model,modelId:uuid(5)};
+  const placements=[rack(1),{...rack(2),modelId:large.modelId},{...rack(3),modelId:twin.modelId},{...rack(4),modelId:large.modelId},rack(5)];
+  for(const strategy of ['INPUT_ORDER','LARGEST_FIRST']){
+    const seen=[];
+    const [option]=await generateRackOptions(fixture({models:[model,large,twin],placements,
+      boundary:{type:'Polygon',coordinates:[[[0,0],[100,0],[100,100],[0,100],[0,0]]]},options:{strategy},
+      pickPosition:async batch=>{seen.push(batch[0].placement.rackId);return 0;}}));
+    const order=(strategy==='INPUT_ORDER'?[1,3,5,2,4]:[2,4,1,3,5]).map(n=>rack(n).rackId);
+    assert.deepEqual(seen,order);
+    assert.equal(option.unplaced.length,0);
+    assert.deepEqual(option.placements.map(p=>p.rackId),placements.map(p=>p.rackId),'output retains original inventory order');
+  }
+});
+
+test('mixed-size additions extend matching-size locked clusters while keeping both clusters together', async()=>{
+  const large={...model,modelId:uuid(4),widthM:2};
+  const fixed=Array.from({length:6},(_,i)=>({...rack(i),modelId:i%2?large.modelId:model.modelId,xM:i%2?24:20,yM:20+Math.floor(i/2)*4,locked:true}));
+  const moving=Array.from({length:12},(_,i)=>({...rack(i+6),modelId:i%2?large.modelId:model.modelId,xM:80,yM:60+i*2}));
+  const input=fixture({models:[model,large],placements:[...fixed,...moving],options:{strategy:'COMPARE',allow_rotation:true},
+    boundary:{type:'Polygon',coordinates:[[[0,0],[100,0],[100,100],[0,100],[0,0]]]}});
+  const before=structuredClone(input.placements), results=await generateRackOptions(input);
+  for(const option of results){
+    assert.equal(option.unplaced.length,0);
+    assert.deepEqual(option.placements.slice(0,6),fixed);
+    const smallRight=Math.max(...option.placements.filter(p=>p.modelId===model.modelId).map(p=>p.xM+model.widthM/2));
+    const largeLeft=Math.min(...option.placements.filter(p=>p.modelId===large.modelId).map(p=>p.xM-large.widthM/2));
+    assert.ok(smallRight<largeLeft,'size groups occupy adjoining sides without interleaving');
+    for(const p of option.placements.slice(6)){
+      assert.ok(p.xM>10 && p.xM<35 && p.yM>15 && p.yM<35,'keeps the overall cluster compact');
+      const others=option.placements.filter(q=>q.rackId!==p.rackId && q.modelId===p.modelId);
+      assert.ok(others.some(q=>Math.hypot(p.xM-q.xM,p.yM-q.yM)<2.3),'has a nearby same-size neighbour');
+    }
+  }
+  assert.deepEqual(input.placements,before);
+  assert.deepEqual(results,await generateRackOptions(input));
+});
+
+test('same-size proximity never overrides rejected geometry or forces moving a locked rack', async()=>{
+  const large={...model,modelId:uuid(4),widthM:2};
+  const fixed=[{...rack(1),xM:20,yM:20,locked:true},{...rack(2),modelId:large.modelId,xM:24,yM:20,locked:true}];
+  const [option]=await generateRackOptions(fixture({models:[model,large],placements:[...fixed,rack(3)],
+    boundary:{type:'Polygon',coordinates:[[[0,0],[100,0],[100,100],[0,100],[0,0]]]},options:{strategy:'INPUT_ORDER'},
+    pickPosition:async batch=>{const i=batch.findIndex(g=>g.placement.xM>25);return i<0?null:i;}}));
+  assert.equal(option.unplaced.length,0);
+  assert.deepEqual(option.placements.slice(0,2),fixed);
+  assert.ok(option.placements[2].xM>25,'uses a different-size neighbour when matching side is rejected');
+});

@@ -57,13 +57,16 @@ const shapeBounds = geometry => {
 const unionBounds = bounds => ({ minX: Math.min(...bounds.map(b=>b.minX)), maxX: Math.max(...bounds.map(b=>b.maxX)),
   minY: Math.min(...bounds.map(b=>b.minY)), maxY: Math.max(...bounds.map(b=>b.maxY)) });
 const occupiedBounds = shape => unionBounds([shape.bounds,...shape.bands.map(shapeBounds)]);
+const sizeKey = model => `${model.widthM}:${model.depthM}`;
+const boundsDistance = (a,b) => Math.hypot(Math.max(0,a.minX-b.maxX,b.minX-a.maxX),
+  Math.max(0,a.minY-b.maxY,b.minY-a.maxY));
 // These shapes are rectangles at quarter turns. Reject only definite interior
 // overlap, with a conservative tolerance for rotation roundoff; PostGIS still
 // decides boundary/obstacle contact, holes and complete candidate validity.
 const overlaps = (a,b) => Math.min(a.maxX,b.maxX)-Math.max(a.minX,b.minX)>1e-8 &&
   Math.min(a.maxY,b.maxY)-Math.max(a.minY,b.minY)>1e-8;
 
-function adjacentPoses(rack, model, boundary, clearance, options, placed) {
+function adjacentPoses(rack, model, boundary, clearance, options, placed, catalog) {
   const room = shapeBounds(boundary);
   if (!placed.length) {
     const seed=plannerGeometry(rack,model,clearance), b=occupiedBounds(seed);
@@ -71,6 +74,9 @@ function adjacentPoses(rack, model, boundary, clearance, options, placed) {
   }
   const core = unionBounds(placed.map(p=>p.bounds));
   const fixed = placed.map(p=>({shape:p,extent:occupiedBounds(p),bands:p.bands.map(shapeBounds)}));
+  // Group by physical dimensions, including different catalog models of the
+  // same size. Locks stay exact; matching-size neighbours are a soft preference.
+  const peers = placed.filter(p=>sizeKey(catalog.get(p.placement.modelId))===sizeKey(model));
   const rotations = options.allow_rotation ? [rack.rotationDeg,...[0,90,180,270].filter(r=>r!==rack.rotationDeg)] : [rack.rotationDeg];
   const seen = new Set(), candidates = [];
   const gap = Math.min(.2,options.grid_step_m);
@@ -97,12 +103,13 @@ function adjacentPoses(rack, model, boundary, clearance, options, placed) {
         // one-rack-wide strip. Existing wide fixed clusters are not penalized.
         const stretched=(next.maxX-next.minX)/(next.maxY-next.minY)>Math.max(2,(core.maxX-core.minX)/(core.maxY-core.minY));
         candidates.push({shape, aligned: rotationDeg!==a.rotationDeg ? 2 : direction<2 ? (stretched?1:0) : (stretched?0:1),
+          sizeDistance:peers.length ? Math.min(...peers.map(p=>boundsDistance(shape.bounds,p.bounds))) : 0,
           area:(next.maxX-next.minX)*(next.maxY-next.minY),
           distance:Math.hypot(xM-(core.minX+core.maxX)/2,yM-(core.minY+core.maxY)/2)});
       }
     }
   }
-  candidates.sort((a,b)=>a.aligned-b.aligned || a.area-b.area || a.distance-b.distance ||
+  candidates.sort((a,b)=>a.aligned-b.aligned || Math.round(a.sizeDistance*1e8)-Math.round(b.sizeDistance*1e8) || a.area-b.area || a.distance-b.distance ||
     a.shape.placement.yM-b.shape.placement.yM || a.shape.placement.xM-b.shape.placement.xM || a.shape.placement.rotationDeg-b.shape.placement.rotationDeg);
   return candidates.map(c=>c.shape);
 }
@@ -129,11 +136,23 @@ export async function generateRackOptions({ placements, models, boundary, constr
   const strategies = options.strategy === 'COMPARE' ? ['INPUT_ORDER', 'LARGEST_FIRST'] : [options.strategy];
   const results = [];
   for (const strategy of strategies) {
-    const queue = [...movable];
-    if (strategy === 'LARGEST_FIRST') queue.sort((a, b) => {
-      const ma = catalog.get(a.modelId), mb = catalog.get(b.modelId);
-      return mb.widthM * mb.depthM - ma.widthM * ma.depthM || (a.rackId < b.rackId ? -1 : a.rackId > b.rackId ? 1 : 0);
-    });
+    // Complete each size group before starting another, avoiding interleaved
+    // large/small additions even when saved UUID order alternates dimensions.
+    const groups = new Map();
+    for (const rack of movable) {
+      const key=sizeKey(catalog.get(rack.modelId));
+      if (!groups.has(key)) groups.set(key,[]);
+      groups.get(key).push(rack);
+    }
+    const orderedGroups=[...groups.values()];
+    if (strategy === 'LARGEST_FIRST') {
+      orderedGroups.sort((a,b)=>{
+        const ma=catalog.get(a[0].modelId), mb=catalog.get(b[0].modelId);
+        return mb.widthM*mb.depthM-ma.widthM*ma.depthM || mb.widthM-ma.widthM || mb.depthM-ma.depthM;
+      });
+      for (const group of orderedGroups) group.sort((a,b)=>a.rackId<b.rackId?-1:a.rackId>b.rackId?1:0);
+    }
+    const queue=orderedGroups.flat();
     const placed = placements.filter(p => p.locked).map(p => plannerGeometry(p, catalog.get(p.modelId), constraints.clearance));
     const chosen = new Map(placed.map(g => [g.placement.rackId, g.placement]));
     // Identical model/orientation searches enumerate identical geometry. Once a
@@ -153,7 +172,7 @@ export async function generateRackOptions({ placements, models, boundary, constr
       // Grow rows around the fixed/placed cluster before searching the room grid.
       // These are freshly ranked for every rack; successful placement changes
       // the compact envelope and creates new adjacent row-extension positions.
-      const nearby = adjacentPoses(rack,catalog.get(rack.modelId),boundary,constraints.clearance,options,placed);
+      const nearby = adjacentPoses(rack,catalog.get(rack.modelId),boundary,constraints.clearance,options,placed,catalog);
       for (let offset=0;offset<nearby.length && !found && rackSubmitted<PLANNER_LIMITS.posesPerRack && submitted<PLANNER_LIMITS.posesPerOption;) {
         // Ranked neighbours usually succeed near the front. Avoid submitting a
         // full room-grid batch against every fixed rack just to use its first pose.

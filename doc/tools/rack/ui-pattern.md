@@ -155,9 +155,14 @@ equipment assignments remain unchanged by relocation. Automatic device allocatio
 is a separate operation and excludes locked racks as installation targets.
 
 Candidates first extend the existing rack rows, matching nearby row directions
-and preferring a compact body envelope. They propose adjacent positions around
+and preferring same-size neighbours before a compact body envelope. Both
+strategies complete width/depth groups rather than interleaving sizes; different
+model IDs with identical dimensions share a group. Saved-order mode keeps first
+group appearance and within-group saved order; largest-first mode orders groups
+by area, width and depth, then racks by UUID. They propose adjacent positions around
 locked/already placed racks before using the room grid as a fallback. Obstacles
 and maintenance clearances remain enforced by the server for every position.
+Size grouping is a preference and never moves locked racks or bypasses geometry.
 
 Within each strategy, identical model/orientation searches continue past rejected
 or occupied grid prefixes; unexamined suffixes are rechecked against newly placed
