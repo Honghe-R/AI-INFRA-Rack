@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { RackElevation } from './RackEquipment.jsx';
 import { optionStageReason, stageRackOption } from './rack-options-state.js';
+import { nameAllocationResult } from './allocation-names.js';
 import { rackError } from './rack-plan-state.js';
 
 const reasons = {
@@ -23,7 +24,7 @@ export function RackAllocation({ client, layout, draft, canWrite, onDraftChange 
   const optionReason = optionStageReason(layout, result, candidate, { canWrite, draft, confirmed });
   const unassigned = layout.equipment.devices.filter(d => d.rackId === null).length;
   const selected = layout.placements.find(p => p.rackId === rackId);
-  const name = id => layout.equipment.devices.find(d => d.deviceId === id)?.name ?? id;
+  const name = id => (candidate?.body.equipment.devices ?? layout.equipment.devices).find(d => d.deviceId === id)?.name ?? id;
   const rackName = id => layout.placements.find(p => p.rackId === id)?.name ?? id;
   const resource = value => `${value.total === null ? 'Unknown' : Number(value.total.toFixed(4))} / ${value.limit === null ? 'Unknown' : value.limit} ${value.unit} (${value.status})`;
   async function generate() {
@@ -34,7 +35,7 @@ export function RackAllocation({ client, layout, draft, canWrite, onDraftChange 
       const response = await client.generateRackEquipmentOption(layout.projectId, layout.planId, {
         contract_version: 1, base_version: layout.version, snapshot_id: layout.snapshot.snapshotId,
       }, { signal: controller.signal });
-      if (!controller.signal.aborted) { setResult(response.data); setRackId(response.data.candidates[0]?.assignments[0]?.rackId ?? layout.placements[0]?.rackId ?? ''); }
+      if (!controller.signal.aborted) { setResult(nameAllocationResult(response.data)); setRackId(response.data.candidates[0]?.assignments[0]?.rackId ?? layout.placements[0]?.rackId ?? ''); }
     } catch (e) { if (!controller.signal.aborted) setError(rackError(e)); }
     finally { if (!controller.signal.aborted) setPending(false); }
   }
@@ -63,6 +64,7 @@ export function RackAllocation({ client, layout, draft, canWrite, onDraftChange 
       <label>Allocation preview rack<select value={rackId} onChange={e => setRackId(e.target.value)}>{layout.placements.map(p => <option key={p.rackId} value={p.rackId}>{p.name}</option>)}</select></label>
       {selected && <RackElevation rack={selected} model={layout.models.find(m => m.modelId === selected.modelId)}
         devices={candidate.body.equipment.devices.filter(d => d.rackId === rackId)} readOnly />}
+      <p className="rack-muted">Installed device names use Rack-Type-Number, ordered by starting U within each rack (for example H05-Server-01, H05-Switch-02). Unassigned names stay unchanged. Names are saved only after staging and Save layout.</p>
       <p>Spatial checks: {candidate.report.status} · Equipment: {candidate.equipmentReport.status} · Whole-plan validation: NOT_RUN.</p>
       {(candidate.report.diagnostics.length > 0 || candidate.equipmentReport.diagnostics.length > 0) && <ul>{[...candidate.report.diagnostics,...candidate.equipmentReport.diagnostics].map((d,i) => <li key={i}>{d.code}: {d.message}</li>)}</ul>}
       <p className="rack-muted">Unrecorded geometry, physical compatibility, redundant power feeds, airflow and floor loads are not certified by this allocation. Partial results retain all remaining devices in inventory.</p>

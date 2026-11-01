@@ -39,5 +39,9 @@ export function deviceKind(device) {
   if (id==='demo-compute-2u') return ['Compute server','server'];
   if (id==='demo-tor-1u') return ['ToR switch','switch'];
   if (id==='demo-optical-2u') return ['Optical switch','switch'];
+  const hint=`${id??''} ${device.name??''}`;
+  if (/\b(switch|tor|spine|leaf)\b/i.test(hint)) return ['Switch','switch'];
+  if (/\bgpu\b/i.test(hint)) return ['GPU server','gpu'];
+  if (/\b(server|compute)\b/i.test(hint)) return ['Server','server'];
   return ['Equipment','other'];
 }

@@ -198,3 +198,36 @@ any pending deletion review is cleared after a lock change. Read-only states dis
 selection/actions. Delete remains disabled while any selected rack is draft-locked or
 saved-locked; saved unlocks must be persisted before moving or deleting those racks.
 Equipment assignments, capacity limits and rack geometry are unchanged by lock actions.
+
+### Creation-time capacities, confirmed overrides and custom inventory
+
+Add rack now includes a capacity template plus editable weight/power/cooling limits.
+General-purpose servers (1000kg,8kW power,8kW cooling) is the initial local planning
+assumption; users may choose another catalog preset, Custom limits or model limits.
+The same explicit override is copied to every new rack in a batch in the same draft.
+Room budgets and older racks remain unchanged. Add to draft confirms these creation inputs.
+
+The selected rack's Use plan-assumed capacity limits form buffers checkbox/number edits
+until **Confirm capacity limits**. Confirm updates the shared draft, then **Save layout**
+persists it. Unconfirmed inputs are not part of the save body. Blank is unknown and zero
+is explicit; capacity-template Apply remains an explicit draft action. Read-only states
+cannot confirm.
+
+Both the Devices Add from catalog picker and Add equipment dialog include **Custom**
+inside Equipment model. Custom offers server/switch/GPU/other type, optional name prefix,
+heightU, weight/power/cooling and quantity1–128, within the2048-device inventory limit.
+Custom entries use explicit plan assumptions with no invented catalog binding. Catalog
+batches retain the selected model version/specifications. All new devices are unassigned;
+no U slots or physical racks are silently changed. The Custom path works if the catalog
+is unavailable. Device type is reflected in its custom name, using the existing device
+contract; it is not a new persisted equipment-kind schema field.
+
+Automatic allocation previews now label installed equipment as Rack-Type-Number, e.g.
+H05-Server-01 and H05-Switch-02. Numbering is shared across device types within each rack,
+ordered by startingU ascending (deviceID breaks ties). All installed devices are relabeled
+for consistent numbering; unassigned names remain unchanged. Type uses known catalog
+identity or explicit type terms in names; unknown types display Equipment. Names are capped
+at160characters. Only display names change: IDs, assignments, demands and catalog refs
+remain. The preview includes these names before staging, and Save layout persists them.
+This applies to the Web Auto allocation workflow; Assistant/server-generated proposals
+are not changed by this UI labeling step.

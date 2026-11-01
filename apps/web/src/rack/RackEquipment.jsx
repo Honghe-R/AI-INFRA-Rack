@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { RackDevicePicker } from './RackDevicePicker.jsx';
+import { RackCapacityLimits } from './RackCapacityLimits.jsx';
 import { RackRoomCapacity } from './RackRoomCapacity.jsx';
-import { deviceFromCatalog, detachCatalogDevice, modelKey } from '../catalog/catalog-state.js';
+import { detachCatalogDevice } from '../catalog/catalog-state.js';
 import { MAX_EQUIPMENT_DEVICES } from './limits.generated.js';
 import { RackBulkRemoval } from './RackBulkRemoval.jsx';
 import { bulkRemoval } from './bulk-removal.js';
@@ -80,9 +82,6 @@ export function RackEquipment({
   mode = 'all',
 }) {
   const [selectedId, setSelectedId] = useState(null);
-  const [catalogId, setCatalogId] = useState('');
-  const catalog = catalogState?.data;
-  const catalogModel = catalog?.models.find((item) => modelKey(item) === catalogId) ?? catalog?.models[0];
   const d = e.devices.find((item) => item.deviceId === selectedId);
   const orderedRacks = [...placements].sort((a, b) => a.name.localeCompare(b.name, 'en', { numeric: true, sensitivity: 'base' }));
   const rack = placements.find((p) => p.rackId === selectedRackId);
@@ -164,23 +163,10 @@ export function RackEquipment({
           Add device
         </button>
       </div>
-      <fieldset className="rack-catalog-picker">
-        <legend>Versioned equipment catalog</legend>
-        {catalogState?.pending ? <p role="status">Reading model specifications…</p> : catalogState?.error ?
-          <div role="alert"><p>Catalog could not be loaded. Custom device entry remains available.</p><button onClick={catalogState.retry}>Retry catalog</button></div> : catalog ? <>
-          <label>Equipment model<select value={catalogModel ? modelKey(catalogModel) : ''} disabled={!editable} onChange={(event) => setCatalogId(event.target.value)}>
-            {catalog.models.map((item) => <option key={modelKey(item)} value={modelKey(item)}>{item.name} · v{item.version}</option>)}
-          </select></label>
-          {catalogModel && <p className="rack-muted">ASSUMED · {catalogModel.specification.heightU} U · {display(catalogModel.specification.weightKg)} kg · {display(catalogModel.specification.powerKw)} kW power · {display(catalogModel.specification.coolingKw)} kW cooling. Unknown values stay unknown.</p>}
-          <button disabled={!editable || !catalogModel || e.devices.length >= MAX_EQUIPMENT_DEVICES} onClick={() => {
-            if (!editable || !catalogModel || e.devices.length >= MAX_EQUIPMENT_DEVICES) return;
-            const deviceId = crypto.randomUUID();
-            patch({ devices: [...e.devices, deviceFromCatalog(catalogModel, deviceId)] });
-            setSelectedId(deviceId);
-          }}>Add from catalog</button>
-          <p className="rack-muted">Creates an unassigned device in this draft. Choose its rack and starting U, then save the layout.</p>
-        </> : <p className="rack-muted">Catalog unavailable. Devices can still use explicit custom assumptions.</p>}
-      </fieldset>
+      <RackDevicePicker catalogState={catalogState} equipment={e} editable={editable} onAdd={devices=>{
+        if(!editable)return;
+        patch({devices:[...e.devices,...devices]});setSelectedId(devices[0]?.deviceId??null);
+      }}/>
       <RackBulkRemoval kind="devices" placements={placements} equipment={e} editable={editable} onApply={ids => {
         if (!editable) throw new Error('This draft is not editable.');
         const result = bulkRemoval({ kind: 'devices', ids, placements, equipment: e });
@@ -316,60 +302,10 @@ export function RackEquipment({
           <RackCapacityCatalog key={rack.rackId} rack={rack} limit={limit} editable={editable} onApply={templateId => {
             if (editable) patch(applyRackCapacityTemplate(e, placements, rack.rackId, templateId));
           }} />
-          <label className="rack-lock-field">
-            <input
-              type="checkbox"
-              checked={Boolean(limit)}
-              disabled={!editable}
-              onChange={(event) =>
-                patch({
-                  rackLimits: event.target.checked
-                    ? [
-                        ...e.rackLimits,
-                        {
-                          rackId: rack.rackId,
-                          maxWeightKg: model?.maxWeightKg ?? null,
-                          maxPowerKw: model?.maxPowerKw ?? null,
-                          maxCoolingKw: model?.maxCoolingKw ?? null,
-                        },
-                      ]
-                    : e.rackLimits.filter((l) => l.rackId !== rack.rackId),
-                })
-              }
-            />
-            Use plan-assumed capacity limits
-          </label>
-          <p className="rack-muted">
-            {limit
-              ? 'All three limits below use this plan assumption and equipment reference.'
-              : 'Using model limits; the demo models have unknown limits.'}{' '}
-            Cabinet position lock does not lock equipment assignments.
-          </p>
-          {limit && (
-            <div className="rack-form-fields">
-              {dimensions.map(([, key, label, unit]) => (
-                <label key={key}>
-                  {label} limit ({unit})
-                  <input
-                    type="number"
-                    min="0"
-                    max="1000000"
-                    step="any"
-                    placeholder="Unknown"
-                    value={Number.isFinite(limit[key]) ? limit[key] : ''}
-                    disabled={!editable}
-                    onChange={(event) =>
-                      patch({
-                        rackLimits: e.rackLimits.map((l) =>
-                          l.rackId === rack.rackId ? { ...l, [key]: optional(event.target.value) } : l,
-                        ),
-                      })
-                    }
-                  />
-                </label>
-              ))}
-            </div>
-          )}
+          <RackCapacityLimits key={rack.rackId} rack={rack} model={model} limit={limit} editable={editable} onConfirm={confirmed=>{
+            if(!editable)return;
+            patch({rackLimits:[...e.rackLimits.filter(l=>l.rackId!==rack.rackId),...(confirmed?[confirmed]:[])]});
+          }}/>
           {summary && (
             <div className="rack-capacity-summary">
               <p>

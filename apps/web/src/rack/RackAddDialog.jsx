@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { suggestRackSequence, rackSequenceNames } from './rack-sequence.js';
+import { CustomDeviceFields } from './RackDevicePicker.jsx';
+import { DEFAULT_CUSTOM_DEVICE } from './device-batch.js';
+import { RACK_CAPACITY_TEMPLATES } from './capacity-catalog.js';
 import { RACK_COMMANDS } from './rack-commands.js';
 
 export function RackAddDialog({ kind, layout, draft, catalogState, blockedReason, onApply, onClose, selectedRackId = null }) {
@@ -8,12 +11,12 @@ export function RackAddDialog({ kind, layout, draft, catalogState, blockedReason
   const [values, setValues] = useState(() => ({ name: kind === 'rack_add' ? `Rack ${(draft?.placements ?? layout.placements).length + 1}` : `Exclusion zone ${(draft?.constraints ?? layout.constraints).obstacles.length + 1}`,
     ...suggestRackSequence(draft?.placements ?? layout.placements, selectedRackId), numbered: true, startNumber: '', columns: '', columnGap: 0.2, rowGap: Math.max(1.2, ((draft?.constraints ?? layout.constraints).clearance?.frontM ?? 0) + ((draft?.constraints ?? layout.constraints).clearance?.rearM ?? 0)),
     modelId: layout.models[0]?.modelId ?? '', xM: Number((layout.snapshot.view.extentM.width / 2).toFixed(2)),
-    yM: Number((layout.snapshot.view.extentM.height / 2).toFixed(2)), rotationDeg: 0, locked: true, widthM: 1, depthM: 1, quantity: 1, catalogKey: '' }));
+    yM: Number((layout.snapshot.view.extentM.height / 2).toFixed(2)), rotationDeg: 0, locked: true, widthM: 1, depthM: 1, quantity: 1, catalogKey: '', custom: {...DEFAULT_CUSTOM_DEVICE}, capacityTemplateId:'general', maxWeightKg:1000, maxPowerKw:8, maxCoolingKw:8 }));
   useEffect(() => { const previous = document.activeElement; dialog.current.showModal();
     return () => { if (previous?.isConnected) previous.focus(); }; }, []);
   const patch = (key, value) => setValues(v => ({ ...v, [key]: value }));
-  const models = catalogState.data?.models ?? [];
-  const catalogKey = values.catalogKey || (models[0] ? `${models[0].modelId}@${models[0].version}` : '');
+  const models = catalogState?.data?.models ?? [];
+  const catalogKey = values.catalogKey || (models[0] ? `${models[0].modelId}@${models[0].version}` : 'custom');
   const specification = models.find(m => `${m.modelId}@${m.version}` === catalogKey)?.specification;
   let namePreview = '', previewError = null;
   if (kind === 'rack_add' && (values.numbered || Number(values.quantity) > 1)) {
@@ -26,11 +29,12 @@ export function RackAddDialog({ kind, layout, draft, catalogState, blockedReason
       <header><h2>{kind === 'rack_add' ? 'Add racks' : kind === 'rack_device' ? 'Add equipment' : 'Add exclusion zone'}</h2><button type="button" aria-label="Close add dialog" onClick={onClose}>×</button></header>
       <p className="rack-muted">Add to this plan's shared draft, then check and choose Save layout to persist it. Cancel leaves the plan unchanged.</p>
       {kind === 'rack_device' ? <>
-        {catalogState.pending ? <p role="status">Loading equipment catalog…</p> : catalogState.error ? <p role="alert">The equipment catalog is unavailable.<button type="button" onClick={catalogState.retry}>Retry catalog</button></p> : null}
-        <label>Equipment model<select aria-label="Equipment model" required value={catalogKey} onChange={e => patch('catalogKey', e.target.value)}>{!models.length && <option value="">No models available</option>}{models.map(m => <option key={`${m.modelId}@${m.version}`} value={`${m.modelId}@${m.version}`}>{m.name} · v{m.version}</option>)}</select></label>
+        {catalogState?.pending ? <p role="status">Loading equipment catalog…</p> : catalogState?.error ? <p role="alert">The equipment catalog is unavailable.<button type="button" onClick={catalogState.retry}>Retry catalog</button></p> : null}
+        <label>Equipment model<select aria-label="Equipment model" required value={catalogKey} onChange={e => patch('catalogKey', e.target.value)}>{!models.length && <option value="">No models available</option>}{models.map(m => <option key={`${m.modelId}@${m.version}`} value={`${m.modelId}@${m.version}`}>{m.name} · v{m.version}</option>)}<option value="custom">Custom</option></select></label>
+        {catalogKey==='custom' && <CustomDeviceFields values={values.custom} onChange={custom=>patch('custom',custom)}/>}
         <label>Equipment quantity<input type="number" required min="1" max="128" step="1" value={values.quantity} onChange={e => patch('quantity', e.target.value)}/></label>
         {specification && <p>{specification.heightU} U · {specification.powerKw ?? 'Unknown'} kW · {specification.weightKg ?? 'Unknown'} kg / device</p>}
-        <p className="rack-muted">Equipment is added to unassigned inventory with its catalog version. Use the equipment page to assign racks and U slots automatically or manually.</p>
+        <p className="rack-muted">Equipment is added to unassigned inventory. Catalog devices retain their pinned model version; Custom devices use your explicit assumptions. Use the equipment page to assign racks and U slots automatically or manually.</p>
       </> : <>
         {kind === 'rack_add' && <>
           <label>Rack quantity<input type="number" required min="1" max={Math.min(128,256-(draft?.placements ?? layout.placements).length)} step="1" value={values.quantity} onChange={e=>patch('quantity',e.target.value)}/></label>
@@ -48,6 +52,14 @@ export function RackAddDialog({ kind, layout, draft, catalogState, blockedReason
         </>}
         {(kind === 'rack_zone' || (!values.numbered && Number(values.quantity)===1)) && <label>{kind === 'rack_add' ? 'Rack name' : 'Exclusion zone name'}<input required maxLength="160" value={values.name} onChange={e => patch('name', e.target.value)}/></label>}
         {kind === 'rack_add' && <label>Rack model<select required value={values.modelId} onChange={e => patch('modelId', e.target.value)}>{layout.models.map(m => <option key={m.modelId} value={m.modelId}>{m.name} · {m.heightU} U · {m.widthM} × {m.depthM} m</option>)}</select></label>}
+        {kind==='rack_add' && <fieldset className="rack-catalog-picker"><legend>Capacity limits for new racks</legend>
+          <label>Capacity template<select value={values.capacityTemplateId} onChange={e=>{
+            const template=RACK_CAPACITY_TEMPLATES.find(t=>t.templateId===e.target.value);
+            setValues(v=>({...v,capacityTemplateId:e.target.value,...(template?{maxWeightKg:template.maxWeightKg,maxPowerKw:template.maxPowerKw,maxCoolingKw:template.maxCoolingKw}:{})}));
+          }}>{RACK_CAPACITY_TEMPLATES.map(t=><option key={t.templateId} value={t.templateId}>{t.name}</option>)}<option value="custom">Custom limits</option><option value="model">Use rack model limits</option></select></label>
+          {values.capacityTemplateId!=='model' && <div className="rack-form-fields">{[['maxWeightKg','Weight limit (kg)'],['maxPowerKw','Power limit (kW)'],['maxCoolingKw','Cooling limit (kW)']].map(([key,label])=><label key={key}>{label}<input type="number" min="0" max="1000000" step="any" placeholder="Unknown" value={values[key]} onChange={e=>setValues(v=>({...v,[key]:e.target.value,capacityTemplateId:'custom'}))}/></label>)}</div>}
+          <p className="rack-muted">ASSUMED · Applies to every rack in this batch. Room budgets stay unchanged. Add to draft confirms these limits; Save layout persists them.</p>
+        </fieldset>}
         <div className="rack-form-fields">{['xM', 'yM', ...(kind === 'rack_zone' ? ['widthM', 'depthM'] : [])].map(key => <label key={key}>{({xM:'Center X (m)', yM:'Center Y (m)', widthM:'Width (m)', depthM:'Depth (m)'})[key]}<input type="number" required step="0.01" min={['widthM', 'depthM'].includes(key) ? '0.01' : '-10000'} max="10000" value={values[key]} onChange={e => patch(key, e.target.value)}/></label>)}</div>
         {kind === 'rack_add' && <label>Orientation<select value={values.rotationDeg} onChange={e => patch('rotationDeg', e.target.value)}>{[0,90,180,270].map(deg => <option key={deg} value={deg}>{deg}°</option>)}</select></label>}
         {kind === 'rack_add' && <label className="rack-lock-field"><input type="checkbox" checked={values.locked} onChange={e => patch('locked', e.target.checked)}/>Position lock (on by default)</label>}
