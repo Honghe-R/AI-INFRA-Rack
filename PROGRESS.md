@@ -1297,3 +1297,11 @@ Docker 可能保留已下载的镜像缓存，本轮没有清理全局 Docker �
 4. 验证命令及结果；
 5. 遗留问题与下一小步；
 6. 是否执行提交/推送（默认不执行）。
+
+
+## 2026-11-01: Round65 — Confirm editable selected-device specifications
+
+- Equipment allocation Selected device now buffers editable name, height, weight, power and cooling in RackDeviceProperties, with an explicit Confirm device changes action. Confirm updates the shared equipment draft; Save layout persists it. Unconfirmed property edits are excluded from saving. Switching devices resets the form; upstream property changes resynchronize it without resetting local inputs on unrelated assignment renders.
+- Catalog-created device specifications are editable. Confirmation automatically removes catalogRef only if a normalized specification changed; name-only edits and unchanged numeric values retain the pinned model. The catalog itself is unchanged. Existing device identity, rack assignment and starting U are preserved. Height changes do not automatically move equipment; ordinary checks still detect U conflicts and capacity issues.
+- Confirmation validates name1–160characters, integer height1–100U, and finite nonnegative demands up to1000000. Blank demand is unknown; zero remains explicit. Read-only controls and confirmation callback retain the existing editable gate; server save authorization remains unchanged. Updated the English UI contract.
+- Verification: full Web72files/739tests passed, including four new tests for catalog detachment/pin preservation, identity/assignment preservation, invalid-input rejection and editable/read-only rendering. Production Web build passed with inherited esbuild/oxc and large-chunk warnings; git diff --check passed. No native browser acceptance, live Plan writes, paid model calls, seed or migrations. Worked only in the Rack copy; teacher folder/platform untouched. No staging, commits, pushes or remote changes.

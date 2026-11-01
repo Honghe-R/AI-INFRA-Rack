@@ -231,3 +231,20 @@ at160characters. Only display names change: IDs, assignments, demands and catalo
 remain. The preview includes these names before staging, and Save layout persists them.
 This applies to the Web Auto allocation workflow; Assistant/server-generated proposals
 are not changed by this UI labeling step.
+
+
+### Confirmed selected-device properties
+
+Equipment allocation → Selected device exposes editable name, height (U), weight (kg),
+power (kW) and cooling (kW), including catalog-created devices. Inputs are buffered until
+**Confirm device changes** updates the shared draft; **Save layout** persists the draft.
+Unconfirmed property inputs are excluded from saving. Selecting a different device resets
+the property form. Assignment and starting-U controls continue to update the shared draft.
+
+Confirmation validates a nonempty name (up to160characters), integer height1–100U and
+finite demands0–1000000. Blank demand means unknown; zero is explicit. Changing any
+specification detaches the device's catalogRef into custom plan assumptions; name-only
+edits preserve the version pin. The catalog model is never edited. Device ID, assignment
+and startingU are preserved. Ordinary equipment checks still detect U overlap/overflow
+and capacity issues; changing height does not automatically relocate devices. Read-only
+users cannot edit or confirm, and backend save authorization remains authoritative.

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { RackDevicePicker } from './RackDevicePicker.jsx';
 import { RackCapacityLimits } from './RackCapacityLimits.jsx';
 import { RackRoomCapacity } from './RackRoomCapacity.jsx';
-import { detachCatalogDevice } from '../catalog/catalog-state.js';
+import { RackDeviceProperties } from './RackDeviceProperties.jsx';
 import { MAX_EQUIPMENT_DEVICES } from './limits.generated.js';
 import { RackBulkRemoval } from './RackBulkRemoval.jsx';
 import { bulkRemoval } from './bulk-removal.js';
@@ -15,7 +15,6 @@ const dimensions = [
   ['coolingKw', 'maxCoolingKw', 'Cooling', 'kW'],
 ];
 const numeric = (v) => (v === '' ? NaN : Number(v));
-const optional = (v) => (v === '' ? null : Number(v));
 const display = (v) => (v === null ? 'Unknown' : Number(v.toFixed(4)).toString());
 
 export function RackElevation({ rack, model, devices, selectedId, onSelect, readOnly = false }) {
@@ -190,48 +189,10 @@ export function RackEquipment({
       {d && (
         <div className="rack-device-form">
           <p className="rack-muted">Device ID: {d.deviceId}</p>
-          {d.catalogRef && <div className="rack-catalog-binding"><p>Pinned model: <code>{d.catalogRef.modelId}@{d.catalogRef.version}</code> · ASSUMED local catalog</p>
-            <p className="rack-muted">Specifications are fixed to this version. Name and U assignment remain editable.</p>
-            <button disabled={!editable} onClick={() => patch({ devices: e.devices.map((item) => item.deviceId === d.deviceId ? detachCatalogDevice(item) : item) })}>Detach to custom assumptions</button>
-          </div>}
-          <label>
-            Device name
-            <input
-              value={d.name}
-              maxLength={160}
-              disabled={!editable}
-              onChange={(event) => patchDevice({ name: event.target.value })}
-            />
-          </label>
-          <div className="rack-form-fields">
-            <label>
-              Device height (U)
-              <input
-                type="number"
-                min="1"
-                max="100"
-                step="1"
-                value={Number.isFinite(d.heightU) ? d.heightU : ''}
-                disabled={!editable || Boolean(d.catalogRef)}
-                onChange={(event) => patchDevice({ heightU: numeric(event.target.value) })}
-              />
-            </label>
-            {dimensions.map(([key, , label, unit]) => (
-              <label key={key}>
-                Device {label.toLowerCase()} ({unit})
-                <input
-                  type="number"
-                  min="0"
-                  max="1000000"
-                  step="any"
-                  placeholder="Unknown"
-                  value={Number.isFinite(d[key]) ? d[key] : ''}
-                  disabled={!editable || Boolean(d.catalogRef)}
-                  onChange={(event) => patchDevice({ [key]: optional(event.target.value) })}
-                />
-              </label>
-            ))}
-          </div>
+          <RackDeviceProperties key={d.deviceId} device={d} editable={editable} onConfirm={confirmed => {
+            if (!editable) return;
+            patch({ devices: e.devices.map(item => item.deviceId === d.deviceId ? confirmed : item) });
+          }} />
           <div className="rack-form-fields">
             <label>
               Assigned rack
