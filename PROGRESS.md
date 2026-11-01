@@ -1271,6 +1271,13 @@ Docker 可能保留已下载的镜像缓存，本轮没有清理全局 Docker �
 - Batch placements form a centered grid with optional columns and editable non-negative row/column gaps; orientation-aware model dimensions determine pitch. New racks default locked with the existing off option. Both canvas and toolbar Add rack use the dialog. Staging copies data atomically, uses unique IDs and does not save implicitly. Grid is a proposal only: existing racks, boundaries, obstacles and clearances still need ordinary checks; no feasibility/optimality claim.
 - Verification: relevant Web2files/17tests passed, covering numbering continuation/collisions, quantity/gap/column rejection, rotated-grid distinct positions, preserved inputs, shared draft and ordinary lock behavior. Existing tests caught null clearance defaults; corrected optional handling before passing. Production build passed with inherited toolchain/bundle warnings. No native browser or live Plan write performed. English UI spec updated. No model calls, teacher-folder changes, migration, seed, staging, commits, pushes or remote changes.
 
+## 2026-11-01: Round63 — Lock and unlock selected racks in bulk
+
+- User requested lock/unlock beside Delete after selecting racks. Added Lock selected and Unlock selected in the bulk toolbar, retaining selections across the operation and clearing stale delete reviews. Locked racks can now be selected when lock-management callbacks are available; Select filtered includes those rows across pages. Draft-only position flag changes flow through the parent's current editable gate and ordinary Save layout/Discard workflow.
+- Generalized the existing unlock transformation to atomic setRackLocks, preserving the unlock compatibility helper. It rejects empty/duplicate/stale IDs before returning a copy and preserves all unrelated rack fields and inventory. Buttons disable when no selected rack needs that action; read-only states remain blocked. Existing filtered-unlock convenience retained.
+- Deletion is separately disabled when any selected rack is draft-locked or saved-locked. Existing removal/backend checks still require saved unlocks before deletion; selection eligibility does not weaken deletion protection. Updated explanatory text and English UI spec.
+- Verification: targeted Web2files/21tests passed, including mixed lock/unlock preservation, stale-ID atomic rejection, locked-row selectability, read-only actions and existing deletion/pending-unlock protections. Git whitespace checks passed. No native browser or live database mutations, model calls, migrations, seed or teacher-folder/platform changes. No staging, commits, pushes or remote changes.
+
 ## 后续记录格式（第十七轮后沿用）
 
 每轮追加一个日期标题，至少写清：

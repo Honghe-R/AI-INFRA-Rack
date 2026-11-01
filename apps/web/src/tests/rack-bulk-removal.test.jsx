@@ -1,7 +1,7 @@
 import { test } from 'vitest';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { bulkRemoval, removalItems, filterRemovalItems, unlockRacks } from '../rack/bulk-removal.js';
+import { bulkRemoval, removalItems, filterRemovalItems, unlockRacks, setRackLocks } from '../rack/bulk-removal.js';
 import { RackBulkRemoval } from '../rack/RackBulkRemoval.jsx';
 import { RackEquipment } from '../rack/RackEquipment.jsx';
 import { defaultEditorEquipment, beginLayoutDraft, layoutCheckBody, validateEditorEquipment } from '../rack/edit-layout-state.js';
@@ -143,3 +143,23 @@ test('device panel includes bulk inventory actions and escapes untrusted labels'
   assert.ok(html.includes('&lt;img onerror=alert(1)&gt;'));
   assert.ok(!html.includes('<img onerror'));
 });
+
+ test('selected rack lock changes are atomic, preserve identities and leave other rack fields untouched', () => {
+  const before=structuredClone(placements);
+  const locked=setRackLocks(placements,['a','c'],true);
+  assert.equal(locked[0].locked,true);assert.equal(locked[1],placements[1]);assert.equal(locked[2].locked,true);
+  assert.deepEqual(setRackLocks(locked,['a','c'],false).map(r=>r.locked),[false,false,false]);
+  for(const ids of [[],['a','a'],['a','missing']]) assert.throws(()=>setRackLocks(placements,ids,true),/changed/);
+  assert.deepEqual(placements,before);
+ });
+ test('rack lock management permits selecting locked rows but retains read-only selection protection', () => {
+  const props={kind:'racks',placements,equipment:equipment(),onLock:()=>{},onUnlock:()=>{}};
+  const html=renderToStaticMarkup(<RackBulkRemoval {...props} editable/>);
+  assert.match(html,/Lock selected/);assert.match(html,/Unlock selected/);
+  assert.match(html,/Select filtered \(3\)/);
+  assert.doesNotMatch(html,/type="checkbox" disabled/);
+  assert.match(html,/can be selected for lock changes but cannot be deleted/);
+  const readonly=renderToStaticMarkup(<RackBulkRemoval {...props} editable={false}/>);
+  assert.equal((readonly.match(/type="checkbox" disabled/g)??[]).length,3);
+  assert.match(readonly,/disabled="">Lock selected/);assert.match(readonly,/disabled="">Unlock selected/);
+ });

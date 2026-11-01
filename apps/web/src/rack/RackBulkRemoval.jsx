@@ -3,7 +3,7 @@ import { bulkRemoval, removalItems, filterRemovalItems } from './bulk-removal.js
 
 const PAGE_SIZE = 50;
 
-export function RackBulkRemoval({ kind, placements, equipment, savedPlacements = placements, editable, onApply, onUnlock }) {
+export function RackBulkRemoval({ kind, placements, equipment, savedPlacements = placements, editable, onApply, onUnlock, onLock }) {
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState('all');
   const [page, setPage] = useState(0);
@@ -14,8 +14,13 @@ export function RackBulkRemoval({ kind, placements, equipment, savedPlacements =
   const existing = new Set(items.map(i => i.id));
   const selected = new Set(selection.filter(id => existing.has(id)));
   const filtered = filterRemovalItems(items, kind, query, filter);
-  const eligible = filtered.filter(i => !i.blocked);
-  const blockedCount = filtered.length - eligible.length;
+  const managesLocks = kind === 'racks' && Boolean(onLock || onUnlock);
+  const eligible = filtered.filter(i => managesLocks || !i.blocked);
+  const blockedCount = filtered.filter(i => i.blocked).length;
+  const selectedBlocked = items.filter(i => selected.has(i.id) && i.blocked).length;
+  const selectedRacks = kind === 'racks' ? placements.filter(r => selected.has(r.rackId)) : [];
+  const lockCount = selectedRacks.filter(r => !r.locked).length;
+  const unlockCount = selectedRacks.filter(r => r.locked).length;
   const unlockableIds = kind === 'racks' ? filtered.filter(i => placements.some(r => r.rackId === i.id && r.locked)).map(i => i.id) : [];
   const pendingUnlocks = kind === 'racks' ? filtered.filter(i => i.blocked && !placements.find(r => r.rackId === i.id)?.locked).length : 0;
   const pages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
@@ -24,6 +29,13 @@ export function RackBulkRemoval({ kind, placements, equipment, savedPlacements =
   const currentReview = review && review.placements === placements && review.equipment === equipment && review.savedPlacements === savedPlacements;
   const hiddenCount = [...selected].filter(id => !filtered.some(i => i.id === id)).length;
   function choose(ids) { setSelection(ids); setReview(null); setError(null); }
+  function changeLocks(locked) {
+    if (!editable || !selected.size) return;
+    const action = locked ? onLock : onUnlock;
+    if (!action) return;
+    try { action([...selected]); setReview(null); setError(null); }
+    catch (e) { setError(e.message); }
+  }
   function preview() {
     if (!editable) return;
     try {
@@ -60,7 +72,7 @@ export function RackBulkRemoval({ kind, placements, equipment, savedPlacements =
       </select></label>
     </div>
     {kind === 'racks' && blockedCount > 0 && <div className="rack-notice" role="status">
-      <p>{blockedCount} position-locked racks excluded from selection. Position locks protect racks from moving or deletion; they do not lock devices.</p>
+      <p>{blockedCount} position-locked racks {managesLocks ? 'can be selected for lock changes but cannot be deleted' : 'excluded from selection'}. Position locks protect racks from moving or deletion; they do not lock devices.</p>
       {onUnlock && <button disabled={!editable || !unlockableIds.length} onClick={() => {
         if (!editable || !unlockableIds.length) return;
         try { onUnlock(unlockableIds); setReview(null); setError(null); } catch (e) { setError(e.message); }
@@ -71,9 +83,12 @@ export function RackBulkRemoval({ kind, placements, equipment, savedPlacements =
     <div className="rack-actions">
       <button disabled={!editable || !eligible.length} onClick={() => choose([...new Set([...selected, ...eligible.map(i => i.id)])])}>Select filtered ({eligible.length})</button>
       <button disabled={!selected.size} onClick={() => choose([])}>Clear selection</button>
-      <button className="rack-bulk-delete" disabled={!editable || !selected.size} onClick={preview}>Delete selected {kind} ({selected.size})</button>
+      {kind === 'racks' && onLock && <button disabled={!editable || !lockCount} onClick={() => changeLocks(true)}>Lock selected ({selected.size})</button>}
+      {kind === 'racks' && onUnlock && <button disabled={!editable || !unlockCount} onClick={() => changeLocks(false)}>Unlock selected ({selected.size})</button>}
+      <button className="rack-bulk-delete" disabled={!editable || !selected.size || selectedBlocked > 0} onClick={preview}>Delete selected {kind} ({selected.size})</button>
     </div>
     <p role="status">{selected.size} selected{hiddenCount ? ` · ${hiddenCount} outside current filter` : ''}. Select filtered includes all matching pages.</p>
+    {kind === 'racks' && selectedBlocked > 0 && <p className="rack-muted">{selectedBlocked} selected racks cannot be deleted yet. Unlock them and Save layout first. Lock changes also require Save layout.</p>}
     {error && <p role="alert" className="rack-error">{error}</p>}
     {review && <div className="rack-bulk-review" role="group" aria-label="Confirm bulk removal">
       <p><strong>Delete {review.result.removedCount} {kind}?</strong> {kind === 'racks'
@@ -88,7 +103,7 @@ export function RackBulkRemoval({ kind, placements, equipment, savedPlacements =
     </div>
     <ul className="rack-bulk-list" aria-label={`${kind} bulk selection`}>
       {visible.map(item => <li key={item.id}><label>
-        <input type="checkbox" checked={selected.has(item.id)} disabled={!editable || item.blocked}
+        <input type="checkbox" checked={selected.has(item.id)} disabled={!editable || (item.blocked && !managesLocks)}
           onChange={e => choose(e.target.checked ? [...selected, item.id] : [...selected].filter(id => id !== item.id))} />
         <span><strong>{item.name}</strong><small>{item.detail}</small></span>
       </label></li>)}

@@ -45,13 +45,16 @@ export function removalItems(kind, placements, equipment, savedPlacements = plac
   }));
 }
 
-export function unlockRacks(placements, ids) {
+export function setRackLocks(placements, ids, locked) {
+  if (typeof locked !== 'boolean') throw new Error('Choose a valid position lock state.');
   if (!Array.isArray(ids) || !ids.length || new Set(ids).size !== ids.length ||
       ids.some(id => !placements.some(r => r.rackId === id)))
     throw new Error('The selected racks changed. Select them again.');
   const selected = new Set(ids);
-  return placements.map(r => selected.has(r.rackId) ? { ...r, locked: false } : r);
+  return placements.map(r => selected.has(r.rackId) ? { ...r, locked } : r);
 }
+
+export function unlockRacks(placements, ids) { return setRackLocks(placements, ids, false); }
 
 export function filterRemovalItems(items, kind, query = '', filter = 'all') {
   const term = query.trim().toLowerCase();

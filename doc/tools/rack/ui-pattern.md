@@ -187,3 +187,14 @@ gaps. Rotated footprints determine pitch. New racks keep the default position lo
 Grid proposals do not avoid existing racks/obstacles or prove room fit; existing server checks
 and Save layout remain required. Cancel creates nothing. Both the toolbar and canvas Add rack
 entry open the dialog. No implicit database save is performed.
+
+### Selected rack position locks in bulk actions
+
+The Bulk remove racks toolbar provides **Lock selected** and **Unlock selected** beside
+Delete selected racks. Locked racks are selectable for lock management. Actions affect
+only the selected IDs across pages/filters and stage position-lock flags in the shared
+draft; Save layout persists them, and Discard reverts them. Selection is retained and
+any pending deletion review is cleared after a lock change. Read-only states disable
+selection/actions. Delete remains disabled while any selected rack is draft-locked or
+saved-locked; saved unlocks must be persisted before moving or deleting those racks.
+Equipment assignments, capacity limits and rack geometry are unchanged by lock actions.
