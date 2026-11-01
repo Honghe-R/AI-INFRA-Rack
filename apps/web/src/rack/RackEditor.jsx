@@ -379,7 +379,7 @@ export function RackEditor({
   );
   return (
     <section className="rack-editor" aria-label="Rack layout editor">
-      {addKind && <RackAddDialog key={`${layout.planId}:${addKind}`} kind={addKind} layout={layout} draft={draft}
+      {addKind && <RackAddDialog key={`${layout.planId}:${addKind}`} kind={addKind} layout={layout} draft={draft} selectedRackId={selectedId}
         catalogState={catalogState} blockedReason={rackCommandReason({ layout, draft, canWrite, busy }, addKind)}
         onClose={() => setAddKind(null)} onApply={values => {
           const reason = rackCommandReason({ layout, draft, canWrite, busy }, addKind);
@@ -460,7 +460,7 @@ export function RackEditor({
             onSelect={setSelectedId} editable={editable} onMove={updateRack}
             isPositionLocked={id => placements.some(p => p.rackId === id && p.locked) || layout.placements.some(p => p.rackId === id && p.locked)}
             onUpdate={patch => updateRack(selectedId, patch)} onNavigate={onNavigate} focusRequest={focusRequest}
-            modelId={modelId} onModelChange={setModelId} onAdd={addRack} onRemove={removeSelectedRack} actions={editorActions}
+            modelId={modelId} onModelChange={setModelId} onAdd={() => setAddKind('rack_add')} onRemove={removeSelectedRack} actions={editorActions}
             feedback={error || inputError || (checkState.error ? rackError(checkState.error) :
               checkState.pending || checkState.body !== checkKey ? 'Checking the current layout…' :
               currentReport?.diagnostics.length || equipmentReport?.diagnostics.length ? 'Checks found conflicts. Resolve them before saving.' : notice)} />}

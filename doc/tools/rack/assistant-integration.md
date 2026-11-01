@@ -203,3 +203,19 @@ Use the shared host's credential-free tool/turn/session audit path. Preserve pri
 - Unknown resources, pagination, diagnostics caps and ten-call/one-generation limits remain visible.
 - Endpoint tests cover private/mixed DNS, redirect, oversize, cancellation and explicit admin allowlist behavior.
 - Real provider acceptance must separately exercise tool round trips, Rack grounding, quota failures and response quality; synthetic success is not that evidence.
+
+## Reply placement and display (2026-11-01)
+
+Each assistant turn places its execution disclosure before its answer. Execution rounds
+remain collapsed by default during and after the request; users may expand them to inspect
+tools, timings and usage. Legacy flat tool records also precede the answer. The transcript
+follows new content while near its end, including reply/viewport height changes, and pauses
+following when the reader scrolls up. Submitting a new turn resumes following.
+
+The current backend sends completed-round events and a final answer envelope, rather than
+provider token deltas. A newly completed live reply is progressively displayed in the UI
+for up to approximately1.2seconds after receipt. This is a presentation animation of the
+already sanitized answer, not lower-latency model streaming. It makes no additional provider
+requests. Restored messages and reduced-motion users receive complete text immediately;
+replacement/unmount cancels the animation. Copy uses the full answer. Tool actions, checks,
+permissions, persistence, usage counts and confirmation flows remain unchanged.

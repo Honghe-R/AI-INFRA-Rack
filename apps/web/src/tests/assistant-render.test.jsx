@@ -273,14 +273,13 @@ const ROUNDS = [
   { iteration: 2, providerMs: 53500, tokens: 1180, calls: [] },
 ];
 
-test('a running turn holds its rounds open, so they are watched rather than found later', () => {
+test('a running turn keeps diagnostics collapsed and indicates work is in progress', () => {
   const html = renderToStaticMarkup(
     <AssistantTranscript turns={[{ turnId: 't1', role: 'ASSISTANT', text: '', status: 'STREAMING', rounds: ROUNDS }]} />,
   );
 
-  // Open, because a disclosure that grew while collapsed is the same as no disclosure: the
-  // reader asked to see the loop, and the loop is only live while the turn is.
-  assert.match(html, /<details class="turn__rounds" open/);
+  // Diagnostics stay available on demand; live activity does not expand over the answer.
+  assert.doesNotMatch(html, /<details class="turn__rounds" open/);
   assert.match(html, /2 rounds · 1 tool/);
   assert.match(html, /Round 1/);
   assert.match(html, /list_containers/);
@@ -461,7 +460,7 @@ test('a round shows what the model said while it worked', () => {
   assert.match(html, /Let me check the yard boundary first\./);
   assert.match(html, /turn__round-said/);
 
-  // The call-less round's words *are* the reply, which is already above it: it is labelled
+  // The call-less round's words *are* the reply, which is shown below it: it is labelled
   // as the answer rather than printed twice.
   assert.equal(html.split('The yard holds one boundary.').length - 1, 1, 'the answer is not repeated');
   assert.match(html, /turn__round-final">answered/);
@@ -771,9 +770,16 @@ test('the rounds disclosure is wired to the reveal decision, not just able to ma
   const source = readFileSync(new URL('../assistant/AssistantTranscript.jsx', import.meta.url), 'utf8');
 
   assert.match(source, /revealExpandedRounds\(/, 'the disclosure asks whether to reveal');
-  // Read and cleared in the same pass, or a streaming open leaves the flag set and
-  // suppresses the reader's *next* open — the one that needs the scroll.
-  assert.match(source, /const openedByStream = openingByStreamRef\.current;\s*\n\s*openingByStreamRef\.current = false;/);
+  // Clear the reader activation after revealing so unrelated updates do not scroll.
+  assert.match(source, /readerOpenedRef\.current = false;/);
   // A layout effect, so the position is right before the paint rather than jumping after.
   assert.match(source, /useLayoutEffect\(\(\) => \{[\s\S]*?revealExpandedRounds/);
 });
+
+ test('the answer follows diagnostics, including legacy tool records', () => {
+   for (const record of [{ rounds: ROUNDS }, {toolCalls: [{name:'rack_read_plan'}]}]) {
+     const html = renderToStaticMarkup(<AssistantTranscript turns={[{turnId:'order',role:'ASSISTANT',status:'COMPLETE',text:'Final answer here',...record}]} />);
+     const recordStart = html.indexOf(record.rounds ? 'turn__rounds' : 'turn__tools');
+     assert.ok(recordStart >= 0 && recordStart < html.indexOf('Final answer here'));
+   }
+ });

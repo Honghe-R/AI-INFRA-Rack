@@ -163,3 +163,27 @@ Keyboard, focus, narrow-screen and assistive-technology behavior require manual 
 ## Acceptance Criteria
 
 The complete creation-to-restoration chain must work without a hidden mutation channel. Read-only content remains useful without write controls. Source/version/deletion blockers match backend behavior. View changes preserve physical coordinates. Verification reports distinguish browser interaction, static rendering and HTTP-only checks.
+
+### Rack naming after creation
+
+Select a rack on the floor layout and edit **Rack name** in the Inspector. Existing saved
+layouts require **Edit layout** first; changes use the ordinary shared draft and **Save
+layout**, and Discard restores the saved name. The name is required with a160-character
+maximum, validated by the existing save path. Position lock protects placement, not naming.
+Read-only, busy, stale-source and pending-save states retain the existing editing gate.
+Rack identity and device assignments do not change when a display name changes.
+
+### Batch rack creation
+
+The Add rack dialog accepts1–128 racks within the256-rack Plan limit. Automatic numbering
+is enabled by default: it suggests the selected rack's prefix, otherwise the last naturally
+sorted numbered group (A for an empty plan), and continues after the highest matching suffix.
+An optional start number overrides the starting point; existing names are skipped ignoring
+case. The live preview shows the generated names. Single racks may disable automatic numbering
+for a custom name. Numbers use at least two digits, preserving wider suggested numbering.
+
+Batch racks are staged on a centered grid with optional column count and editable row/column
+gaps. Rotated footprints determine pitch. New racks keep the default position lock setting.
+Grid proposals do not avoid existing racks/obstacles or prove room fit; existing server checks
+and Save layout remain required. Cancel creates nothing. Both the toolbar and canvas Add rack
+entry open the dialog. No implicit database save is performed.

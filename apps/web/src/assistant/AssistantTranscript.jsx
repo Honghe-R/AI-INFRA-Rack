@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { canApplyProposal, revealExpandedRounds, shouldAutoOpenRounds } from './assistant-state.js';
+import { canApplyProposal, revealExpandedRounds } from './assistant-state.js';
 import { Markdown } from './Markdown.jsx';
+import { revealReply, nearTranscriptEnd, followTranscriptEnd } from './reply-display.js';
 import { getTool } from '../state/tool-registry.js';
 import { uiActionTypeFor } from './ui-actions.js';
 import { Icon } from '../shell/icons.jsx';
@@ -52,53 +53,16 @@ function TurnRounds({ turn, onEntitySelect = null, onEntityHover = null, onEntit
   const wrote = calls.some((call) => call.wrote === true);
   const notices = Array.isArray(turn.notices) ? turn.notices : [];
 
-  // A turn that is still running holds its disclosure open, so rounds are *watched* as they
-  // arrive rather than discovered afterwards — which is the whole reason they are streamed.
-  // A finished turn is left exactly as the reader left it: the flag only ever opens, so
-  // closing it mid-turn is not undone by the next round, and the answer does not snap shut
-  // the moment it lands.
+  // Keep diagnostics available without competing with the answer, including live turns.
   const streaming = turn.status === 'STREAMING';
-  const [open, setOpen] = useState(streaming);
-  /**
-   * Whether the reader has made their own decision about this disclosure.
-   *
-   * Rounds land every few seconds while the model works, so an auto-open that kept winning
-   * would make the head unclickable for exactly the turn the reader most wants out of the
-   * way. A click on the summary is the reader's own act — the `open` prop moves the element
-   * without one — so it settles the question for the rest of the turn.
-   */
-  const readerDecidedRef = useRef(false);
-  useEffect(() => {
-    if (shouldAutoOpenRounds({ streaming, readerDecided: readerDecidedRef.current })) setOpen(true);
-  }, [streaming]);
-
+  const [open, setOpen] = useState(false);
   const detailsRef = useRef(null);
-  // Whether the change being rendered was the streaming open rather than a reader's
-  // click. The disclosure is opened by data arriving as well as by the summary, and only
-  // the reader's own action should move their scroll position.
-  const openingByStreamRef = useRef(streaming);
-
-  /**
-   * Brings the rounds into view when the reader opens them.
-   *
-   * The transcript is scrolled to its end, so a turn sits against the bottom edge — and a
-   * disclosure below it has nowhere to grow *but* downwards, off the end of the visible
-   * area. Without this the panel expands and the content the reader asked for is below the
-   * fold: it looks like nothing happened. `scrollIntoView` walks up to the first scrollable
-   * ancestor, which is the transcript, so it does not need a handle on the list or any
-   * knowledge of the composer's own scroll container.
-   *
-   * A layout effect so the position is right before the paint, like the transcript's own
-   * scroll-to-end; otherwise the panel is painted off screen and then jumps. The decision
-   * itself lives in `revealExpandedRounds` so it can be asserted without a browser.
-   */
+  const readerOpenedRef = useRef(false);
   useLayoutEffect(() => {
-    // Read and clear in the same pass: the flag describes the change being committed, so
-    // leaving it set after a streaming open would suppress the reader's *next* open — the
-    // one that actually needs the scroll, and the one they would report as broken.
-    const openedByStream = openingByStreamRef.current;
-    openingByStreamRef.current = false;
-    revealExpandedRounds({ open, openedByStream, element: detailsRef.current });
+    if (readerOpenedRef.current) {
+      revealExpandedRounds({ open, openedByStream: false, element: detailsRef.current });
+      readerOpenedRef.current = false;
+    }
   }, [open]);
 
   // Turns stored before rounds existed still carry the flat list. Showing it costs nothing
@@ -127,12 +91,7 @@ function TurnRounds({ turn, onEntitySelect = null, onEntityHover = null, onEntit
       className="turn__rounds"
       ref={detailsRef}
       open={open}
-      onToggle={(event) => {
-        // `onToggle` fires for the streaming open too, so the flag is set only when the
-        // browser changed it under the reader rather than because of them.
-        if (event.currentTarget.open && streaming && !readerDecidedRef.current) openingByStreamRef.current = true;
-        setOpen(event.currentTarget.open);
-      }}
+      onToggle={(event) => setOpen(event.currentTarget.open)}
     >
       {/*
         The whole row is the control, not the two words in it. `summary` is the
@@ -143,12 +102,7 @@ function TurnRounds({ turn, onEntitySelect = null, onEntityHover = null, onEntit
       */}
       <summary
         className="turn__rounds-summary"
-        // The reader's own activation, which is what settles the disclosure open or closed
-        // for the rest of the turn. Nothing else sets this: the `open` prop moves the element
-        // without a click.
-        onClick={() => {
-          readerDecidedRef.current = true;
-        }}
+        onClick={() => { readerOpenedRef.current = true; }}
       >
         {streaming ? <span className="turn__rounds-live">live</span> : null}
         <span className="turn__rounds-count">
@@ -176,7 +130,7 @@ function TurnRounds({ turn, onEntitySelect = null, onEntityHover = null, onEntit
                 the turn's own entities, so a name it mentioned is the same link here as in
                 the reply.
 
-                The last round has no calls — its words *are* the reply, already above — so a
+                The last round has no calls — its words *are* the reply, shown below — so a
                 call-less round is not repeated. Reasoning is the provider's separate thinking
                 channel: it accompanies the answer rather than restating it, so it is shown
                 wherever the provider supplied one.
@@ -257,6 +211,24 @@ function TurnRounds({ turn, onEntitySelect = null, onEntityHover = null, onEntit
   );
 }
 
+function ReplyText({ turn, onEntitySelect, onEntityHover, onEntityLeave }) {
+  const liveRef = useRef(turn.status === 'STREAMING');
+  const [display, setDisplay] = useState(null);
+  useLayoutEffect(() => {
+    if (turn.status === 'STREAMING') { liveRef.current = true; setDisplay(null); return; }
+    if (!liveRef.current || !turn.text) return;
+    liveRef.current = false;
+    // Older/restored answers and reduced-motion users see the complete answer immediately.
+    if (globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+    return revealReply(turn.text, (text, done) => setDisplay(done ? null : text));
+  }, [turn.status, turn.text]);
+  if (!turn.text) return null;
+  return <div className="turn__text" aria-live="off" aria-busy={display !== null}>
+    <Markdown text={display ?? turn.text} entities={turn.entities}
+      onSelectEntity={onEntitySelect} onEntityHover={onEntityHover} onEntityLeave={onEntityLeave} />
+  </div>;
+}
+
 export function AssistantTranscript({
   turns = [],
   restoring = false,
@@ -272,22 +244,20 @@ export function AssistantTranscript({
 }) {
   const listRef = useRef(null);
 
-  /**
-   * Keeps the newest turn in view.
-   *
-   * The composer mounts this list every time it expands — minimizing unmounts it and the
-   * launcher stands in its place — so the effect running on mount *is* the "scroll to the
-   * bottom when expanded" behaviour, and the same one call covers a turn arriving while the
-   * composer is already open. A layout effect rather than an effect for the reason the
-   * message area's height uses one: the position has to be right before the paint, or the
-   * panel opens showing the top of the conversation and jumps.
-   *
-   * `scrollHeight` rather than `scrollIntoView` on the last turn: the list is the only thing
-   * here that scrolls, and naming the target keeps the composer's layout out of it.
-   */
+  const followingRef = useRef(true);
+  const previousCountRef = useRef(turns.length);
   useLayoutEffect(() => {
     const list = listRef.current;
-    if (list) list.scrollTop = list.scrollHeight;
+    // A newly submitted message starts following again. Streaming updates do not
+    // interrupt someone who has deliberately scrolled back to read older messages.
+    if (turns.length > previousCountRef.current) followingRef.current = true;
+    previousCountRef.current = turns.length;
+    followTranscriptEnd(list, followingRef.current);
+    if (!list || typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(() => followTranscriptEnd(list, followingRef.current));
+    observer.observe(list);
+    for (const item of list.children) observer.observe(item);
+    return () => observer.disconnect();
   }, [turns]);
 
   if (turns.length === 0) {
@@ -303,7 +273,8 @@ export function AssistantTranscript({
   }
 
   return (
-    <ol className="transcript" aria-label="Conversation" aria-live="polite" ref={listRef}>
+    <ol className="transcript" aria-label="Conversation" aria-live="polite" ref={listRef}
+      onScroll={event => { followingRef.current = nearTranscriptEnd(event.currentTarget); }}>
       {turns.map((turn, index) => {
         // The composer header already states the active context, so a turn repeats
         // it only when it answered in a different scope from the one before it —
@@ -314,16 +285,14 @@ export function AssistantTranscript({
           <li key={turn.turnId} className={`turn turn--${role}`}>
             {showScope ? <p className="turn__scope">{turn.scopeLabel ?? 'unknown scope'}</p> : null}
             <div className="turn__bubble">
-              {turn.text ? (
-                <div className="turn__text">
-                  <Markdown
-                    text={turn.text}
-                    entities={turn.entities}
-                    onSelectEntity={onEntitySelect}
-                    onEntityHover={onEntityHover}
-                    onEntityLeave={onEntityLeave}
-                  />
-                </div>
+              <TurnRounds
+                turn={turn}
+                onEntitySelect={onEntitySelect}
+                onEntityHover={onEntityHover}
+                onEntityLeave={onEntityLeave}
+              />
+              {turn.text || turn.status === 'STREAMING' ? (
+                <ReplyText turn={turn} onEntitySelect={onEntitySelect} onEntityHover={onEntityHover} onEntityLeave={onEntityLeave} />
               ) : null}
 
               {/*
@@ -346,12 +315,7 @@ export function AssistantTranscript({
 
               {turn.entityRefs?.length ? <p className="turn__refs">{turn.entityRefs.join(' · ')}</p> : null}
 
-              <TurnRounds
-                turn={turn}
-                onEntitySelect={onEntitySelect}
-                onEntityHover={onEntityHover}
-                onEntityLeave={onEntityLeave}
-              />
+
 
               {/* The wait, in the assistant's own bubble: that is where the answer will
                   appear, and the transcript is the only live region, so a reader is told

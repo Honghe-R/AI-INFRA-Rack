@@ -1,5 +1,6 @@
 import { beginLayoutDraft, validateEditorPlacements, validateEditorConstraints, validateEditorEquipment } from './edit-layout-state.js';
 import { deviceFromCatalog } from '../catalog/catalog-state.js';
+import { rackSequenceNames } from './rack-sequence.js';
 import { MAX_EQUIPMENT_DEVICES } from './limits.generated.js';
 
 export const RACK_COMMANDS = [
@@ -40,9 +41,27 @@ export function addPlanObject(layout, draft, kind, values, catalog, makeId = () 
     if (next.placements.length >= 256) throw new Error('A plan supports at most 256 racks.');
     const model = layout.models.find(m => m.modelId === values.modelId);
     if (!model) throw new Error('Choose an available rack model.');
-    selectedId = makeId();
-    next.placements.push({ rackId: selectedId, modelId: model.modelId, name: values.name.trim(),
-      xM: Number(values.xM), yM: Number(values.yM), rotationDeg: Number(values.rotationDeg), locked: values.locked === undefined ? true : values.locked });
+    const quantity = Number(values.quantity ?? 1);
+    const names = values.numbered || quantity !== 1
+      ? rackSequenceNames(next.placements, { ...values, quantity }) : [values.name.trim()];
+    if (!Number.isSafeInteger(quantity) || quantity < 1 || quantity > 128 || next.placements.length + quantity > 256)
+      throw new Error('Add 1–128 racks at a time, within the 256-rack plan limit.');
+    const columns = values.columns === '' || values.columns == null ? Math.ceil(Math.sqrt(quantity)) : Number(values.columns);
+    const columnGap = Number(values.columnGap ?? 0.2);
+    const rowGap = Number(values.rowGap ?? Math.max(1.2, (next.constraints.clearance?.frontM ?? 0) + (next.constraints.clearance?.rearM ?? 0)));
+    if (!Number.isSafeInteger(columns) || columns < 1 || columns > 128 || ![columnGap,rowGap].every(v => Number.isFinite(v) && v >= 0 && v <= 100))
+      throw new Error('Use 1–128 columns and gaps from 0 to 100 metres.');
+    const rotated = [90,270].includes(Number(values.rotationDeg));
+    const pitchX = (rotated ? model.depthM : model.widthM) + columnGap;
+    const pitchY = (rotated ? model.widthM : model.depthM) + rowGap;
+    const rows = Math.ceil(quantity / columns), usedColumns = Math.min(columns, quantity);
+    for (let i=0; i<quantity; i++) {
+      const rackId=makeId(); if (!selectedId) selectedId=rackId;
+      next.placements.push({ rackId, modelId: model.modelId, name: names[i],
+        xM: Number(values.xM) + (i % columns - (usedColumns-1)/2) * pitchX,
+        yM: Number(values.yM) + (Math.floor(i / columns) - (rows-1)/2) * pitchY,
+        rotationDeg: Number(values.rotationDeg), locked: values.locked === undefined ? true : values.locked });
+    }
   } else if (kind === 'rack_zone') {
     if (next.constraints.obstacles.length >= 64) throw new Error('A plan supports at most 64 exclusion zones.');
     selectedId = makeId();

@@ -32,6 +32,9 @@ export function RackInspector({rack, model, devices, selectedDevice, report, onD
     </> : rack ? <>
       <div className="rack-inspector-title"><Server size={24}/><h3>{rack.name}</h3><span className="rack-type-chip">Rack</span></div>
       <p className="rack-inspector-subtitle">{model?.name} · {positionLocked?'Position locked':'Position editable'}</p>
+      <label>Rack name<input type="text" value={rack.name} maxLength={160} disabled={!editable || !onUpdate}
+        onChange={event => { if (editable && onUpdate) onUpdate({ name: event.target.value }); }}/></label>
+      <p className="rack-muted">{editable ? 'Save layout to keep the new name. Position lock does not prevent renaming.' : 'Choose Edit layout to rename this rack if you have write access.'}</p>
       <label className="rack-lock-field"><input type="checkbox" checked={Boolean(rack.locked)} disabled={!editable || !onUpdate}
         onChange={event => { if (editable && onUpdate) onUpdate({ locked: event.target.checked }); }}/>Position lock (on = locked)</label>
       {!rack.locked && positionLocked && <p role="status" className="rack-muted">Unlock pending. Save layout before moving or deleting this rack.</p>}

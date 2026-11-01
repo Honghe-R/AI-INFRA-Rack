@@ -84,6 +84,7 @@ export function RackEquipment({
   const catalog = catalogState?.data;
   const catalogModel = catalog?.models.find((item) => modelKey(item) === catalogId) ?? catalog?.models[0];
   const d = e.devices.find((item) => item.deviceId === selectedId);
+  const orderedRacks = [...placements].sort((a, b) => a.name.localeCompare(b.name, 'en', { numeric: true, sensitivity: 'base' }));
   const rack = placements.find((p) => p.rackId === selectedRackId);
   const model = models.find((m) => m.modelId === rack?.modelId);
   const summary = report?.racks.find((r) => r.rackId === selectedRackId);
@@ -261,7 +262,7 @@ export function RackEquipment({
                 }}
               >
                 <option value="">Unassigned</option>
-                {placements.map((p) => (
+                {orderedRacks.map((p) => (
                   <option key={p.rackId} value={p.rackId}>
                     {p.name}
                   </option>
@@ -301,7 +302,7 @@ export function RackEquipment({
         Capacity rack
         <select value={selectedRackId ?? ''} onChange={(event) => onSelectRack(event.target.value || null)}>
           <option value="">Choose a rack</option>
-          {placements.map((p) => (
+          {orderedRacks.map((p) => (
             <option value={p.rackId} key={p.rackId}>
               {p.name}
             </option>

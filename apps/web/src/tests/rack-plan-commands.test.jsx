@@ -93,3 +93,21 @@ test('schematic views retain rack/device IDs and show unknown capacities and act
   assert.equal(capacityLabel({capacities:{powerKw:{total:0,knownSubtotal:0,limit:0,status:'WITHIN_LIMIT'}}},'powerKw','kW'),'0 / 0 kW');
   assert.deepEqual({rack,devices},source);
 });
+
+ test('batch racks continue selected prefixes, skip collisions, and stage a non-overlapping rotated grid atomically', async () => {
+  const {suggestRackSequence,rackSequenceNames}=await import('../rack/rack-sequence.js');
+  const existing=[{...rackValues,rackId:'h',name:'H04',xM:1,yM:1,rotationDeg:0,locked:true}];
+  assert.deepEqual(suggestRackSequence(existing,'h'),{prefix:'H',padding:2});
+  assert.deepEqual(rackSequenceNames(existing,{prefix:'H',quantity:8}),['H05','H06','H07','H08','H09','H10','H11','H12']);
+  assert.deepEqual(rackSequenceNames([...existing,{name:'h05'}],{prefix:'H',startNumber:4,quantity:2}),['H06','H07']);
+  const source={...layout,placements:existing}; const before=structuredClone(source);let id=0;
+  const result=addPlanObject(source,null,'rack_add',{...rackValues,numbered:true,prefix:'H',quantity:8,xM:10,yM:5,columns:4},catalog,()=>`batch-${++id}`);
+  const added=result.draft.placements.slice(1);
+  assert.deepEqual(added.map(p=>p.name),['H05','H06','H07','H08','H09','H10','H11','H12']);
+  assert.equal(new Set(added.map(p=>`${p.xM},${p.yM}`)).size,8);
+  assert.ok(Math.abs(added[1].xM-added[0].xM)>model.depthM);assert.ok(added.every(p=>p.locked));
+  assert.deepEqual(source,before);
+  for(const patch of [{quantity:0},{quantity:129},{quantity:1.5},{columns:0},{rowGap:-1},{startNumber:-1}])
+    assert.throws(()=>addPlanObject(source,null,'rack_add',{...rackValues,numbered:true,prefix:'H',quantity:8,...patch},catalog));
+  assert.deepEqual(source,before);
+ });
