@@ -1230,6 +1230,14 @@ Docker 可能保留已下载的镜像缓存，本轮没有清理全局 Docker �
 - No live Plan creation/edit/deletion, private source edits, migration, seed or business-data write occurred. Real natural-language mutation/confirmation execution remains untested; prior scripted real-database mutation coverage remains round55 evidence. Native browser interaction/sign-in was not tested. Final Web5193 and API8797 health probes returned200. The sanitized full result is in ignored .local-runtime/assistant-live-smoke/result-1793469398058.json; it contains the answer/tool outcomes/token usage and no credentials. Script syntax and Git whitespace checks passed.
 - Worked only in the Rack copy. No teacher folder/platform changes, staging, commits, pushes or remote changes.
 
+## 2026-11-01: Round57 — Restore local services and clarify localhost scope
+
+- Investigated the reported login outage. Initially Web5193 and API8797 refused connections, and the isolated Rack Docker containers were stopped. Started only the existing Rack dependency stack with `npm run dev:up`, then started the application in a hidden background process with logs under ignored `.local-runtime/recovery-dev*.log`.
+- Found an additional concrete startup failure: Windows reserved TCP8702–8801, which includes8797; API binding returned EACCES. Verified18797 could bind, changed only PORT/API_URL in ignored local `.env`, and restarted the application processes started in this round. The Web URL remains5193. No password, account, role or authentication-policy change.
+- Verification: Web5193, API18797 `/healthz`, `/readyz`, Web `/__auth/session`, and a short-lived server-signed dev-user `/api/v1/me/permissions` request all returned200. Existing database counts were12users/2projects. This checks backend identity availability, not an actual password/browser sign-in. No password/store contents or credentials were printed, and no model provider was called. Dependency startup ensured the Rack object bucket exists; no seed, migration, reset or business Plan mutation was run.
+- User clarified teammates each open localhost on their own computers. Explained that these are independent instances with independent accounts/database/model setup; GitHub does not host the platform or synchronize runtime data. This repair does not repair teammates' machines. Requested their startup error text; their failures remain undiagnosed. Updated local setup documentation with shared-access scope, readiness checks and Windows reserved-port troubleshooting. No shared/public deployment, automatic port fallback or teammate-machine fix is claimed.
+- Worked only in the Rack copy. No teacher-folder/platform changes, staging, commits, pushes or remote changes. User handles all Git actions.
+
 ## 后续记录格式（第十七轮后沿用）
 
 每轮追加一个日期标题，至少写清：

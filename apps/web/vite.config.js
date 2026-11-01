@@ -5,6 +5,7 @@ import { SignJWT } from 'jose';
 import { fileURLToPath } from 'node:url';
 import { clientIdentities, devSubjects } from '../../scripts/lib/dev-identities.mjs';
 import { createAccountStore, createRackAuthMiddleware, RACK_GATEWAY_TOKEN } from '../../scripts/lib/rack-auth.mjs';
+import { localLoginEnabled, withLocalLogin } from '../../scripts/lib/rack-local-login.mjs';
 
 /** The repository root, where `.env` lives — one level above `apps/web`. */
 const REPO_ROOT = fileURLToPath(new URL('../..', import.meta.url));
@@ -85,7 +86,13 @@ const authMode = readEnv('RACK_AUTH_MODE') ?? 'password';
 if (!['password', 'demo'].includes(authMode)) throw new Error('RACK_AUTH_MODE must be password or demo.');
 const demoAuth = authMode === 'demo' && mode === 'development';
 const webPort = Number(readEnv('WEB_PORT') ?? 5173);
-const accountStore = createAccountStore({ file: fileURLToPath(new URL('../../.local-runtime/auth/accounts.json', import.meta.url)) });
+const accountStore = withLocalLogin(
+  createAccountStore({ file: fileURLToPath(new URL('../../.local-runtime/auth/accounts.json', import.meta.url)) }),
+  {
+    enabled: localLoginEnabled({ mode, host: readEnv('HOST') ?? '127.0.0.1', enabled: readEnv('RACK_LOCAL_DEMO_LOGIN') !== 'false' }),
+    organisationId: readEnv('VITE_ORGANISATION_ID') ?? loadEnv(mode, fileURLToPath(new URL('.', import.meta.url)), '').VITE_ORGANISATION_ID ?? null,
+  },
+);
 async function mintSessionToken(subject) {
   if (!devSecret) throw new Error('The local authentication gateway is not configured.');
   return new SignJWT({}).setProtectedHeader({ alg: 'HS256' }).setSubject(subject).setIssuer(issuer)

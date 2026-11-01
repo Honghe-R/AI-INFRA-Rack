@@ -224,7 +224,7 @@ export function createRackAuthMiddleware({ store, mint, allowedOrigins, secure =
           data = { login: invitation.login, activationUrl: link.href, expiresAt: invitation.expiresAt };
         } else if (path === '/__auth/activate') data = await store.activate(body.token, body.password);
         else if (path === '/__auth/login') {
-          const result = await store.login(body.login, body.password, validateAccount);
+          const result = await store.login(body.login, body.password, validateAccount, request.socket.remoteAddress);
           await store.logout(raw);
           response.setHeader('Set-Cookie', cookie(result.raw, secure));
           data = result.account;

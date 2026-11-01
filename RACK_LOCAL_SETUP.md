@@ -65,6 +65,28 @@ npm run dev:down
 不要为正常重启运行 `dev:reset`：该命令会删除所选 Compose 栈的数据卷。
 若端口被占用，先确认当前运行的进程或终端，不要盲目结束其他项目的服务。
 
+## Local URLs and shared access
+
+`http://localhost:5193/` is a local development address, not a shared or public deployment.
+On each computer it connects to that computer's own web server, database and account store.
+GitHub synchronizes source files; it does not host this backend or synchronize local accounts,
+passwords, database volumes or model connections. An invitation created on one local instance
+belongs to that instance. A shared deployment requires a reachable host and persistent shared
+services; never expose the development server directly as a production service.
+
+If sign-in says it is temporarily unavailable, start Docker Desktop, run `npm run dev:up`,
+then keep `npm run dev` running. Check the API URL printed by the startup banner:
+`/healthz` must return 200 and `/readyz` must return 200 before troubleshooting credentials.
+An expired eight-hour session requires signing in again, not reactivating the account.
+
+Windows may reserve a previously usable API port after a restart. If the API reports
+`listen EACCES`, inspect `netsh interface ipv4 show excludedportrange protocol=tcp`.
+Choose an available loopback port, set both `PORT` and `API_URL` in your ignored local
+`.env` consistently, and restart the application. Do not reset, reseed or reprovision accounts
+for a port problem. On the maintainer's local machine, the API moved from 8797 to 18797
+on 2026-11-01; the browser URL remains `http://localhost:5193/`. Other computers keep their
+own settings and must be diagnosed independently. No shared deployment has been created.
+
 ## 本副本的隔离配置
 
 | 内容 | 地址/名称 |
