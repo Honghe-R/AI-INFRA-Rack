@@ -16,12 +16,15 @@ export function RackOptions({ client, layout, draft, canWrite, onDraftChange, on
     return () => request.current?.abort();
   }, [layout.projectId, layout.planId, layout.version, layout.snapshot.snapshotId]);
   const stale = layout.sourceStatus.status !== 'UNCHANGED';
+  const movableCount = layout.placements.filter(p => !p.locked).length;
+  const lockReason = movableCount === 0 ? 'All racks are locked. Unlock the racks you want to relocate and Save layout first.'
+    : movableCount > 64 ? `${movableCount} racks are unlocked. Relocation supports at most 64 at a time; lock the racks to keep fixed and Save layout first.` : null;
   const option = result?.candidates[selected];
   const guards = { canWrite, draft, confirmed };
   const stageReason = optionStageReason(layout, result, option, guards);
   async function generate(event) {
     event.preventDefault();
-    if (pending || draft || stale) return;
+    if (pending || draft || stale || lockReason) return;
     request.current?.abort();
     const controller = new AbortController(); request.current = controller;
     setPending(true); setError(null); setResult(null); setConfirmed(false);
@@ -48,7 +51,9 @@ export function RackOptions({ client, layout, draft, canWrite, onDraftChange, on
       </div>
       <label className="rack-option-check"><input type="checkbox" checked={rotate} disabled={pending} onChange={e => setRotate(e.target.checked)} />Allow quarter-turn rotations</label>
       <p>{layout.placements.length} racks · {layout.placements.filter(p => p.locked).length} locked · base v{layout.version}. Save or discard manual edits before generation.</p>
-      <div className="rack-actions"><button className="rack-primary" disabled={pending || Boolean(draft) || stale || !layout.placements.length}> {pending ? 'Searching…' : 'Generate layout options'}</button>
+      <p className="rack-muted">{movableCount} movable racks. Locked racks stay fixed and reserve their footprint and maintenance space. Save lock/unlock changes before generating; device assignments remain unchanged.</p>
+      {lockReason && <p className="rack-warning">{lockReason}</p>}
+      <div className="rack-actions"><button className="rack-primary" disabled={pending || Boolean(draft) || stale || Boolean(lockReason) || !layout.placements.length}> {pending ? 'Searching…' : 'Generate layout options'}</button>
         {pending && <button type="button" onClick={() => { request.current?.abort(); setPending(false); }}>Stop waiting</button>}</div>
       {draft && <p className="rack-warning">One shared draft is open. Current edits will not be overwritten.</p>}
       <p className="rack-muted">At most 64 movable racks, 2,048 proposed poses per rack and 16,384 per option. Server planning time is bounded; stopping this view does not immediately interrupt an already running database query.</p>

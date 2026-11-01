@@ -37,6 +37,19 @@ test('options entry states bounds and real scope, generation is disabled for sha
   const html=renderToStaticMarkup(<RackOptions client={{}} layout={layout} draft={{baseVersion:2}} canWrite={false} />);
   for(const text of ['64 movable racks','2,048','16,384','No device allocation','Current edits will not be overwritten','disabled=""']) assert.ok(html.includes(text),text);
 });
+
+test('planning explains saved position locks and blocks all-locked or over-limit searches',()=>{
+  for(const [placements,message] of [
+    [[{rackId:'fixed',locked:true}],'All racks are locked'],
+    [Array.from({length:65},(_,i)=>({rackId:`r${i}`,locked:false})),'65 racks are unlocked'],
+  ]){
+    const html=renderToStaticMarkup(<RackOptions client={{}} layout={{...layout,placements}} canWrite={true} />);
+    assert.ok(html.includes(message));assert.ok(html.includes('disabled=""'));
+    assert.ok(html.includes('Save lock/unlock changes'));
+  }
+  const html=renderToStaticMarkup(<RackOptions client={{}} layout={{...layout,placements:Array.from({length:160},(_,i)=>({rackId:`r${i}`,locked:i<96}))}} canWrite={true} />);
+  assert.ok(html.includes('64 movable racks'));assert.ok(!html.includes('disabled=""'));
+});
 test('planning client sends saved version and snapshot with an abort signal without write headers',async()=>{
   const signal=new AbortController().signal;let call;
   const client=createApiClient({identity:()=>null,fetchImpl:async(url,options)=>{call={url,options};return {ok:true,json:async()=>({data:result})};}});

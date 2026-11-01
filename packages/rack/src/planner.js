@@ -78,25 +78,37 @@ export async function generateRackOptions({ placements, models, boundary, constr
     });
     const placed = placements.filter(p => p.locked).map(p => plannerGeometry(p, catalog.get(p.modelId), constraints.clearance));
     const chosen = new Map(placed.map(g => [g.placement.rackId, g.placement]));
+    // Identical model/orientation searches enumerate identical geometry. Once a
+    // pose is rejected it remains rejected as placed only grows. Continue that
+    // stream for the next rack instead of spending its budget on the same prefix.
+    // Keep the unexamined suffix: the adapter returns only the FIRST valid pose.
+    const searches = new Map();
     const unplaced = [];
     let submitted = 0;
     for (const rack of queue) {
-      const iterator = posesFor(rack, catalog.get(rack.modelId), boundary, constraints.clearance, options);
+      const key = `${rack.modelId}:${rack.rotationDeg}`;
+      if (!searches.has(key)) searches.set(key, {
+        iterator: posesFor(rack, catalog.get(rack.modelId), boundary, constraints.clearance, options), pending: [], exhausted: false,
+      });
+      const search = searches.get(key);
       let found = null, rackSubmitted = 0, exhausted = false;
       while (!found && rackSubmitted < PLANNER_LIMITS.posesPerRack && submitted < PLANNER_LIMITS.posesPerOption) {
         const batch = [];
         const count = Math.min(PLANNER_LIMITS.batchSize, PLANNER_LIMITS.posesPerRack - rackSubmitted, PLANNER_LIMITS.posesPerOption - submitted);
         for (let i = 0; i < count; i++) {
-          const next = iterator.next();
-          if (next.done) { exhausted = true; break; }
-          batch.push(next.value);
+          const next = search.pending.length ? { value: search.pending.shift(), done: false } : search.iterator.next();
+          if (next.done) { search.exhausted = true; break; }
+          const pose = next.value;
+          batch.push({ ...pose, placement: { ...rack, xM: pose.placement.xM, yM: pose.placement.yM, rotationDeg: pose.placement.rotationDeg } });
         }
+        exhausted = search.exhausted;
         if (!batch.length) break;
         submitted += batch.length; rackSubmitted += batch.length;
         const index = await pickPosition(batch, placed);
         if (index !== null) {
           if (!Number.isInteger(index) || index < 0 || index >= batch.length) throw new Error('Invalid planner geometry adapter result');
           found = batch[index];
+          search.pending.unshift(...batch.slice(index + 1));
         }
         if (exhausted) break;
       }

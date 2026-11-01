@@ -54,3 +54,30 @@ test('planner refuses empty and excess movable inventory, and clamps total work'
   const [option]=await generateRackOptions(fixture({placements:Array.from({length:10},(_,i)=>rack(i)),options:{grid_step_m:.1,strategy:'INPUT_ORDER'},pickPosition:async()=>null}));
   assert.equal(option.positionsSubmitted,PLANNER_LIMITS.posesPerOption);assert.equal(option.unplaced.at(-1).positionsSubmitted,0);
 });
+
+test('64 identical racks continue past occupied scan prefixes without exhausting the option budget', async()=>{
+  const wide={...model,widthM:20};
+  const placements=Array.from({length:64},(_,i)=>({...rack(i),name:`Unique ${i}`,xM:10+i*20,yM:1}));
+  const input=fixture({placements,models:[wide],boundary:{type:'Polygon',coordinates:[[[0,0],[1600,0],[1600,2],[0,2],[0,0]]]},
+    options:{grid_step_m:.5,allow_rotation:false,strategy:'INPUT_ORDER'}});
+  const before=structuredClone(placements);
+  const [option]=await generateRackOptions(input);
+  assert.equal(option.unplaced.length,0);
+  assert.ok(option.positionsSubmitted<=PLANNER_LIMITS.posesPerOption);
+  assert.deepEqual(option.placements,before,'retains every identity/name and packs contiguous 20m bodies');
+  assert.deepEqual(placements,before);
+});
+
+test('continued searches recheck the unexamined batch suffix against newly placed racks', async()=>{
+  const [option]=await generateRackOptions(fixture({options:{grid_step_m:.5,allow_rotation:false,strategy:'INPUT_ORDER'}}));
+  assert.deepEqual(option.placements.map(p=>[p.xM,p.yM]),[[.5,1],[1.5,1]]);
+  assert.notEqual(option.placements[0].rackId,option.placements[1].rackId);
+});
+
+test('all locked racks stay exact and bypass pose search; rotation streams remain independent', async()=>{
+  const fixed={...rack(1),locked:true};
+  const [locked]=await generateRackOptions(fixture({placements:[fixed],options:{strategy:'INPUT_ORDER'},pickPosition:async()=>assert.fail('locked racks must not be searched')}));
+  assert.deepEqual(locked.placements,[fixed]);assert.equal(locked.positionsSubmitted,0);
+  const [mixed]=await generateRackOptions(fixture({placements:[rack(1),{...rack(2),rotationDeg:90}],options:{strategy:'INPUT_ORDER',allow_rotation:false}}));
+  assert.deepEqual(mixed.placements.map(p=>p.rotationDeg),[0,90]);assert.equal(mixed.unplaced.length,0);
+});

@@ -145,6 +145,21 @@ Tools inspect saved data. Dirty-state hints do not contain the draft itself. Cap
 
 ## State Handling
 
+### Relocation locks and search limits
+
+Layout options shows the saved movable-rack count and explains that locked racks
+remain fixed obstacles, including their maintenance space. Lock/unlock edits must
+be saved before generating. All-locked and over-64-movable inputs disable generation
+with a specific explanation; the UI never changes locks automatically. Existing
+equipment assignments remain unchanged by relocation. Automatic device allocation
+is a separate operation and excludes locked racks as installation targets.
+
+Within each strategy, identical model/orientation searches continue past rejected
+or occupied grid prefixes; unexamined suffixes are rechecked against newly placed
+racks. Geometry batches reuse parsed shapes and bounding-box rejection before exact
+PostGIS topology checks. Full candidate validation, save guards and work/time limits
+remain authoritative; bounded search does not establish optimality or infeasibility.
+
 | State | Required response |
 | --- | --- |
 | No HALL/plan | Explain prerequisites and the creation path |
