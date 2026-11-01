@@ -9,7 +9,7 @@ async function authRequest(path, body) {
   return payload.data;
 }
 
-export function AuthScreen({ activation = false, busy = false, error, notice, onSubmit }) {
+export function AuthScreen({ activation = false, busy = false, error, notice, onSubmit, onSkip }) {
   const [login, setLogin] = useState(''), [password, setPassword] = useState(''), [confirm, setConfirm] = useState('');
   const [localError, setLocalError] = useState(null);
   return <main className="rack-auth"><section className="rack-auth-card" aria-label={activation ? 'Activate account' : 'Sign in'}>
@@ -28,7 +28,7 @@ export function AuthScreen({ activation = false, busy = false, error, notice, on
       <button disabled={busy} type="submit">{busy ? 'Please wait…' : activation ? 'Activate account' : 'Sign in'}</button>
     </form>
     <p className="rack-auth-note">{activation ? 'After activation, sign in with the account name provided by your administrator.' : 'Need an account or password help? Contact your platform administrator. Project roles are assigned by an administrator.'}</p>
-  </section></main>;
+  </section>{!activation && onSkip && <button className="rack-auth-skip" type="button" disabled={busy} title="Enter as the local demo administrator" onClick={onSkip}>{busy ? 'Please wait…' : 'Skip sign-in'}</button>}</main>;
 }
 
 export function AuthGate({ children }) {
@@ -64,7 +64,7 @@ export function AuthGate({ children }) {
       try { await authRequest('logout', {}); rememberDevIdentity(null); location.reload(); }
       catch (e) { globalThis.alert(e.message); }
     } });
-  return <AuthScreen key={activation ? 'activation' : 'login'} activation={Boolean(activation)} busy={busy} error={error} notice={notice} onSubmit={async values => {
+  const submit = async values => {
     if (busy) return;
     setBusy(true); setError(null);
     try {
@@ -73,5 +73,7 @@ export function AuthGate({ children }) {
         setActivation(null); setNotice(`Account ${account.login} activated. Sign in with your new password.`);
       } else { await authRequest('login', values); rememberDevIdentity(null); location.reload(); }
     } catch (e) { setError(e.message); } finally { setBusy(false); }
-  }} />;
+  };
+  return <AuthScreen key={activation ? 'activation' : 'login'} activation={Boolean(activation)} busy={busy} error={error} notice={notice}
+    onSubmit={submit} onSkip={session.localDemoLogin ? () => submit({ login: '111', password: '111' }) : undefined} />;
 }

@@ -11,7 +11,7 @@ test('local 111 login validates backend identity, persists until expiry, and rev
   let now = 0, checked = 0;
   const store = withLocalLogin(base, { enabled: true, organisationId: 'local-org', now: () => now });
   const result = await store.login('111', '111', async account => { checked++; assert.equal(account.subject, 'dev-user'); }, '127.0.0.1');
-  assert.equal(checked, 1); assert.equal((await store.session(result.raw)).organisationId, 'local-org');
+  assert.equal(checked, 1); assert.equal(result.account.subject, undefined); assert.equal((await store.session(result.raw)).organisationId, 'local-org');
   await store.logout(result.raw); assert.equal(await store.session(result.raw), null);
   const next = await store.login('111', '111', async () => {}, '::1'); now += 8 * 60 * 60 * 1000;
   assert.equal(await store.session(next.raw), null);

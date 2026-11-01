@@ -1,4 +1,4 @@
-import { test } from 'vitest';
+import { test, expect } from 'vitest';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { AuthScreen } from '../app/AuthGate.jsx';
@@ -19,4 +19,13 @@ test('signed-in account control exposes own identity without the development dir
   const html = renderToStaticMarkup(<AccountControl devIdentity={{ available: false, current: { name: 'Personal user', subject: 'personal' }, signOut() {} }} />);
   assert.match(html, /Account: Personal user/); assert.match(html, /aria-haspopup="menu"/);
   assert.ok(!html.includes('Switch identity')); assert.ok(!html.includes('dev-editor')); assert.ok(!html.includes('Act as'));
+});
+
+test('shows the small skip button only when enabled and outside account activation', () => {
+  const html = renderToStaticMarkup(<AuthScreen onSkip={() => {}} />);
+  expect(html).toContain('rack-auth-skip');
+  expect(html).toContain('Skip sign-in');
+  expect(renderToStaticMarkup(<AuthScreen />)).not.toContain('Skip sign-in');
+  expect(renderToStaticMarkup(<AuthScreen activation onSkip={() => {}} />)).not.toContain('Skip sign-in');
+  expect(renderToStaticMarkup(<AuthScreen busy onSkip={() => {}} />)).toMatch(/class="rack-auth-skip"[^>]*disabled/);
 });

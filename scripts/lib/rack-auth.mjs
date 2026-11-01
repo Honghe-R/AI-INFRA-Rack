@@ -199,7 +199,8 @@ export function createRackAuthMiddleware({ store, mint, allowedOrigins, secure =
       let data, body = {};
       if (path === '/__auth/session' && request.method === 'GET') {
         const account = await store.session(raw);
-        data = { mode: 'password', account: account ? publicAccount(account) : null };
+        data = { mode: 'password', account: account ? publicAccount(account) : null,
+          ...(store.canLocalLogin?.(request.socket.remoteAddress) ? { localDemoLogin: true } : {}) };
       } else {
         if (request.method !== 'POST' || !['/__auth/activate', '/__auth/login', '/__auth/logout', '/__auth/invitations'].includes(path))
           throw fail(404, 'NOT_FOUND', 'The requested resource was not found.');

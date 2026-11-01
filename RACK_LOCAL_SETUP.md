@@ -126,3 +126,23 @@ node --env-file=.env records/2026-10-28-platform/check-runtime.mjs
 当前本地数据库沿用初始化用户（超级用户）连接，适合这份单机开发基线；
 生产部署须拆分迁移/应用账号并重新验证数据库 RLS。两组织的 API 拒绝检查不能代替 RLS 安全审计。
 开发身份切换、HTTP、本机凭证和这套服务不应用于公网部署。
+
+## Temporary local demo sign-in
+
+On the updated source, a loopback-bound development server accepts account `111` with
+password `111` in the existing sign-in form. No activation, personal account provisioning
+or additional environment setting is needed. Each teammate must obtain the updated source,
+start their own initialized database/object store (`npm run dev:up`) and restart `npm run dev`.
+This uses the existing seeded `dev-user` administrator and that computer's organization;
+backend identity verification, JWT and RBAC still apply. It cannot recover a stopped API,
+missing database, missing seeded identity or blocked API port. It does not share databases.
+
+The sign-in screen offers a small **Skip sign-in** button at its bottom-right when the
+server confirms local demo access is enabled. It signs in through the same temporary
+administrator session without typing credentials. Hiding an entry is not a security boundary. It is accepted only from loopback connections in local development,
+never production/preview or a server bound to a network interface. Set
+`RACK_LOCAL_DEMO_LOGIN=false` in local `.env` and restart to disable it. Demo sessions use
+HttpOnly cookies and server-memory hashed tokens with an eight-hour expiry; restarting
+the web server revokes them. Personal accounts and password policy remain unchanged.
+This shared administrator is temporary for local testing; it does not provide individual
+audit identity and should be removed/disabled before a shared deployment.

@@ -3637,3 +3637,7 @@ body {
 .rack-auth-card button:disabled { opacity: .6; cursor: default; }
 .rack-auth-note { font-size: 12px; color: var(--text-muted); }
 .rack-auth-error { color: var(--error); }
+
+.rack-auth-skip { position: fixed; right: max(16px, env(safe-area-inset-right)); bottom: max(14px, env(safe-area-inset-bottom)); padding: 8px 10px; border: 0; border-radius: 4px; background: var(--bg); color: var(--text-muted); font: inherit; font-size: 12px; text-decoration: underline; cursor: pointer; }
+.rack-auth-skip:hover, .rack-auth-skip:focus-visible { color: var(--accent); }
+.rack-auth-skip:disabled { opacity: .6; cursor: wait; }

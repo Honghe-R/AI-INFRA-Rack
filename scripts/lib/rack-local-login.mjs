@@ -14,6 +14,7 @@ export function withLocalLogin(store, { enabled = false, organisationId = null, 
   const prune = () => { for (const [key, value] of sessions) if (value.expires <= now()) sessions.delete(key); };
   return {
     ...store,
+    canLocalLogin: remoteAddress => enabled && loopback(remoteAddress),
     async login(login, password, validateAccount, remoteAddress) {
       if (!enabled || login !== '111') return store.login(login, password, validateAccount);
       if (password !== '111' || !loopback(remoteAddress))
@@ -26,7 +27,7 @@ export function withLocalLogin(store, { enabled = false, organisationId = null, 
       if (sessions.size >= 24) sessions.delete(sessions.keys().next().value);
       const raw = randomBytes(32).toString('base64url');
       sessions.set(hash(raw), { account, expires: now() + ttl });
-      return { raw, account };
+      return { raw, account: { login: account.login, name: account.name, organisationId: account.organisationId } };
     },
     async session(raw) {
       prune();

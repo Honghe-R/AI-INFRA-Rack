@@ -104,3 +104,29 @@ Public deployment requires HTTPS/Secure cookies and an appropriate authenticatio
 gateway or identity provider; a static Vite build alone does not provide this
 local server. Filesystem owners can administer the local account store and must
 be trusted. Eight-hour sessions are fixed-duration rather than rolling sessions.
+
+## Temporary local development access (2026-11-01)
+
+For temporary team testing, `111` / `111` in the existing sign-in form maps to the
+seeded `dev-user` administrator on each machine. This adapter is enabled by default
+only for loopback-bound Vite development servers, with loopback requests and live
+backend identity verification. `RACK_LOCAL_DEMO_LOGIN=false` disables it after restart.
+Production and preview do not install this login. It never creates/changes personal
+accounts, password hashes, database roles or shared deployment data.
+
+Sessions are hashed in server memory, use the existing HttpOnly/SameSite cookie and
+eight-hour expiry, and are revoked on logout/restart. Origin checks and attempt limits
+remain. Normal password login is unchanged. The shortcut has administrator authority,
+including existing authorized Assistant tools, and shares that seeded identity's local
+settings; use it only for temporary local testing. It offers no per-person attribution.
+Hidden UI presentation is not a security boundary. Backend/database availability and
+initial setup remain required on each teammate's machine.
+
+### One-click local administrator entry
+
+The session response adds `localDemoLogin: true` only when local development demo login
+is enabled for the socket peer. On that sign-in screen, a small bottom-right **Skip sign-in**
+button submits the existing temporary login and uses its normal cookie/session flow. No
+client-selected role or new bypass endpoint is introduced. The button is hidden during
+activation or when capability is absent, disabled during requests, and reports backend
+failures through the existing error panel. It still requires a running initialized backend.
